@@ -2,17 +2,21 @@
 #define GAMELOGIC_H
 
 #include <QObject>
+#include <QRandomGenerator>
+#include <QSet>
 
-#include "character.h"
 #include "direction.h"
+#include "magicalgirl.h"
 #include "map.h"
+#include "witch.h"
 
 class GameLogic : public QObject {
     Q_OBJECT
 
 private:
     Map *map;
-    Character *luca;
+    MagicalGirl *player;
+    QSet<Witch *> witches;
 
 public:
     explicit GameLogic(QObject *parent = nullptr);
@@ -20,10 +24,14 @@ public:
 
     void startGame();
 
-    void updatePlayerPosition(BiDirection moveX, BiDirection moveY);
+    void movePlayer(Direction dir);
+    void moveWitches();
+
+    void addWitch(int viewportX, int viewPortY);
 
     Map *getMap() const;
-    Character *getPlayer() const;
+    MagicalGirl *getPlayer() const;
+    QSet<Witch *> &getWitches();
 
 signals:
     void gameOver();

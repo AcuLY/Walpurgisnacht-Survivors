@@ -10,21 +10,26 @@ CONFIG += c++17
 
 SOURCES += \
     character.cpp \
+    direction.cpp \
     gamelogic.cpp \
     gamewindow.cpp \
+    magicalgirl.cpp \
     main.cpp \
     mainwindow.cpp \
     map.cpp \
-    utils.cpp
+    utils.cpp \
+    witch.cpp
 
 HEADERS += \
     character.h \
     direction.h \
     gamelogic.h \
     gamewindow.h \
+    magicalgirl.h \
     mainwindow.h \
     map.h \
-    utils.h
+    utils.h \
+    witch.h
 
 FORMS += \
     mainwindow.ui

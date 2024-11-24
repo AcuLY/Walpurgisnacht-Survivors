@@ -11,6 +11,9 @@
 
 #include "gamelogic.h"
 
+const int WINDOW_WIDTH = 1280;
+const int WINDOW_HEIGHT = 720;
+
 const int RENDER_FPS = 120;
 const int RENDER_FRAME_TIME = 1000 / RENDER_FPS;
 
@@ -21,6 +24,8 @@ class GameWindow : public QWidget {
     Q_OBJECT
 
 private:
+    int viewportX = 0, viewportY = 0;
+
     GameLogic *gameLogic;
 
     QSet<int> pressedKeys;
@@ -36,7 +41,9 @@ protected:
     void keyReleaseEvent(QKeyEvent *event) override;
     void paintEvent(QPaintEvent *event) override;
 
-    std::pair<BiDirection, BiDirection> getPlayerMovement();
+    Direction getPlayerMovement();
+
+    void updateViewport();
 
 private slots:
     void updateGameLogic();

@@ -2,7 +2,7 @@
 #include <QDebug>
 
 GameWindow::GameWindow(QWidget *parent) : QWidget{parent} {
-    setFixedSize(600, 600);
+    setFixedSize(1280, 720);
 
     setFocusPolicy(Qt::StrongFocus);
 
@@ -25,7 +25,7 @@ void GameWindow::keyReleaseEvent(QKeyEvent *event) {
     pressedKeys.remove(event->key());
 }
 
-std::pair<BiDirection, BiDirection> GameWindow::getPlayerMovement() {
+Direction GameWindow::getPlayerMovement() {
     BiDirection moveX = BiDirection::Neutral, moveY = BiDirection::Neutral;
     if (pressedKeys.contains(Qt::Key_W)) {
         moveY = BiDirection::Negative;
@@ -39,12 +39,25 @@ std::pair<BiDirection, BiDirection> GameWindow::getPlayerMovement() {
     if (pressedKeys.contains(Qt::Key_D)) {
         moveX = moveX ? BiDirection::Neutral : BiDirection::Positive;
     }
-    return {moveX, moveY};
+    return pairBiDirection(moveX, moveY);
+}
+
+void GameWindow::updateViewport() {
+    Character *player = gameLogic->getPlayer();
+    int playerX = player->geometry().x() + player->geometry().width() / 2;
+    int playerY = player->geometry().y() + player->geometry().height() / 2;
+
+    viewportX = playerX - WINDOW_WIDTH / 2;
+    viewportY = playerY - WINDOW_HEIGHT / 2;
 }
 
 void GameWindow::updateGameLogic() {
-    auto [moveX, moveY] = getPlayerMovement();
-    gameLogic->updatePlayerPosition(moveX, moveY);
+    gameLogic->addWitch(viewportX, viewportY);
+    Direction dir = getPlayerMovement();
+    gameLogic->movePlayer(dir);
+    gameLogic->moveWitches();
+
+    updateViewport();
 }
 
 void GameWindow::paintEvent(QPaintEvent *event) {
@@ -52,13 +65,18 @@ void GameWindow::paintEvent(QPaintEvent *event) {
 
     QPainter painter(this);
 
-    painter.fillRect(rect(), Qt::black);
+    painter.translate(-viewportX, -viewportY);
 
     Map *map = gameLogic->getMap();
-    painter.fillRect(map->geometry(), Qt::green);
+    map->render(&painter, viewportX, viewportY);
 
-    Character *player = gameLogic->getPlayer();
+    MagicalGirl *player = gameLogic->getPlayer();
     painter.fillRect(player->geometry(), Qt::white);
+
+    auto witches = gameLogic->getWitches();
+    for (auto it = witches.begin(); it != witches.end(); ++it) {
+        painter.fillRect((*it)->geometry(), Qt::blue);
+    }
 }
 
 void GameWindow::renderFrame() {

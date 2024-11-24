@@ -1,48 +1,26 @@
 #include "map.h"
 
-Map::Map(int width, int height, double friction, QWidget *parent)
-    : QWidget{parent}, width(width), height(height), friction(friction) {
-    setFixedSize(width, height);
+Map::Map(double friction, QWidget *parent) : QWidget{parent}, friction(friction) {
+    setFixedSize(MAP_WIDTH, MAP_HEIGHT);
 };
-
-std::pair<int, int> Map::getSize() const {
-    return {width, height};
-}
-
-int Map::getWidth() const {
-    return width;
-}
-
-int Map::getHeight() const {
-    return height;
-}
 
 double Map::getFriction() const {
     return friction;
 }
 
-Direction Map::isOutOfBoundry(const QRect &characterBounds) {
-    if (characterBounds.left() < this->x()) {
-        return Direction::West;
-    }
-    if (characterBounds.right() > this->x() + width) {
-        return Direction::East;
-    }
-    if (characterBounds.top() < this->y()) {
-        return Direction::North;
-    }
-    if (characterBounds.bottom() > this->y() + height) {
-        return Direction::South;
-    }
-    return Direction::Center;
-}
+void Map::render(QPainter *painter, int viewportX, int viewportY) const {
+    painter->setPen(Qt::black);
+    painter->setBrush(Qt::gray);
 
-void Map::paintEvent(QPaintEvent *event) {
-    Q_UNUSED(event);
-    QPainter painter(this);
+    int startX = viewportX - viewportX % GRID_SIZE - GRID_SIZE;
+    int endX = startX + MAP_WIDTH + GRID_SIZE;
+    int startY = viewportY - viewportY % GRID_SIZE - GRID_SIZE;
+    int endY = startY + MAP_HEIGHT + GRID_SIZE;
 
-    painter.setPen(Qt::black);
-    painter.setBrush(Qt::yellow);
-
-    painter.drawRect(this->geometry());
+    for (int x = startX; x <= endX; x += GRID_SIZE) {
+        for (int y = startY; y <= endY; y += GRID_SIZE) {
+            QRect grid(x, y, GRID_SIZE, GRID_SIZE);
+            painter->drawRect(grid);
+        }
+    }
 }

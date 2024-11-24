@@ -32,47 +32,33 @@ double Character::getVelocity() const {
     return std::hypot(velocityX, velocityY);
 }
 
+void Character::updateAcceleration(BiDirection moveX, BiDirection moveY) {
+    accelerationX = moveX ? moveX * maxVelocity * accelerationFactor : 0;
+    accelerationY = moveY ? moveY * maxVelocity * accelerationFactor : 0;
+
+    if (moveX && moveY) {
+        accelerationX *= DIAGONAL_FACTOR;
+        accelerationY *= DIAGONAL_FACTOR;
+    }
+
+    // 当速度大于角色自身最大时只能做减速
+    if (getVelocity() >= maxVelocity) {
+        if (accelerationX * velocityX > 0) {
+            accelerationX = 0;
+        }
+        if (accelerationY * velocityY > 0) {
+            accelerationY = 0;
+        }
+    }
+}
+
 void Character::updateVelocity() {
     velocityX += accelerationX;
     velocityY += accelerationY;
-
-    if (getVelocity() > maxVelocity) {
-        double currentVelocity = getVelocity();
-        velocityX = maxVelocity * velocityX / currentVelocity;
-        velocityY = maxVelocity * velocityY / currentVelocity;
-    }
 }
 
-void Character::updatePosition(Map &map) {
+void Character::updatePosition() {
     this->move(this->x() + velocityX, this->y() + velocityY);
-
-    Direction boundCheck = map.isOutOfBoundry(this->geometry());
-    if (boundCheck == Direction::North) {
-        this->move(this->x(), map.y());
-    }
-    if (boundCheck == Direction::South) {
-        this->move(this->x(), map.y() + map.getHeight() - height);
-    }
-    if (boundCheck == Direction::West) {
-        this->move(map.x(), this->y());
-    }
-    if (boundCheck == Direction::East) {
-        this->move(map.x() + map.getWidth() - width, this->y());
-    }
-
-    if (boundCheck == Direction::West || boundCheck == Direction::East) {
-        velocityX = -velocityX * reboundFactor;
-        accelerationX = 0;
-    }
-    if (boundCheck == Direction::North || boundCheck == Direction::South) {
-        velocityY = -velocityY * reboundFactor;
-        accelerationY = 0;
-    }
-}
-
-void Character::applyAcceleration(double aX, double aY) {
-    accelerationX += aX;
-    accelerationY += aY;
 }
 
 void Character::applyFriction(double friction) {
@@ -91,28 +77,42 @@ void Character::applyFriction(double friction) {
     }
 }
 
-void Character::moveActively(BiDirection moveX, BiDirection moveY, Map &map) {
-    accelerationX = moveX ? moveX * maxVelocity * accelerationFactor : 0;
-    accelerationY = moveY ? moveY * maxVelocity * accelerationFactor : 0;
-
-    if (moveX && moveY) {
-        accelerationX *= DIAGONAL_FACTOR;
-        accelerationY *= DIAGONAL_FACTOR;
-    }
-
+void Character::moveActively(Direction dir) {
+    auto [moveX, moveY] = ~dir;
+    updateAcceleration(moveX, moveY);
     updateVelocity();
-    updatePosition(map);
+    updatePosition();
 }
 
-void Character::paintEvent(QPaintEvent *event) {
-    Q_UNUSED(event);
-    QPainter painter(this);
+void Character::handleCollision(Character *other) {
+    QRect thisRect = geometry();
+    QRect otherRect = other->geometry();
 
-    painter.setPen(Qt::black);
-    painter.setBrush(Qt::blue);
+    if (thisRect.intersects(otherRect)) {
+        QRect intersection = thisRect.intersected(otherRect);
 
-    painter.drawRect(this->rect());
+        if (intersection.width() > intersection.height()) {
+            if (thisRect.top() < otherRect.top()) {
+                this->move(thisRect.left(), otherRect.top() - thisRect.height());
+            } else {
+                this->move(thisRect.left(), otherRect.bottom());
+            }
 
-    painter.setPen(Qt::white);
-    painter.drawText(rect(), Qt::AlignCenter, name);
+            velocityY = -velocityY * reboundFactor;
+            accelerationY = 0;
+            other->velocityY = -other->velocityY * other->reboundFactor;
+            other->accelerationY = 0;
+        } else {
+            if (thisRect.left() < otherRect.left()) {
+                this->move(otherRect.left() - thisRect.width(), thisRect.top());
+            } else {
+                this->move(otherRect.right(), thisRect.top());
+            }
+
+            velocityX = -velocityX * reboundFactor;
+            accelerationX = 0;
+            other->velocityX = -other->velocityX * other->reboundFactor;
+            other->accelerationX = 0;
+        }
+    }
 }

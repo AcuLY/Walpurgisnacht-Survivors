@@ -42,15 +42,14 @@ public:
     double getDamage() const;
     double getVelocity() const;
 
+    void updateAcceleration(BiDirection moveX, BiDirection moveY);
     void updateVelocity();
-    void updatePosition(Map &map);
-    void applyAcceleration(double aX, double aY);
+    void updatePosition();
     void applyFriction(double friction);
 
-    void moveActively(BiDirection moveX, BiDirection moveY, Map &map);
+    void moveActively(Direction dir);
 
-protected:
-    void paintEvent(QPaintEvent *event) override;
+    void handleCollision(Character *other);
 };
 
 #endif // CHARACTER_H
