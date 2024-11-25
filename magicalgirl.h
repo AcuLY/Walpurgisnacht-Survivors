@@ -4,6 +4,7 @@
 #include <QWidget>
 
 #include "character.h"
+#include "weapon.h"
 
 class MagicalGirl : public Character {
     Q_OBJECT
@@ -11,16 +12,18 @@ class MagicalGirl : public Character {
 protected:
     int mana;
 
+    Weapon *weapon;
+
 public:
     explicit MagicalGirl(QString name,
                          int width,
                          int height,
                          double health,
-                         double damage,
                          double maxVelocity,
                          double accelerationFactor,
                          double reboundFactor,
                          int mana,
+                         Weapon *weapon,
                          QWidget *parent = nullptr);
 
 signals:

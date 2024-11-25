@@ -15,15 +15,20 @@ public:
                    int width,
                    int height,
                    double health,
-                   double damage,
                    double maxVelocity,
                    double accelerationFactor,
                    double reboundFactor,
                    QWidget *parent = nullptr);
 
+    bool getValidity();
+
+    void setValidity();
+
     void moveActively(Character *player);
 
 protected:
+    bool isValid = true;
+
     Direction chooseDirection(Character *player);
 
 signals:

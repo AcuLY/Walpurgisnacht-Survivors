@@ -42,6 +42,7 @@ protected:
     void paintEvent(QPaintEvent *event) override;
 
     Direction getPlayerMovement();
+    bool getPlayerAttack();
 
     void updateViewport();
 

@@ -4,7 +4,6 @@ Witch::Witch(QString name,
              int width,
              int height,
              double health,
-             double damage,
              double maxVelocity,
              double accelerationFactor,
              double reboundFactor,
@@ -13,24 +12,33 @@ Witch::Witch(QString name,
                 width,
                 height,
                 health,
-                damage,
                 maxVelocity,
                 accelerationFactor,
                 reboundFactor,
+                nullptr,
                 parent) {};
+
+bool Witch::getValidity() {
+    return isValid;
+}
+
+void Witch::setValidity() {
+    isValid = !isValid;
+}
 
 Direction Witch::chooseDirection(Character *player) {
     Direction directions[]
         = {West, South, North, East, Center, NorthEast, NorthWest, SouthEast, SouthWest};
 
-    double minDistance = 1e9;
+    double minDistance = INF;
     Direction optimalDirection;
 
     for (auto dir : directions) {
         auto [moveX, moveY] = ~dir;
-        int newX = moveX * maxVelocity + this->x();
-        int newY = moveY * maxVelocity + this->y();
-        double distance = MathUtils::euclideanDistance(player->x(), player->y(), newX, newY);
+        int newX = moveX * maxVelocity + this->x(), newY = moveY * maxVelocity + this->y();
+        QPointF playerPos(player->x(), player->y()), newPos(newX, newY);
+        double distance = MathUtils::euclideanDistance(playerPos, newPos);
+
         if (distance < minDistance) {
             minDistance = distance;
             optimalDirection = dir;
@@ -45,5 +53,5 @@ void Witch::moveActively(Character *player) {
     auto [moveX, moveY] = ~dir;
     updateAcceleration(moveX, moveY);
     updateVelocity();
-    updatePosition();
+    updateQPointF();
 }

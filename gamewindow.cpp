@@ -2,7 +2,7 @@
 #include <QDebug>
 
 GameWindow::GameWindow(QWidget *parent) : QWidget{parent} {
-    setFixedSize(1280, 720);
+    setFixedSize(MAP_WIDTH, MAP_HEIGHT);
 
     setFocusPolicy(Qt::StrongFocus);
 
@@ -39,11 +39,16 @@ Direction GameWindow::getPlayerMovement() {
     if (pressedKeys.contains(Qt::Key_D)) {
         moveX = moveX ? BiDirection::Neutral : BiDirection::Positive;
     }
+
     return pairBiDirection(moveX, moveY);
 }
 
+bool GameWindow::getPlayerAttack() {
+    return pressedKeys.contains(Qt::Key_Space);
+}
+
 void GameWindow::updateViewport() {
-    Character *player = gameLogic->getPlayer();
+    MagicalGirl *player = gameLogic->getPlayer();
     int playerX = player->geometry().x() + player->geometry().width() / 2;
     int playerY = player->geometry().y() + player->geometry().height() / 2;
 
@@ -53,9 +58,18 @@ void GameWindow::updateViewport() {
 
 void GameWindow::updateGameLogic() {
     gameLogic->addWitch(viewportX, viewportY);
-    Direction dir = getPlayerMovement();
-    gameLogic->movePlayer(dir);
+    gameLogic->movePlayer(getPlayerMovement());
     gameLogic->moveWitches();
+    gameLogic->moveBullets();
+
+    gameLogic->handleCharacterCollision();
+    gameLogic->handleBulletCollision();
+
+    gameLogic->handleOutOfBoundObject(viewportX, viewportY);
+
+    if (getPlayerAttack()) {
+        gameLogic->playerAttack();
+    }
 
     updateViewport();
 }
@@ -76,6 +90,13 @@ void GameWindow::paintEvent(QPaintEvent *event) {
     auto witches = gameLogic->getWitches();
     for (auto it = witches.begin(); it != witches.end(); ++it) {
         painter.fillRect((*it)->geometry(), Qt::blue);
+    }
+
+    auto bullets = gameLogic->getBullets();
+    for (auto it = bullets.begin(); it != bullets.end(); ++it) {
+        double size = (*it)->getSize();
+        painter.setBrush(Qt::red);
+        painter.drawEllipse((*it)->x(), (*it)->y(), size, size);
     }
 }
 

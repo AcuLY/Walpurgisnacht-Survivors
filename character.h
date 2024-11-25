@@ -6,6 +6,7 @@
 #include <QWidget>
 
 #include "map.h"
+#include "weapon.h"
 
 class Character : public QWidget {
     Q_OBJECT
@@ -17,7 +18,6 @@ protected:
     int height;
 
     double health;
-    double damage;
 
     double maxVelocity;
     double accelerationFactor;
@@ -26,30 +26,34 @@ protected:
     double velocityX = 0.0, velocityY = 0.0;
     double accelerationX = 0.0, accelerationY = 0.0;
 
+    Weapon *weapon;
+
 public:
     explicit Character(QString name,
                        int width,
                        int height,
                        double health,
-                       double damage,
                        double maxVelocity,
                        double accelerationFactor,
                        double reboundFactor,
+                       Weapon *weapon,
                        QWidget *parent = nullptr);
 
     QString getName() const;
     double getHealth() const;
     double getDamage() const;
     double getVelocity() const;
+    Weapon *getWeapon() const;
 
     void updateAcceleration(BiDirection moveX, BiDirection moveY);
     void updateVelocity();
-    void updatePosition();
+    void updateQPointF();
     void applyFriction(double friction);
 
     void moveActively(Direction dir);
-
     void handleCollision(Character *other);
+
+    Bullet *regularAttack(double degree);
 };
 
 #endif // CHARACTER_H

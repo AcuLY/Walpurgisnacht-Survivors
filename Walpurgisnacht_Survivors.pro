@@ -9,6 +9,7 @@ CONFIG += c++17
 #DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0x060000    # disables all the APIs deprecated before Qt 6.0.0
 
 SOURCES += \
+    bullet.cpp \
     character.cpp \
     direction.cpp \
     gamelogic.cpp \
@@ -18,9 +19,11 @@ SOURCES += \
     mainwindow.cpp \
     map.cpp \
     utils.cpp \
+    weapon.cpp \
     witch.cpp
 
 HEADERS += \
+    bullet.h \
     character.h \
     direction.h \
     gamelogic.h \
@@ -29,6 +32,7 @@ HEADERS += \
     mainwindow.h \
     map.h \
     utils.h \
+    weapon.h \
     witch.h
 
 FORMS += \

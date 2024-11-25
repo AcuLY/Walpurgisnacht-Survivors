@@ -5,14 +5,14 @@ Character::Character(QString name,
                      int width,
                      int height,
                      double health,
-                     double damage,
                      double maxVelocity,
                      double accelerationFactor,
                      double reboundFactor,
+                     Weapon *weapon,
                      QWidget *parent)
-    : QWidget(parent), name(name), width(width), height(height), health(health), damage(damage),
+    : QWidget(parent), name(name), width(width), height(height), health(health),
       maxVelocity(maxVelocity), accelerationFactor(accelerationFactor),
-      reboundFactor(reboundFactor) {
+      reboundFactor(reboundFactor), weapon(weapon) {
     setFixedSize(width, height);
 };
 
@@ -24,12 +24,12 @@ double Character::getHealth() const {
     return health;
 }
 
-double Character::getDamage() const {
-    return damage;
-}
-
 double Character::getVelocity() const {
     return std::hypot(velocityX, velocityY);
+}
+
+Weapon *Character::getWeapon() const {
+    return weapon;
 }
 
 void Character::updateAcceleration(BiDirection moveX, BiDirection moveY) {
@@ -57,7 +57,7 @@ void Character::updateVelocity() {
     velocityY += accelerationY;
 }
 
-void Character::updatePosition() {
+void Character::updateQPointF() {
     this->move(this->x() + velocityX, this->y() + velocityY);
 }
 
@@ -81,7 +81,7 @@ void Character::moveActively(Direction dir) {
     auto [moveX, moveY] = ~dir;
     updateAcceleration(moveX, moveY);
     updateVelocity();
-    updatePosition();
+    updateQPointF();
 }
 
 void Character::handleCollision(Character *other) {
@@ -115,4 +115,13 @@ void Character::handleCollision(Character *other) {
             other->accelerationX = 0;
         }
     }
+}
+
+Bullet *Character::regularAttack(double degree) {
+    int x = this->x(), y = this->y();
+    if (weapon->getType() == Weapon::WeaponType::Remote) {
+        Bullet *bullet = ((RemoteWeapon *) weapon)->attack(x, y, degree);
+        return bullet;
+    }
+    return nullptr;
 }
