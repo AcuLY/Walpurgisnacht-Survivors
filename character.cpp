@@ -24,8 +24,12 @@ double Character::getHealth() const {
     return health;
 }
 
+QPointF Character::getPos() const {
+    return QPointF(this->x() + width / 2, this->y() + height / 2);
+}
+
 double Character::getVelocity() const {
-    return std::hypot(velocityX, velocityY);
+    return std::hypot(velocity.x(), velocity.y());
 }
 
 Weapon *Character::getWeapon() const {
@@ -33,47 +37,47 @@ Weapon *Character::getWeapon() const {
 }
 
 void Character::updateAcceleration(BiDirection moveX, BiDirection moveY) {
-    accelerationX = moveX ? moveX * maxVelocity * accelerationFactor : 0;
-    accelerationY = moveY ? moveY * maxVelocity * accelerationFactor : 0;
+    acceleration.setX(moveX ? moveX * maxVelocity * accelerationFactor : 0);
+    acceleration.setY(moveY ? moveY * maxVelocity * accelerationFactor : 0);
 
     if (moveX && moveY) {
-        accelerationX *= DIAGONAL_FACTOR;
-        accelerationY *= DIAGONAL_FACTOR;
+        acceleration.setX(acceleration.x() * DIAGONAL_FACTOR);
+        acceleration.setY(acceleration.y() * DIAGONAL_FACTOR);
     }
 
     // 当速度大于角色自身最大时只能做减速
     if (getVelocity() >= maxVelocity) {
-        if (accelerationX * velocityX > 0) {
-            accelerationX = 0;
+        if (acceleration.x() * velocity.x() > 0) {
+            acceleration.setX(0);
         }
-        if (accelerationY * velocityY > 0) {
-            accelerationY = 0;
+        if (acceleration.y() * velocity.y() > 0) {
+            acceleration.setY(0);
         }
     }
 }
 
 void Character::updateVelocity() {
-    velocityX += accelerationX;
-    velocityY += accelerationY;
+    velocity.setX(velocity.x() + acceleration.x());
+    velocity.setY(velocity.y() + acceleration.y());
 }
 
 void Character::updateQPointF() {
-    this->move(this->x() + velocityX, this->y() + velocityY);
+    this->move(this->x() + velocity.x(), this->y() + velocity.y());
 }
 
 void Character::applyFriction(double friction) {
-    friction = velocityX && velocityY ? friction * DIAGONAL_FACTOR : friction;
+    friction = velocity.x() && velocity.y() ? friction * DIAGONAL_FACTOR : friction;
 
-    if (velocityX > 0) {
-        velocityX = qMax(velocityX - friction, 0.0);
-    } else if (velocityX < 0) {
-        velocityX = qMin(velocityX + friction, 0.0);
+    if (velocity.x() > 0) {
+        velocity.setX(qMax(velocity.x() - friction, 0.0));
+    } else if (velocity.x() < 0) {
+        velocity.setX(qMin(velocity.x() + friction, 0.0));
     }
 
-    if (velocityY > 0) {
-        velocityY = qMax(velocityY - friction, 0.0);
-    } else if (velocityY < 0) {
-        velocityY = qMin(velocityY + friction, 0.0);
+    if (velocity.y() > 0) {
+        velocity.setY(qMax(velocity.y() - friction, 0.0));
+    } else if (velocity.y() < 0) {
+        velocity.setY(qMin(velocity.y() + friction, 0.0));
     }
 }
 
@@ -98,10 +102,10 @@ void Character::handleCollision(Character *other) {
                 this->move(thisRect.left(), otherRect.bottom());
             }
 
-            velocityY = -velocityY * reboundFactor;
-            accelerationY = 0;
-            other->velocityY = -other->velocityY * other->reboundFactor;
-            other->accelerationY = 0;
+            velocity.setY(-velocity.y() * reboundFactor);
+            acceleration.setY(0);
+            other->velocity.setY(-other->velocity.y() * other->reboundFactor);
+            other->acceleration.setY(0);
         } else {
             if (thisRect.left() < otherRect.left()) {
                 this->move(otherRect.left() - thisRect.width(), thisRect.top());
@@ -109,19 +113,22 @@ void Character::handleCollision(Character *other) {
                 this->move(otherRect.right(), thisRect.top());
             }
 
-            velocityX = -velocityX * reboundFactor;
-            accelerationX = 0;
-            other->velocityX = -other->velocityX * other->reboundFactor;
-            other->accelerationX = 0;
+            velocity.setX(-velocity.x() * reboundFactor);
+            acceleration.setX(0);
+            other->velocity.setX(-other->velocity.x() * other->reboundFactor);
+            other->acceleration.setX(0);
         }
     }
 }
 
 Bullet *Character::regularAttack(double degree) {
-    int x = this->x(), y = this->y();
     if (weapon->getType() == Weapon::WeaponType::Remote) {
-        Bullet *bullet = ((RemoteWeapon *) weapon)->attack(x, y, degree);
+        Bullet *bullet = ((RemoteWeapon *) weapon)->attack(this->getPos(), degree);
         return bullet;
     }
     return nullptr;
+}
+
+void Character::receiveDamage(double damage) {
+    health -= damage;
 }

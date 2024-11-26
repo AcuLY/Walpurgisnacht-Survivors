@@ -46,6 +46,7 @@ public:
 
     void handleBulletCollision();
 
+    void handleDeadWitches();
     void handleOutOfBoundObject(int viewportX, int viewportY);
 
 signals:

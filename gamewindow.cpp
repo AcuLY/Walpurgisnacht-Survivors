@@ -64,6 +64,7 @@ void GameWindow::updateGameLogic() {
 
     gameLogic->handleCharacterCollision();
     gameLogic->handleBulletCollision();
+    gameLogic->handleDeadWitches();
 
     gameLogic->handleOutOfBoundObject(viewportX, viewportY);
 
@@ -94,9 +95,7 @@ void GameWindow::paintEvent(QPaintEvent *event) {
 
     auto bullets = gameLogic->getBullets();
     for (auto it = bullets.begin(); it != bullets.end(); ++it) {
-        double size = (*it)->getSize();
-        painter.setBrush(Qt::red);
-        painter.drawEllipse((*it)->x(), (*it)->y(), size, size);
+        painter.fillPath((*it)->createPath(), Qt::red);
     }
 }
 

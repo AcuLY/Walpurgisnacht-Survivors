@@ -23,8 +23,8 @@ protected:
     double accelerationFactor;
     double reboundFactor;
 
-    double velocityX = 0.0, velocityY = 0.0;
-    double accelerationX = 0.0, accelerationY = 0.0;
+    QPointF velocity = QPointF(0, 0);
+    QPointF acceleration = QPointF(0, 0);
 
     Weapon *weapon;
 
@@ -41,7 +41,7 @@ public:
 
     QString getName() const;
     double getHealth() const;
-    double getDamage() const;
+    QPointF getPos() const;
     double getVelocity() const;
     Weapon *getWeapon() const;
 
@@ -54,6 +54,8 @@ public:
     void handleCollision(Character *other);
 
     Bullet *regularAttack(double degree);
+
+    void receiveDamage(double damage);
 };
 
 #endif // CHARACTER_H

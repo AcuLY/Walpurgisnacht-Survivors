@@ -4,7 +4,7 @@
 #include <QTimer>
 #include <QWidget>
 
-#include "bullet.h"
+#include "attack.h"
 #include "utils.h"
 
 class Weapon : public QWidget {
@@ -13,7 +13,8 @@ class Weapon : public QWidget {
 protected:
     double damage;
     double attackInterval;
-    double range;
+    double rangeSize;
+    AttackRange *range;
 
     bool isOnCooldown = false;
     QTimer cooldownTimer;
@@ -21,13 +22,17 @@ protected:
     bool isPlayerSide;
 
 public:
-    explicit Weapon(double damage, double attackInterval, double range, QWidget *parent = nullptr);
+    explicit Weapon(double damage,
+                    double attackInterval,
+                    double rangeSize,
+                    bool isPlayerSide,
+                    QWidget *parent = nullptr);
 
     enum class WeaponType { Remote, Melee };
 
     double getDamage();
     double getAttackInterval();
-    double getRange();
+    AttackRange *getRange();
     bool isCooldownFinished();
 
     bool getSide();
@@ -50,8 +55,23 @@ public:
                           double bulletSize,
                           double damage,
                           double attackSpeed,
-                          double range,
+                          double rangeSize,
+                          bool isPlayerSide,
                           QWidget *parent = nullptr);
+
+    Bullet *attack(QPointF pos, double degree);
+};
+
+class MeleeWeapon : public Weapon {
+protected:
+    WeaponType getType() override;
+
+public:
+    explicit MeleeWeapon(double damage,
+                         double attackSpeed,
+                         double range,
+                         bool isPlayerSide,
+                         QWidget *parent = nullptr);
 
     Bullet *attack(int x, int y, double degree);
 };

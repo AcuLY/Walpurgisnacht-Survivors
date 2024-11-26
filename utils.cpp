@@ -1,9 +1,9 @@
 #include "utils.h"
 
-std::pair<double, double> MathUtils::velocityDecomQPointF(double velocity, double degree) {
+QPointF MathUtils::velocityDecomQPointF(double velocity, double degree) {
     double vX = velocity * cos(degree);
     double vY = velocity * sin(degree);
-    return std::make_pair(vX, vY);
+    return QPointF(vX, vY);
 }
 
 double MathUtils::calculateDegree(QPointF pos1, QPointF pos2) {
