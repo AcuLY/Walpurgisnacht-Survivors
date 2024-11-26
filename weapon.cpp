@@ -1,4 +1,5 @@
 #include "weapon.h"
+#include "attackrange.h"
 
 Weapon::Weapon(double damage,
                double attackInterval,
@@ -56,11 +57,38 @@ Bullet *RemoteWeapon::attack(QPointF pos, double degree) {
     isOnCooldown = true;
     cooldownTimer.start();
 
-    int validTime = rangeSize / bulletVelocity;
+    int validTime = rangeSize / bulletVelocity * 16;
     auto newBullet = new Bullet(pos, bulletSize, damage, isPlayerSide, validTime);
 
     QPointF v = MathUtils::velocityDecomQPointF(bulletVelocity, degree);
     newBullet->setVelocity(v);
 
     return newBullet;
+}
+
+Weapon::WeaponType MeleeWeapon::getType() {
+    return Weapon::WeaponType::Melee;
+}
+
+MeleeWeapon::MeleeWeapon(double damage,
+                         double attackInterval,
+                         double rangeSize,
+                         bool isPlayerSide,
+                         QWidget *parent)
+    : Weapon(damage, attackInterval, rangeSize, isPlayerSide, parent) {
+    range = new CircleRange(rangeSize);
+}
+
+Slash *MeleeWeapon::attack(QPointF pos, double degree) {
+    if (isOnCooldown) {
+        return nullptr;
+    }
+
+    isOnCooldown = true;
+    cooldownTimer.start();
+
+    Slash *slash
+        = new Slash(pos, rangeSize, degree, qDegreesToRadians(60), damage, isPlayerSide, validTime);
+
+    return slash;
 }

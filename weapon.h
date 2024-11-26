@@ -3,6 +3,7 @@
 
 #include <QTimer>
 #include <QWidget>
+#include <QtMath>
 
 #include "attack.h"
 #include "utils.h"
@@ -38,8 +39,6 @@ public:
     bool getSide();
     virtual WeaponType getType() = 0;
 
-    Bullet *attack(int x, int y, double degree);
-
 signals:
 };
 
@@ -64,16 +63,18 @@ public:
 
 class MeleeWeapon : public Weapon {
 protected:
+    int validTime = 200;
+
     WeaponType getType() override;
 
 public:
     explicit MeleeWeapon(double damage,
-                         double attackSpeed,
-                         double range,
+                         double attackInterval,
+                         double rangeSize,
                          bool isPlayerSide,
                          QWidget *parent = nullptr);
 
-    Bullet *attack(int x, int y, double degree);
+    Slash *attack(QPointF pos, double degree);
 };
 
 #endif // WEAPON_H

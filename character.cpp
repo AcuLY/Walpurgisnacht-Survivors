@@ -36,6 +36,10 @@ Weapon *Character::getWeapon() const {
     return weapon;
 }
 
+double Character::getFacingDegree() const {
+    return facingDegree;
+}
+
 void Character::updateAcceleration(BiDirection moveX, BiDirection moveY) {
     acceleration.setX(moveX ? moveX * maxVelocity * accelerationFactor : 0);
     acceleration.setY(moveY ? moveY * maxVelocity * accelerationFactor : 0);
@@ -59,6 +63,8 @@ void Character::updateAcceleration(BiDirection moveX, BiDirection moveY) {
 void Character::updateVelocity() {
     velocity.setX(velocity.x() + acceleration.x());
     velocity.setY(velocity.y() + acceleration.y());
+
+    facingDegree = qAtan2(-velocity.y(), velocity.x());
 }
 
 void Character::updateQPointF() {
@@ -121,12 +127,14 @@ void Character::handleCollision(Character *other) {
     }
 }
 
-Bullet *Character::regularAttack(double degree) {
+Attack *Character::regularAttack(double degree) {
     if (weapon->getType() == Weapon::WeaponType::Remote) {
         Bullet *bullet = ((RemoteWeapon *) weapon)->attack(this->getPos(), degree);
         return bullet;
+    } else {
+        Slash *slash = ((MeleeWeapon *) weapon)->attack(this->getPos(), degree);
+        return slash;
     }
-    return nullptr;
 }
 
 void Character::receiveDamage(double damage) {

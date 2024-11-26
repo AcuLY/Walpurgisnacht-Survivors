@@ -63,14 +63,16 @@ void GameWindow::updateGameLogic() {
     gameLogic->moveBullets();
 
     gameLogic->handleCharacterCollision();
-    gameLogic->handleBulletCollision();
+    gameLogic->handleAttack();
     gameLogic->handleDeadWitches();
 
+    gameLogic->handleInvalidAttack();
     gameLogic->handleOutOfBoundObject(viewportX, viewportY);
 
     if (getPlayerAttack()) {
         gameLogic->playerAttack();
     }
+    gameLogic->witchAttack();
 
     updateViewport();
 }
@@ -95,6 +97,11 @@ void GameWindow::paintEvent(QPaintEvent *event) {
 
     auto bullets = gameLogic->getBullets();
     for (auto it = bullets.begin(); it != bullets.end(); ++it) {
+        painter.fillPath((*it)->createPath(), Qt::red);
+    }
+
+    auto slashes = gameLogic->getSlashes();
+    for (auto it = slashes.begin(); it != slashes.end(); ++it) {
         painter.fillPath((*it)->createPath(), Qt::red);
     }
 }

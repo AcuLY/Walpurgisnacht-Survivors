@@ -7,6 +7,7 @@ Witch::Witch(QString name,
              double maxVelocity,
              double accelerationFactor,
              double reboundFactor,
+             Weapon *weapon,
              QWidget *parent)
     : Character(name,
                 width,
@@ -15,7 +16,7 @@ Witch::Witch(QString name,
                 maxVelocity,
                 accelerationFactor,
                 reboundFactor,
-                nullptr,
+                weapon,
                 parent) {};
 
 bool Witch::getValidity() {

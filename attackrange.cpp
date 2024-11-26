@@ -46,3 +46,38 @@ QPainterPath CircleRange::createTrack(const QPointF &center1, const QPointF &cen
 
     return track;
 };
+
+SectorRange::SectorRange(double radius, double startAngle, double spanAngle)
+    : radius(radius), startAngle(startAngle), spanAngle(spanAngle) {
+}
+
+QPainterPath SectorRange::createPath(const QPointF &center) const {
+    QPainterPath path;
+
+    double startAngleDegrees = qRadiansToDegrees(startAngle - M_PI / 6);
+    double spanAngleDegrees = qRadiansToDegrees(spanAngle);
+
+    path.moveTo(center);
+    QRect arcRect(center.x() - radius, center.y() - radius, radius * 2, radius * 2);
+    path.arcTo(arcRect, startAngleDegrees, spanAngleDegrees);
+
+    return path;
+}
+
+QPainterPath SectorRange::createTrack(const QPointF &center1, const QPointF &center2) const {
+    QPainterPath track = createPath(center2);
+
+    QPointF startPoint1 = center1 + QPointF(radius * cos(startAngle), radius * sin(startAngle));
+    QPointF startPoint2 = center1 - QPointF(radius * cos(startAngle), radius * sin(startAngle));
+
+    track.lineTo(startPoint1);
+    track.lineTo(startPoint2);
+    track.closeSubpath();
+
+    return track;
+}
+
+bool SectorRange::contains(const QPointF &center, const QRectF &target) const {
+    QPainterPath range = createPath(center);
+    return range.intersects(target);
+}

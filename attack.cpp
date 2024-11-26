@@ -12,6 +12,7 @@ Attack::Attack(QPointF initPos,
     validityTimer.setInterval(validTime);
     validityTimer.setSingleShot(true);
     connect(&validityTimer, &QTimer::timeout, this, [this]() { isValid = false; });
+    validityTimer.start();
 }
 
 Attack::~Attack() {
@@ -81,4 +82,21 @@ bool Bullet::isHit(const QRectF &targetRect) {
     QPointF curPos(this->x(), this->y());
     QPainterPath track = range->createTrack(curPos, prevPos);
     return track.intersects(targetRect);
+}
+
+Slash::Slash(QPointF pos,
+             double size,
+             double startAngle,
+             double spanAngle,
+             double damage,
+             bool isPlayerSide,
+             int validTime,
+             QWidget *parent)
+    : Attack(pos, size, damage, isPlayerSide, validTime, parent) {
+    range = new SectorRange(size, startAngle, spanAngle);
+};
+
+bool Slash::isHit(const QRectF &targetRect) {
+    QPainterPath path = range->createPath(pos);
+    return path.intersects(targetRect);
 }

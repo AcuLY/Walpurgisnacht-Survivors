@@ -18,6 +18,7 @@ public:
                    double maxVelocity,
                    double accelerationFactor,
                    double reboundFactor,
+                   Weapon *weapon,
                    QWidget *parent = nullptr);
 
     bool getValidity();

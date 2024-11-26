@@ -3,12 +3,12 @@
 QPointF MathUtils::velocityDecomQPointF(double velocity, double degree) {
     double vX = velocity * cos(degree);
     double vY = velocity * sin(degree);
-    return QPointF(vX, vY);
+    return QPointF(vX, -vY); // y 轴数值是反的
 }
 
 double MathUtils::calculateDegree(QPointF pos1, QPointF pos2) {
     double dx = pos2.x() - pos1.x();
-    double dy = pos2.y() - pos1.y();
+    double dy = pos1.y() - pos2.y();
     return atan2(dy, dx);
 }
 

@@ -21,6 +21,7 @@ private:
     MagicalGirl *player;
     QSet<Witch *> witches;
     QSet<Bullet *> bullets;
+    QSet<Slash *> slashes;
 
 public:
     explicit GameLogic(QObject *parent = nullptr);
@@ -32,6 +33,7 @@ public:
     MagicalGirl *getPlayer() const;
     QSet<Witch *> &getWitches();
     QSet<Bullet *> &getBullets();
+    QSet<Slash *> &getSlashes();
 
     void movePlayer(Direction dir);
     void moveWitches();
@@ -44,9 +46,12 @@ public:
     Witch *playerSelectTarget();
     void playerAttack();
 
-    void handleBulletCollision();
+    void witchAttack();
+
+    void handleAttack();
 
     void handleDeadWitches();
+    void handleInvalidAttack();
     void handleOutOfBoundObject(int viewportX, int viewportY);
 
 signals:

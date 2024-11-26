@@ -4,6 +4,7 @@
 #include <QPainterPath>
 #include <QPointF>
 #include <QRectF>
+#include <QtMath>
 
 #include "utils.h"
 
@@ -37,6 +38,19 @@ public:
     ~CircleRange() = default;
 
     QPainterPath createTrack(const QPointF &center1, const QPointF &center2) const override;
+};
+
+class SectorRange : public AttackRange {
+public:
+    explicit SectorRange(double radius, double startAngle, double spanAngle);
+
+    QPainterPath createPath(const QPointF &center) const override;
+    QPainterPath createTrack(const QPointF &center1, const QPointF &center2) const override;
+
+    bool contains(const QPointF &center, const QRectF &target) const override;
+
+protected:
+    double radius, startAngle, spanAngle;
 };
 
 #endif // ATTACKRANGE_H

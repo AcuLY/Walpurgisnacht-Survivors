@@ -4,7 +4,8 @@ GameLogic::GameLogic(QObject* parent) : QObject{parent} {
     QWidget* window = qobject_cast<QWidget*>(parent);
     map = new Map(FRICTION, window);
 
-    RemoteWeapon* weapon = new RemoteWeapon(50, 10, 3, 100, 1000, true, map);
+    // RemoteWeapon* weapon = new RemoteWeapon(50, 10, 3, 100, 1000, true, map);
+    MeleeWeapon* weapon = new MeleeWeapon(5, 200, 100, true, map);
     player = new MagicalGirl("lufuck", 20, 50, 1, 5, 0.1, 0.1, 0, weapon, map);
 }
 
@@ -27,6 +28,10 @@ QSet<Witch*>& GameLogic::getWitches() {
 
 QSet<Bullet*>& GameLogic::getBullets() {
     return bullets;
+}
+
+QSet<Slash*>& GameLogic::getSlashes() {
+    return slashes;
 }
 
 void GameLogic::startGame() {
@@ -67,11 +72,13 @@ void GameLogic::handleCharacterCollision() {
 
 void GameLogic::addWitch(int viewportX, int viewPortY) {
     int ifAddWitch = QRandomGenerator::global()->generate() % 100;
-    if (ifAddWitch < 95) {
+    if (ifAddWitch < 98) {
         return;
     }
 
-    auto newWitch = new Witch("lufuck", 30, 50, 5, 1, 1, 0.8, map);
+    RemoteWeapon* weapon = new RemoteWeapon(50, 10, 3, 100, 500, false, map);
+    //MeleeWeapon* weapon = new MeleeWeapon(5, 200, 100, false, map);
+    auto newWitch = new Witch("lufuck", 30, 50, 5, 1, 1, 0.8, weapon, map);
 
     int edge = QRandomGenerator::global()->bounded(0, 4);
     int x = 0, y = 0;
@@ -126,38 +133,81 @@ void GameLogic::playerAttack() {
     }
 
     auto target = playerSelectTarget();
-    double degree = 0;
+    double degree = player->getFacingDegree();
     if (target) {
         degree = MathUtils::calculateDegree(player->getPos(), target->getPos());
     }
 
     if (player->getWeapon()->getType() == Weapon::WeaponType::Remote) {
-        Bullet* bullet = player->regularAttack(degree);
+        Bullet* bullet = (Bullet*) player->regularAttack(degree);
         bullets.insert(bullet);
+    } else {
+        Slash* slash = (Slash*) player->regularAttack(degree);
+        slashes.insert(slash);
     }
 }
 
-void GameLogic::handleBulletCollision() {
-    for (auto witchIt = witches.begin(); witchIt != witches.end();) {
-        QRect witchRect = (*witchIt)->geometry();
-        bool witchHit = false;
+void GameLogic::witchAttack() {
+    for (auto it = witches.begin(); it != witches.end(); ++it) {
+        Witch* witch = *it;
+        Weapon* weapon = witch->getWeapon();
+        if (!weapon->isCooldownFinished()) {
+            continue;
+        }
 
-        for (auto bulletIt = bullets.begin(); bulletIt != bullets.end();) {
-            if ((*bulletIt)->isHit(witchRect)) {
+        AttackRange* range = weapon->getRange();
+        QPointF witchPos = witch->getPos(), playerPos = player->getPos();
+        if (range->contains(witchPos, player->geometry())) {
+            double degree = MathUtils::calculateDegree(witchPos, playerPos);
+            if (weapon->getType() == Weapon::WeaponType::Remote) {
+                Bullet* bullet = (Bullet*) witch->regularAttack(degree);
+                bullets.insert(bullet);
+            } else {
+                Slash* slash = (Slash*) witch->regularAttack(degree);
+                slashes.insert(slash);
+            }
+        }
+    }
+}
+
+void GameLogic::handleAttack() {
+    for (auto bulletIt = bullets.begin(); bulletIt != bullets.end();) {
+        if (!(*bulletIt)->getValidity()) {
+            ++bulletIt;
+            continue;
+        }
+
+        bool bulletHit = false;
+        // player
+
+        // witch
+        for (auto witchIt = witches.begin(); witchIt != witches.end(); ++witchIt) {
+            if ((*bulletIt)->getPlayerSide() && (*bulletIt)->isHit((*witchIt)->geometry())) {
                 (*witchIt)->receiveDamage((*bulletIt)->getDamage());
 
                 delete *bulletIt;
                 bulletIt = bullets.erase(bulletIt);
 
-                witchHit = true;
+                bulletHit = true;
                 break;
-            } else {
-                ++bulletIt;
             }
         }
 
-        if (!witchHit) {
-            ++witchIt;
+        if (!bulletHit) {
+            ++bulletIt;
+        }
+    }
+
+    for (auto slashIt = slashes.begin(); slashIt != slashes.end(); ++slashIt) {
+        if (!(*slashIt)->getValidity()) {
+            continue;
+        }
+
+        // witch
+        for (auto witchIt = witches.begin(); witchIt != witches.end(); ++witchIt) {
+            if ((*slashIt)->getPlayerSide() && (*slashIt)->isHit((*witchIt)->geometry())) {
+                (*witchIt)->receiveDamage((*slashIt)->getDamage());
+            }
         }
     }
 }
@@ -169,6 +219,26 @@ void GameLogic::handleDeadWitches() {
             witchIt = witches.erase(witchIt);
         } else {
             ++witchIt;
+        }
+    }
+}
+
+void GameLogic::handleInvalidAttack() {
+    for (auto bulletIt = bullets.begin(); bulletIt != bullets.end();) {
+        if (!(*bulletIt)->getValidity()) {
+            delete *bulletIt;
+            bulletIt = bullets.erase(bulletIt);
+        } else {
+            ++bulletIt;
+        }
+    }
+
+    for (auto slashIt = slashes.begin(); slashIt != slashes.end();) {
+        if (!(*slashIt)->getValidity()) {
+            delete *slashIt;
+            slashIt = slashes.erase(slashIt);
+        } else {
+            ++slashIt;
         }
     }
 }

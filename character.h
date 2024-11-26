@@ -4,6 +4,7 @@
 #include <QPainter>
 #include <QString>
 #include <QWidget>
+#include <QtMath>
 
 #include "map.h"
 #include "weapon.h"
@@ -25,6 +26,7 @@ protected:
 
     QPointF velocity = QPointF(0, 0);
     QPointF acceleration = QPointF(0, 0);
+    double facingDegree = 0;
 
     Weapon *weapon;
 
@@ -44,6 +46,7 @@ public:
     QPointF getPos() const;
     double getVelocity() const;
     Weapon *getWeapon() const;
+    double getFacingDegree() const;
 
     void updateAcceleration(BiDirection moveX, BiDirection moveY);
     void updateVelocity();
@@ -53,7 +56,7 @@ public:
     void moveActively(Direction dir);
     void handleCollision(Character *other);
 
-    Bullet *regularAttack(double degree);
+    Attack *regularAttack(double degree);
 
     void receiveDamage(double damage);
 };

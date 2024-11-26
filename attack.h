@@ -60,8 +60,20 @@ public:
     void moveActively();
 
     bool isHit(const QRectF &targetRect);
+};
 
-signals:
+class Slash : public Attack {
+public:
+    explicit Slash(QPointF pos,
+                   double size,
+                   double startAngle,
+                   double spanAngle,
+                   double damage,
+                   bool isPlayerSide,
+                   int validTime,
+                   QWidget *parent = nullptr);
+
+    bool isHit(const QRectF &targetRect);
 };
 
 #endif // ATTACK_H
