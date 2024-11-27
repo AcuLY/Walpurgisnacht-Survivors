@@ -7,6 +7,7 @@ Witch::Witch(QString name,
              double maxVelocity,
              double accelerationFactor,
              double reboundFactor,
+             int attackWaitTime,
              Weapon *weapon,
              QWidget *parent)
     : Character(name,
@@ -17,10 +18,15 @@ Witch::Witch(QString name,
                 accelerationFactor,
                 reboundFactor,
                 weapon,
-                parent) {};
+                parent),
+      attackWaitTime(attackWaitTime) {};
 
 bool Witch::getValidity() {
     return isValid;
+}
+
+int Witch::getAttackWaitTime() {
+    return attackWaitTime;
 }
 
 void Witch::setValidity() {
@@ -55,4 +61,31 @@ void Witch::moveActively(Character *player) {
     updateAcceleration(moveX, moveY);
     updateVelocity();
     updateQPointF();
+}
+
+void Witch::performAttack(Character *player) {
+    if (!weapon->isCooldownFinished() || isAttacking || !isValid) {
+        return;
+    }
+
+    AttackRange *range = weapon->getRange();
+    QPointF witchPos = this->getPos(), playerPos = player->getPos();
+    if (!range->contains(witchPos, player->geometry())) {
+        return;
+    }
+
+    double degree = MathUtils::calculateDegree(witchPos, playerPos);
+    isAttacking = true;
+
+    QTimer::singleShot(attackWaitTime, this, [this, degree]() {
+        if (weapon->getType() == Weapon::WeaponType::Remote) {
+            Bullet *bullet = (Bullet *) this->regularAttack(degree);
+            emit attackPerformed(bullet);
+        } else {
+            Slash *slash = (Slash *) this->regularAttack(degree);
+            emit attackPerformed(slash);
+        }
+
+        isAttacking = false;
+    });
 }

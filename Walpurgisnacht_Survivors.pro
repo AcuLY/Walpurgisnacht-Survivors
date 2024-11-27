@@ -39,6 +39,12 @@ HEADERS += \
 
 FORMS += \
     mainwindow.ui
+    
+LIBS += -L$(PROJECT_DIR)/bin -lnoise
+
+DESTDIR = $$PWD/bin
+
+QMAKE_POST_LINK += cp $$PWD/bin/libnoise.dll $$DESTDIR/
 
 # Default rules for deployment.
 qnx: target.path = /tmp/$${TARGET}/bin

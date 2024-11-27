@@ -56,6 +56,9 @@ public:
 
 signals:
     void gameOver();
+
+private slots:
+    void storeAttack(Attack *attack);
 };
 
 #endif // GAMELOGIC_H

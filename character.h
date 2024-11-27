@@ -28,6 +28,8 @@ protected:
     QPointF acceleration = QPointF(0, 0);
     double facingDegree = 0;
 
+    bool isAttacking = false;
+
     Weapon *weapon;
 
 public:
@@ -45,8 +47,11 @@ public:
     double getHealth() const;
     QPointF getPos() const;
     double getVelocity() const;
-    Weapon *getWeapon() const;
+    AttackRange *getRange() const;
     double getFacingDegree() const;
+    bool getAttacking() const;
+
+    void setAttacking();
 
     void updateAcceleration(BiDirection moveX, BiDirection moveY);
     void updateVelocity();
@@ -56,9 +61,15 @@ public:
     void moveActively(Direction dir);
     void handleCollision(Character *other);
 
-    Attack *regularAttack(double degree);
+    void performAttack(Character *target);
 
     void receiveDamage(double damage);
+
+protected:
+    Attack *regularAttack(double degree);
+
+signals:
+    void attackPerformed(Attack *attack);
 };
 
 #endif // CHARACTER_H

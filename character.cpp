@@ -32,12 +32,20 @@ double Character::getVelocity() const {
     return std::hypot(velocity.x(), velocity.y());
 }
 
-Weapon *Character::getWeapon() const {
-    return weapon;
+AttackRange *Character::getRange() const {
+    return weapon->getRange();
 }
 
 double Character::getFacingDegree() const {
     return facingDegree;
+}
+
+bool Character::getAttacking() const {
+    return isAttacking;
+}
+
+void Character::setAttacking() {
+    isAttacking = !isAttacking;
 }
 
 void Character::updateAcceleration(BiDirection moveX, BiDirection moveY) {
@@ -127,6 +135,25 @@ void Character::handleCollision(Character *other) {
     }
 }
 
+void Character::performAttack(Character *target) {
+    if (!weapon->isCooldownFinished() || isAttacking) {
+        return;
+    }
+
+    double degree = facingDegree;
+    if (target) {
+        degree = MathUtils::calculateDegree(this->getPos(), target->getPos());
+    }
+
+    if (weapon->getType() == Weapon::WeaponType::Remote) {
+        Bullet *bullet = (Bullet *) this->regularAttack(degree);
+        emit attackPerformed(bullet);
+    } else {
+        Slash *slash = (Slash *) this->regularAttack(degree);
+        emit attackPerformed(slash);
+    }
+}
+
 Attack *Character::regularAttack(double degree) {
     if (weapon->getType() == Weapon::WeaponType::Remote) {
         Bullet *bullet = ((RemoteWeapon *) weapon)->attack(this->getPos(), degree);
@@ -138,5 +165,6 @@ Attack *Character::regularAttack(double degree) {
 }
 
 void Character::receiveDamage(double damage) {
+    qDebug() << name << "receive damage:" << damage;
     health -= damage;
 }

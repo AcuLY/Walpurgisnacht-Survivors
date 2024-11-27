@@ -65,7 +65,6 @@ void GameWindow::updateGameLogic() {
     gameLogic->handleCharacterCollision();
     gameLogic->handleAttack();
     gameLogic->handleDeadWitches();
-
     gameLogic->handleInvalidAttack();
     gameLogic->handleOutOfBoundObject(viewportX, viewportY);
 

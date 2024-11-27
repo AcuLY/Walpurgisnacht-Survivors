@@ -4,9 +4,11 @@ GameLogic::GameLogic(QObject* parent) : QObject{parent} {
     QWidget* window = qobject_cast<QWidget*>(parent);
     map = new Map(FRICTION, window);
 
-    // RemoteWeapon* weapon = new RemoteWeapon(50, 10, 3, 100, 1000, true, map);
-    MeleeWeapon* weapon = new MeleeWeapon(5, 200, 100, true, map);
+    RemoteWeapon* weapon = new RemoteWeapon(50, 10, 3, 100, 1000, true, map);
+    //MeleeWeapon* weapon = new MeleeWeapon(5, 200, 100, true, map);
     player = new MagicalGirl("lufuck", 20, 50, 1, 5, 0.1, 0.1, 0, weapon, map);
+
+    connect(player, &Character::attackPerformed, this, &GameLogic::storeAttack);
 }
 
 GameLogic::~GameLogic() {
@@ -76,9 +78,11 @@ void GameLogic::addWitch(int viewportX, int viewPortY) {
         return;
     }
 
-    RemoteWeapon* weapon = new RemoteWeapon(50, 10, 3, 100, 500, false, map);
+    RemoteWeapon* weapon = new RemoteWeapon(3, 10, 3, 3000, 800, false, map);
     //MeleeWeapon* weapon = new MeleeWeapon(5, 200, 100, false, map);
-    auto newWitch = new Witch("lufuck", 30, 50, 5, 1, 1, 0.8, weapon, map);
+    auto newWitch = new Witch("witch", 30, 50, 5, 1, 1, 0.8, 1000, weapon, map);
+
+    connect(newWitch, &Witch::attackPerformed, this, &GameLogic::storeAttack);
 
     int edge = QRandomGenerator::global()->bounded(0, 4);
     int x = 0, y = 0;
@@ -111,7 +115,7 @@ void GameLogic::addWitch(int viewportX, int viewPortY) {
 Witch* GameLogic::playerSelectTarget() {
     double minDistance = INF;
     MagicalGirl* player = getPlayer();
-    AttackRange* range = player->getWeapon()->getRange();
+    AttackRange* range = player->getRange();
 
     Witch* target = nullptr;
     for (auto it = witches.begin(); it != witches.end(); it++) {
@@ -128,45 +132,13 @@ Witch* GameLogic::playerSelectTarget() {
 }
 
 void GameLogic::playerAttack() {
-    if (!player->getWeapon()->isCooldownFinished()) {
-        return;
-    }
-
-    auto target = playerSelectTarget();
-    double degree = player->getFacingDegree();
-    if (target) {
-        degree = MathUtils::calculateDegree(player->getPos(), target->getPos());
-    }
-
-    if (player->getWeapon()->getType() == Weapon::WeaponType::Remote) {
-        Bullet* bullet = (Bullet*) player->regularAttack(degree);
-        bullets.insert(bullet);
-    } else {
-        Slash* slash = (Slash*) player->regularAttack(degree);
-        slashes.insert(slash);
-    }
+    Witch* target = playerSelectTarget();
+    player->performAttack(target);
 }
 
 void GameLogic::witchAttack() {
     for (auto it = witches.begin(); it != witches.end(); ++it) {
-        Witch* witch = *it;
-        Weapon* weapon = witch->getWeapon();
-        if (!weapon->isCooldownFinished()) {
-            continue;
-        }
-
-        AttackRange* range = weapon->getRange();
-        QPointF witchPos = witch->getPos(), playerPos = player->getPos();
-        if (range->contains(witchPos, player->geometry())) {
-            double degree = MathUtils::calculateDegree(witchPos, playerPos);
-            if (weapon->getType() == Weapon::WeaponType::Remote) {
-                Bullet* bullet = (Bullet*) witch->regularAttack(degree);
-                bullets.insert(bullet);
-            } else {
-                Slash* slash = (Slash*) witch->regularAttack(degree);
-                slashes.insert(slash);
-            }
-        }
+        (*it)->performAttack(player);
     }
 }
 
@@ -179,6 +151,14 @@ void GameLogic::handleAttack() {
 
         bool bulletHit = false;
         // player
+        if (!(*bulletIt)->getPlayerSide() && (*bulletIt)->isHit(player->geometry())) {
+            player->receiveDamage((*bulletIt)->getDamage());
+
+            delete *bulletIt;
+            bulletIt = bullets.erase(bulletIt);
+
+            continue;
+        }
 
         // witch
         for (auto witchIt = witches.begin(); witchIt != witches.end(); ++witchIt) {
@@ -201,6 +181,11 @@ void GameLogic::handleAttack() {
     for (auto slashIt = slashes.begin(); slashIt != slashes.end(); ++slashIt) {
         if (!(*slashIt)->getValidity()) {
             continue;
+        }
+
+        // player
+        if (!(*slashIt)->getPlayerSide() && (*slashIt)->isHit(player->geometry())) {
+            player->receiveDamage((*slashIt)->getDamage());
         }
 
         // witch
@@ -265,5 +250,13 @@ void GameLogic::handleOutOfBoundObject(int viewportX, int viewportY) {
         } else {
             ++bulletIt;
         }
+    }
+}
+
+void GameLogic::storeAttack(Attack* attack) {
+    if (auto bullet = dynamic_cast<Bullet*>(attack)) {
+        bullets.insert(bullet);
+    } else if (auto slash = dynamic_cast<Slash*>(attack)) {
+        slashes.insert(slash);
     }
 }
