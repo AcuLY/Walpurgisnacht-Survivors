@@ -60,6 +60,7 @@ public:
 
     void moveActively(Direction dir);
     void handleCollision(Character *other);
+    void handleCollision(Map *map);
 
     void performAttack(Character *target);
 

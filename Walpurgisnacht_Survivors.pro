@@ -19,6 +19,7 @@ SOURCES += \
     main.cpp \
     mainwindow.cpp \
     map.cpp \
+    third_party/perlinnoise.cpp \
     utils.cpp \
     weapon.cpp \
     witch.cpp
@@ -33,18 +34,13 @@ HEADERS += \
     magicalgirl.h \
     mainwindow.h \
     map.h \
+    third_party/perlinnoise.h \
     utils.h \
     weapon.h \
     witch.h
 
 FORMS += \
     mainwindow.ui
-    
-LIBS += -L$(PROJECT_DIR)/bin -lnoise
-
-DESTDIR = $$PWD/bin
-
-QMAKE_POST_LINK += cp $$PWD/bin/libnoise.dll $$DESTDIR/
 
 # Default rules for deployment.
 qnx: target.path = /tmp/$${TARGET}/bin

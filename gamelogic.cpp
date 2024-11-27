@@ -58,6 +58,8 @@ void GameLogic::moveBullets() {
 }
 
 void GameLogic::handleCharacterCollision() {
+    player->handleCollision(map);
+
     for (auto witchIt = witches.begin(); witchIt != witches.end(); ++witchIt) {
         player->handleCollision(*witchIt);
     }
@@ -74,7 +76,7 @@ void GameLogic::handleCharacterCollision() {
 
 void GameLogic::addWitch(int viewportX, int viewPortY) {
     int ifAddWitch = QRandomGenerator::global()->generate() % 100;
-    if (ifAddWitch < 98) {
+    if (ifAddWitch < 198) {
         return;
     }
 

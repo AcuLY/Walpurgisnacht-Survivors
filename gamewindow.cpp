@@ -56,7 +56,7 @@ void GameWindow::updateViewport() {
     viewportY = playerY - WINDOW_HEIGHT / 2;
 }
 
-void GameWindow::updateGameLogic() {
+void GameWindow::updateGameLogic() {    
     gameLogic->addWitch(viewportX, viewportY);
     gameLogic->movePlayer(getPlayerMovement());
     gameLogic->moveWitches();
@@ -84,7 +84,8 @@ void GameWindow::paintEvent(QPaintEvent *event) {
     painter.translate(-viewportX, -viewportY);
 
     Map *map = gameLogic->getMap();
-    map->render(&painter, viewportX, viewportY);
+    map->updateObstacle(QPoint(viewportX, viewportY));
+    map->render(&painter, QPoint(viewportX, viewportY));
 
     MagicalGirl *player = gameLogic->getPlayer();
     painter.fillRect(player->geometry(), Qt::white);

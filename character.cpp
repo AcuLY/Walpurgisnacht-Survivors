@@ -58,13 +58,23 @@ void Character::updateAcceleration(BiDirection moveX, BiDirection moveY) {
     }
 
     // 当速度大于角色自身最大时只能做减速
-    if (getVelocity() >= maxVelocity) {
+    if (getVelocity() > maxVelocity) {
         if (acceleration.x() * velocity.x() > 0) {
             acceleration.setX(0);
         }
         if (acceleration.y() * velocity.y() > 0) {
             acceleration.setY(0);
         }
+    }
+
+    // 如果一个方向达到最大速度时往另一个方向加速, 则原方向减速
+    if (abs(velocity.x()) >= maxVelocity && moveY) {
+        acceleration.setX(0);
+        acceleration.setY(moveY * maxVelocity * accelerationFactor);
+    }
+    if (abs(velocity.y()) >= maxVelocity && moveX) {
+        acceleration.setY(0);
+        acceleration.setX(moveX * maxVelocity * accelerationFactor);
     }
 }
 
@@ -135,6 +145,38 @@ void Character::handleCollision(Character *other) {
     }
 }
 
+void Character::handleCollision(Map *map) {
+    if (!map->getObstacle(QPoint(this->x(), this->y()))) {
+        return;
+    }
+
+    int gridX = this->x() - this->x() % GRID_SIZE, gridY = this->y() - this->y() % GRID_SIZE;
+    QRect otherRect(gridX, gridY, GRID_SIZE, GRID_SIZE);
+
+    QRect thisRect = geometry();
+
+    QRect intersection = thisRect.intersected(otherRect);
+    if (intersection.width() > intersection.height()) {
+        if (thisRect.top() < otherRect.top()) {
+            this->move(thisRect.left(), otherRect.top() - thisRect.height());
+        } else {
+            this->move(thisRect.left(), otherRect.bottom());
+        }
+
+        velocity.setY(-velocity.y() * reboundFactor);
+        acceleration.setY(0);
+    } else {
+        if (thisRect.left() < otherRect.left()) {
+            this->move(otherRect.left() - thisRect.width(), thisRect.top());
+        } else {
+            this->move(otherRect.right(), thisRect.top());
+        }
+
+        velocity.setX(-velocity.x() * reboundFactor);
+        acceleration.setX(0);
+    }
+}
+
 void Character::performAttack(Character *target) {
     if (!weapon->isCooldownFinished() || isAttacking) {
         return;
@@ -165,6 +207,5 @@ Attack *Character::regularAttack(double degree) {
 }
 
 void Character::receiveDamage(double damage) {
-    qDebug() << name << "receive damage:" << damage;
     health -= damage;
 }
