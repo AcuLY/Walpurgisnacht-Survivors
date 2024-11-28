@@ -24,7 +24,7 @@ class GameWindow : public QWidget {
     Q_OBJECT
 
 private:
-    int viewportX = 0, viewportY = 0;
+    QPoint viewport = QPoint(0, 0);
 
     GameLogic *gameLogic;
 

@@ -41,7 +41,7 @@ public:
 
     void handleCharacterCollision();
 
-    void addWitch(int viewportX, int viewPortY);
+    void addWitch(QPoint &viewport);
 
     Witch *playerSelectTarget();
     void playerAttack();
@@ -49,10 +49,11 @@ public:
     void witchAttack();
 
     void handleAttack();
+    void handleBulletMapCollision();
 
     void handleDeadWitches();
     void handleInvalidAttack();
-    void handleOutOfBoundObject(int viewportX, int viewportY);
+    void handleOutOfBoundObject(QPoint &viewport);
 
 signals:
     void gameOver();

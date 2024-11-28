@@ -1,6 +1,6 @@
 #include "direction.h"
 
-std::pair<BiDirection, BiDirection> operator~(Direction dir) {
+QPair<BiDirection, BiDirection> operator~(Direction dir) {
     switch (dir) {
         case West:
             return {Negative, Neutral};
@@ -21,6 +21,7 @@ std::pair<BiDirection, BiDirection> operator~(Direction dir) {
         case SouthWest:
             return {Negative, Positive};
     }
+    return {Neutral, Neutral};
 }
 
 Direction pairBiDirection(BiDirection d1, BiDirection d2) {

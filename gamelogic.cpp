@@ -3,10 +3,12 @@
 GameLogic::GameLogic(QObject* parent) : QObject{parent} {
     QWidget* window = qobject_cast<QWidget*>(parent);
     map = new Map(FRICTION, window);
+    QPoint initViewpoint(10, 25);
+    map->updateObstacle(initViewpoint);
 
     RemoteWeapon* weapon = new RemoteWeapon(50, 10, 3, 100, 1000, true, map);
     //MeleeWeapon* weapon = new MeleeWeapon(5, 200, 100, true, map);
-    player = new MagicalGirl("lufuck", 20, 50, 1, 5, 0.1, 0.1, 0, weapon, map);
+    player = new MagicalGirl("lufuck", 30, 50, 1, 5, 0.1, 0.1, 0, weapon, map);
 
     connect(player, &Character::attackPerformed, this, &GameLogic::storeAttack);
 }
@@ -59,30 +61,30 @@ void GameLogic::moveBullets() {
 
 void GameLogic::handleCharacterCollision() {
     player->handleCollision(map);
-
     for (auto witchIt = witches.begin(); witchIt != witches.end(); ++witchIt) {
         player->handleCollision(*witchIt);
     }
 
     for (auto witchIt = witches.begin(); witchIt != witches.end(); ++witchIt) {
+        (*witchIt)->handleCollision(map);
+        (*witchIt)->handleCollision(player);
         for (auto witchIt2 = witches.begin(); witchIt2 != witches.end(); ++witchIt2) {
             if (witchIt != witchIt2) {
                 (*witchIt)->handleCollision(*witchIt2);
             }
-            (*witchIt)->handleCollision(player);
         }
     }
 }
 
-void GameLogic::addWitch(int viewportX, int viewPortY) {
+void GameLogic::addWitch(QPoint& viewport) {
     int ifAddWitch = QRandomGenerator::global()->generate() % 100;
-    if (ifAddWitch < 198) {
+    if (ifAddWitch < 98) {
         return;
     }
 
     RemoteWeapon* weapon = new RemoteWeapon(3, 10, 3, 3000, 800, false, map);
     //MeleeWeapon* weapon = new MeleeWeapon(5, 200, 100, false, map);
-    auto newWitch = new Witch("witch", 30, 50, 5, 1, 1, 0.8, 1000, weapon, map);
+    auto newWitch = new Witch("witch", 30, 50, 5, 1, 0.6, 0.5, 1000, weapon, map);
 
     connect(newWitch, &Witch::attackPerformed, this, &GameLogic::storeAttack);
 
@@ -90,23 +92,23 @@ void GameLogic::addWitch(int viewportX, int viewPortY) {
     int x = 0, y = 0;
     switch (edge) {
         case 0: // 上边界
-            x = QRandomGenerator::global()->bounded(0, MAP_WIDTH) + viewportX;
-            y = viewPortY - newWitch->geometry().height();
+            x = QRandomGenerator::global()->bounded(0, MAP_WIDTH) + viewport.x();
+            y = viewport.y() - newWitch->geometry().height();
             break;
 
         case 1: // 右边界
-            x = viewportX + MAP_WIDTH;
-            y = QRandomGenerator::global()->bounded(0, MAP_HEIGHT) + viewPortY;
+            x = viewport.x() + MAP_WIDTH;
+            y = QRandomGenerator::global()->bounded(0, MAP_HEIGHT) + viewport.y();
             break;
 
         case 2: // 下边界
-            x = QRandomGenerator::global()->bounded(0, MAP_WIDTH) + viewportX;
-            y = viewPortY + MAP_HEIGHT;
+            x = QRandomGenerator::global()->bounded(0, MAP_WIDTH) + viewport.x();
+            y = viewport.y() + MAP_HEIGHT;
             break;
 
         case 3: // 左边界
-            x = viewportX - newWitch->geometry().width();
-            y = QRandomGenerator::global()->bounded(0, MAP_HEIGHT) + viewPortY;
+            x = viewport.x() - newWitch->geometry().width();
+            y = QRandomGenerator::global()->bounded(0, MAP_HEIGHT) + viewport.y();
             break;
     }
     newWitch->move(x, y);
@@ -199,6 +201,18 @@ void GameLogic::handleAttack() {
     }
 }
 
+void GameLogic::handleBulletMapCollision() {
+    QPainterPath mapPath = map->getWholePath();
+    for (auto it = bullets.begin(); it != bullets.end();) {
+        if ((*it)->isHit(mapPath)) {
+            delete *it;
+            it = bullets.erase(it);
+        } else {
+            ++it;
+        }
+    }
+}
+
 void GameLogic::handleDeadWitches() {
     for (auto witchIt = witches.begin(); witchIt != witches.end();) {
         if ((*witchIt)->getHealth() <= 0) {
@@ -230,9 +244,9 @@ void GameLogic::handleInvalidAttack() {
     }
 }
 
-void GameLogic::handleOutOfBoundObject(int viewportX, int viewportY) {
-    QRect validRange(viewportX - MAP_WIDTH * (VALID_MAP_MAGNIFICATION - 1) / 2,
-                     viewportY - MAP_HEIGHT * (VALID_MAP_MAGNIFICATION - 1) / 2,
+void GameLogic::handleOutOfBoundObject(QPoint& viewport) {
+    QRect validRange(viewport.x() - MAP_WIDTH * (VALID_MAP_MAGNIFICATION - 1) / 2,
+                     viewport.y() - MAP_HEIGHT * (VALID_MAP_MAGNIFICATION - 1) / 2,
                      MAP_WIDTH * VALID_MAP_MAGNIFICATION,
                      MAP_HEIGHT * VALID_MAP_MAGNIFICATION);
 

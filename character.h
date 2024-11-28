@@ -9,6 +9,8 @@
 #include "map.h"
 #include "weapon.h"
 
+const int REBOUND_PADDING = 1;
+
 class Character : public QWidget {
     Q_OBJECT
 
@@ -55,12 +57,15 @@ public:
 
     void updateAcceleration(BiDirection moveX, BiDirection moveY);
     void updateVelocity();
-    void updateQPointF();
+    void updatePosition();
     void applyFriction(double friction);
 
     void moveActively(Direction dir);
+
+    QPair<bool, bool> handleCollision(QRect &otherRect);
     void handleCollision(Character *other);
     void handleCollision(Map *map);
+    void rebound(bool x, bool y);
 
     void performAttack(Character *target);
 
@@ -71,6 +76,8 @@ protected:
 
 signals:
     void attackPerformed(Attack *attack);
+
+public slots:
 };
 
 #endif // CHARACTER_H

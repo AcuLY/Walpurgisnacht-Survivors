@@ -82,10 +82,12 @@ void Character::updateVelocity() {
     velocity.setX(velocity.x() + acceleration.x());
     velocity.setY(velocity.y() + acceleration.y());
 
-    facingDegree = qAtan2(-velocity.y(), velocity.x());
+    if (velocity.x() || velocity.y()) {
+        facingDegree = qAtan2(-velocity.y(), velocity.x());
+    }
 }
 
-void Character::updateQPointF() {
+void Character::updatePosition() {
     this->move(this->x() + velocity.x(), this->y() + velocity.y());
 }
 
@@ -109,71 +111,100 @@ void Character::moveActively(Direction dir) {
     auto [moveX, moveY] = ~dir;
     updateAcceleration(moveX, moveY);
     updateVelocity();
-    updateQPointF();
+    updatePosition();
 }
 
-void Character::handleCollision(Character *other) {
-    QRect thisRect = geometry();
-    QRect otherRect = other->geometry();
+QPair<bool, bool> Character::handleCollision(QRect &otherRect) {
+    QRect thisRect(this->x(), this->y(), width + 1, height + 1);
+
+    bool moveX = false, moveY = false;
 
     if (thisRect.intersects(otherRect)) {
         QRect intersection = thisRect.intersected(otherRect);
 
         if (intersection.width() > intersection.height()) {
             if (thisRect.top() < otherRect.top()) {
-                this->move(thisRect.left(), otherRect.top() - thisRect.height());
+                this->move(thisRect.left(), otherRect.top() - thisRect.height() - REBOUND_PADDING);
             } else {
-                this->move(thisRect.left(), otherRect.bottom());
+                this->move(thisRect.left(), otherRect.bottom() + REBOUND_PADDING);
             }
-
-            velocity.setY(-velocity.y() * reboundFactor);
-            acceleration.setY(0);
-            other->velocity.setY(-other->velocity.y() * other->reboundFactor);
-            other->acceleration.setY(0);
+            moveY = true;
         } else {
             if (thisRect.left() < otherRect.left()) {
-                this->move(otherRect.left() - thisRect.width(), thisRect.top());
+                this->move(otherRect.left() - thisRect.width() - REBOUND_PADDING, thisRect.top());
             } else {
-                this->move(otherRect.right(), thisRect.top());
+                this->move(otherRect.right() + REBOUND_PADDING, thisRect.top());
             }
+            moveX = true;
+        }
+    }
 
-            velocity.setX(-velocity.x() * reboundFactor);
-            acceleration.setX(0);
-            other->velocity.setX(-other->velocity.x() * other->reboundFactor);
-            other->acceleration.setX(0);
+    this->rebound(moveX, moveY);
+
+    return qMakePair(moveX, moveY);
+}
+
+void Character::handleCollision(Character *other) {
+    QRect otherRect = other->geometry();
+
+    auto [moveX, moveY] = handleCollision(otherRect);
+
+    other->rebound(moveX, moveY);
+}
+
+void Character::handleCollision(Map *map) {
+    int offsetX = this->x() < 0 ? this->x() % GRID_SIZE + GRID_SIZE : this->x() % GRID_SIZE;
+    int offsetY = this->y() < 0 ? this->y() % GRID_SIZE + GRID_SIZE : this->y() % GRID_SIZE;
+    int startX = this->x() - offsetX;
+    int startY = this->y() - offsetY;
+
+    int widthGridsNum = width / GRID_SIZE;
+    int heightGridsNum = height / GRID_SIZE;
+
+    // 边界情况
+    if (this->x() + width > startX + GRID_SIZE * (widthGridsNum + 1)) {
+        widthGridsNum++;
+    }
+    if (this->y() + height > startY + GRID_SIZE * (heightGridsNum + 1)) {
+        heightGridsNum++;
+    }
+
+    int endX = startX + GRID_SIZE * widthGridsNum;
+    int endY = startY + GRID_SIZE * heightGridsNum;
+
+    for (int x = startX; x <= endX; x += GRID_SIZE) {
+        QPoint p1(x, startY), p2(x, endY);
+        if (map->isObstacle(p1)) {
+            QRect obstacle(x, startY, GRID_SIZE, GRID_SIZE);
+            this->handleCollision(obstacle);
+        }
+        if (map->isObstacle(p2)) {
+            QRect obstacle(x, endY, GRID_SIZE, GRID_SIZE);
+            this->handleCollision(obstacle);
+        }
+    }
+
+    for (int y = startY; y <= endY; y += GRID_SIZE) {
+        QPoint p1(startX, y), p2(endX, y);
+        if (map->isObstacle(p1)) {
+            QRect obstacle(startX, y, GRID_SIZE, GRID_SIZE);
+            this->handleCollision(obstacle);
+        }
+        if (map->isObstacle(p2)) {
+            QRect obstacle(endX, y, GRID_SIZE, GRID_SIZE);
+            this->handleCollision(obstacle);
         }
     }
 }
 
-void Character::handleCollision(Map *map) {
-    if (!map->getObstacle(QPoint(this->x(), this->y()))) {
-        return;
-    }
-
-    int gridX = this->x() - this->x() % GRID_SIZE, gridY = this->y() - this->y() % GRID_SIZE;
-    QRect otherRect(gridX, gridY, GRID_SIZE, GRID_SIZE);
-
-    QRect thisRect = geometry();
-
-    QRect intersection = thisRect.intersected(otherRect);
-    if (intersection.width() > intersection.height()) {
-        if (thisRect.top() < otherRect.top()) {
-            this->move(thisRect.left(), otherRect.top() - thisRect.height());
-        } else {
-            this->move(thisRect.left(), otherRect.bottom());
-        }
-
-        velocity.setY(-velocity.y() * reboundFactor);
-        acceleration.setY(0);
-    } else {
-        if (thisRect.left() < otherRect.left()) {
-            this->move(otherRect.left() - thisRect.width(), thisRect.top());
-        } else {
-            this->move(otherRect.right(), thisRect.top());
-        }
-
+void Character::rebound(bool x, bool y) {
+    if (x) {
         velocity.setX(-velocity.x() * reboundFactor);
-        acceleration.setX(0);
+        acceleration.setX(-acceleration.x() * reboundFactor);
+    }
+    if (y) {
+        velocity.setY(-velocity.y() * reboundFactor);
+        acceleration.setY(-acceleration.y() * reboundFactor);
     }
 }
 

@@ -60,7 +60,7 @@ void Witch::moveActively(Character *player) {
     auto [moveX, moveY] = ~dir;
     updateAcceleration(moveX, moveY);
     updateVelocity();
-    updateQPointF();
+    updatePosition();
 }
 
 void Witch::performAttack(Character *player) {

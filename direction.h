@@ -1,6 +1,7 @@
 #ifndef DIRECTION_H
 #define DIRECTION_H
 
+#include <QPair>
 #include <cmath>
 
 const double DIAGONAL_FACTOR = 1 / std::sqrt(2.0);
@@ -19,7 +20,7 @@ enum Direction {
     SouthWest = '4'
 };
 
-std::pair<BiDirection, BiDirection> operator~(Direction dir);
+QPair<BiDirection, BiDirection> operator~(Direction dir);
 
 Direction pairBiDirection(BiDirection d1, BiDirection d2);
 

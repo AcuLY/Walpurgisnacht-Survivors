@@ -84,6 +84,12 @@ bool Bullet::isHit(const QRectF &targetRect) {
     return track.intersects(targetRect);
 }
 
+bool Bullet::isHit(const QPainterPath &path) {
+    QPointF curPos(this->x(), this->y());
+    QPainterPath track = range->createTrack(curPos, prevPos);
+    return track.intersects(path);
+}
+
 Slash::Slash(QPointF pos,
              double size,
              double startAngle,

@@ -52,21 +52,23 @@ void GameWindow::updateViewport() {
     int playerX = player->geometry().x() + player->geometry().width() / 2;
     int playerY = player->geometry().y() + player->geometry().height() / 2;
 
-    viewportX = playerX - WINDOW_WIDTH / 2;
-    viewportY = playerY - WINDOW_HEIGHT / 2;
+    viewport.setX(playerX - WINDOW_WIDTH / 2);
+    viewport.setY(playerY - WINDOW_HEIGHT / 2);
 }
 
-void GameWindow::updateGameLogic() {    
-    gameLogic->addWitch(viewportX, viewportY);
+void GameWindow::updateGameLogic() {
+    gameLogic->addWitch(viewport);
     gameLogic->movePlayer(getPlayerMovement());
     gameLogic->moveWitches();
     gameLogic->moveBullets();
 
     gameLogic->handleCharacterCollision();
     gameLogic->handleAttack();
+
+    gameLogic->handleBulletMapCollision();
     gameLogic->handleDeadWitches();
     gameLogic->handleInvalidAttack();
-    gameLogic->handleOutOfBoundObject(viewportX, viewportY);
+    gameLogic->handleOutOfBoundObject(viewport);
 
     if (getPlayerAttack()) {
         gameLogic->playerAttack();
@@ -81,11 +83,11 @@ void GameWindow::paintEvent(QPaintEvent *event) {
 
     QPainter painter(this);
 
-    painter.translate(-viewportX, -viewportY);
+    painter.translate(-viewport);
 
     Map *map = gameLogic->getMap();
-    map->updateObstacle(QPoint(viewportX, viewportY));
-    map->render(&painter, QPoint(viewportX, viewportY));
+    map->updateObstacle(viewport);
+    map->render(&painter, viewport);
 
     MagicalGirl *player = gameLogic->getPlayer();
     painter.fillRect(player->geometry(), Qt::white);

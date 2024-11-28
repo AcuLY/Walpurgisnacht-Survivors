@@ -37,7 +37,7 @@ private:
     PerlinNoise *pn;
     QPointF lastViewPoint = QPoint(99999, 99999); // 设一个比较大的初值, 使初始化的时候可以生成
 
-    bool isObstacle(int x, int y);
+    bool setObstacle(int x, int y);
 
 public:
     explicit Map(double friction, QWidget *parent = nullptr);
@@ -45,10 +45,12 @@ public:
 
     double getFriction() const;
 
-    void render(QPainter *painter, QPoint pos) const;
+    void render(QPainter *painter, QPoint &pos) const;
 
-    bool getObstacle(QPoint pos);
-    void updateObstacle(QPoint viewpoint);
+    bool isObstacle(QPoint &pos);
+    void updateObstacle(QPoint &viewpoint);
+
+    QPainterPath getWholePath();
 };
 
 #endif // MAP_H

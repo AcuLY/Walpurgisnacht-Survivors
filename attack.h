@@ -60,6 +60,7 @@ public:
     void moveActively();
 
     bool isHit(const QRectF &targetRect);
+    bool isHit(const QPainterPath &path);
 };
 
 class Slash : public Attack {
