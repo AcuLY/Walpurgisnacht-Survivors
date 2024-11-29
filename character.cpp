@@ -24,8 +24,8 @@ double Character::getHealth() const {
     return health;
 }
 
-QPointF Character::getPos() const {
-    return QPointF(this->x() + width / 2, this->y() + height / 2);
+QPoint Character::getPos() const {
+    return QPoint(this->x() + width / 2, this->y() + height / 2);
 }
 
 double Character::getVelocity() const {
@@ -112,6 +112,11 @@ void Character::moveActively(Direction dir) {
     updateAcceleration(moveX, moveY);
     updateVelocity();
     updatePosition();
+}
+
+void Character::stop() {
+    velocity = QPointF(0, 0);
+    acceleration = QPointF(0, 0);
 }
 
 QPair<bool, bool> Character::handleCollision(QRect &otherRect) {

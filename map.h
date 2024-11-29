@@ -3,6 +3,7 @@
 
 #include <QDateTime>
 #include <QPainter>
+#include <QPainterPath>
 #include <QRandomGenerator>
 #include <QVector>
 #include <QWidget>
@@ -10,7 +11,7 @@
 #include "./third_party/perlinnoise.h"
 #include "direction.h"
 
-const int GRID_SIZE = 40;
+const int GRID_SIZE = 20;
 
 const int MAP_WIDTH = 1280;
 const int MAP_HEIGHT = 720;
@@ -37,6 +38,8 @@ private:
     PerlinNoise *pn;
     QPointF lastViewPoint = QPoint(99999, 99999); // 设一个比较大的初值, 使初始化的时候可以生成
 
+    QPoint getOffset(const QPoint pos) const;
+
     bool setObstacle(int x, int y);
 
 public:
@@ -45,12 +48,12 @@ public:
 
     double getFriction() const;
 
-    void render(QPainter *painter, QPoint &pos) const;
+    void render(QPainter *painter, const QPoint &pos) const;
 
-    bool isObstacle(QPoint &pos);
-    void updateObstacle(QPoint &viewpoint);
+    bool isObstacle(const QPoint &pos);
+    void updateObstacle(const QPoint &viewpoint);
 
-    QPainterPath getWholePath();
+    QPainterPath getPartialPath(const QPoint begin, const QPoint end);
 };
 
 #endif // MAP_H

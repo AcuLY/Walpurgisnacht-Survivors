@@ -1,6 +1,6 @@
 #include "attack.h"
 
-Attack::Attack(QPointF initPos,
+Attack::Attack(QPoint initPos,
                double size,
                double damage,
                bool isPlayerSide,
@@ -19,7 +19,7 @@ Attack::~Attack() {
     delete range;
 }
 
-QPointF Attack::getPos() const {
+QPoint Attack::getPos() const {
     return pos;
 }
 
@@ -47,7 +47,7 @@ QPainterPath Attack::createPath() const {
     return range->createPath(pos);
 }
 
-Bullet::Bullet(QPointF initPos,
+Bullet::Bullet(QPoint initPos,
                double size,
                double damage,
                bool isPlayerSide,
@@ -58,6 +58,10 @@ Bullet::Bullet(QPointF initPos,
 
     prevPos.setX(initPos.x() - size);
     prevPos.setY(initPos.y() - size);
+}
+
+QPoint &Bullet::getPrevPos() {
+    return prevPos;
 }
 
 void Bullet::setAcceleration(QPointF a) {
@@ -87,10 +91,11 @@ bool Bullet::isHit(const QRectF &targetRect) {
 bool Bullet::isHit(const QPainterPath &path) {
     QPointF curPos(this->x(), this->y());
     QPainterPath track = range->createTrack(curPos, prevPos);
+
     return track.intersects(path);
 }
 
-Slash::Slash(QPointF pos,
+Slash::Slash(QPoint pos,
              double size,
              double startAngle,
              double spanAngle,

@@ -90,28 +90,44 @@ void GameLogic::addWitch(QPoint& viewport) {
 
     int edge = QRandomGenerator::global()->bounded(0, 4);
     int x = 0, y = 0;
+    Direction dir = Direction::Center;
+
     switch (edge) {
         case 0: // 上边界
             x = QRandomGenerator::global()->bounded(0, MAP_WIDTH) + viewport.x();
             y = viewport.y() - newWitch->geometry().height();
+            dir = Direction::North;
             break;
 
         case 1: // 右边界
             x = viewport.x() + MAP_WIDTH;
             y = QRandomGenerator::global()->bounded(0, MAP_HEIGHT) + viewport.y();
+            dir = Direction::East;
             break;
 
         case 2: // 下边界
             x = QRandomGenerator::global()->bounded(0, MAP_WIDTH) + viewport.x();
             y = viewport.y() + MAP_HEIGHT;
+            dir = Direction::South;
             break;
 
         case 3: // 左边界
             x = viewport.x() - newWitch->geometry().width();
             y = QRandomGenerator::global()->bounded(0, MAP_HEIGHT) + viewport.y();
+            dir = Direction::West;
             break;
     }
+
     newWitch->move(x, y);
+    int width = newWitch->geometry().width(), height = newWitch->geometry().height();
+    QPainterPath partialPath = map->getPartialPath(QPoint(x, y), QPoint(x + width, y + height));
+    auto [moveX, moveY] = ~dir;
+    while (partialPath.intersects(newWitch->geometry())) {
+        x += moveX * GRID_SIZE;
+        y += moveY * GRID_SIZE;
+        newWitch->move(x, y);
+        partialPath = map->getPartialPath(QPoint(x, y), QPoint(x + width, y + height));
+    }
 
     witches.insert(newWitch);
 }
@@ -202,9 +218,11 @@ void GameLogic::handleAttack() {
 }
 
 void GameLogic::handleBulletMapCollision() {
-    QPainterPath mapPath = map->getWholePath();
     for (auto it = bullets.begin(); it != bullets.end();) {
-        if ((*it)->isHit(mapPath)) {
+        QPoint curPos = (*it)->getPos(), prevPos = (*it)->getPrevPos();
+        QPainterPath partialPath = map->getPartialPath(prevPos, curPos);
+
+        if ((*it)->isHit(partialPath)) {
             delete *it;
             it = bullets.erase(it);
         } else {

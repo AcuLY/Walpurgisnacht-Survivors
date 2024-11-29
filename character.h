@@ -47,7 +47,7 @@ public:
 
     QString getName() const;
     double getHealth() const;
-    QPointF getPos() const;
+    QPoint getPos() const;
     double getVelocity() const;
     AttackRange *getRange() const;
     double getFacingDegree() const;
@@ -61,6 +61,7 @@ public:
     void applyFriction(double friction);
 
     void moveActively(Direction dir);
+    void stop();
 
     QPair<bool, bool> handleCollision(QRect &otherRect);
     void handleCollision(Character *other);

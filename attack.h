@@ -1,6 +1,7 @@
 #ifndef ATTACK_H
 #define ATTACK_H
 
+#include <QPainter>
 #include <QTimer>
 #include <QWidget>
 
@@ -10,7 +11,7 @@ class Attack : public QWidget {
     Q_OBJECT
 
 protected:
-    QPointF pos;
+    QPoint pos;
     double size;
     AttackRange *range;
     double damage;
@@ -19,7 +20,7 @@ protected:
     QTimer validityTimer;
 
 public:
-    explicit Attack(QPointF initPos,
+    explicit Attack(QPoint initPos,
                     double size,
                     double damage,
                     bool isPlayerSide,
@@ -27,7 +28,7 @@ public:
                     QWidget *parent = nullptr);
     ~Attack();
 
-    QPointF getPos() const;
+    QPoint getPos() const;
     AttackRange *getRange() const;
     double getDamage() const;
     double getPlayerSide() const;
@@ -44,15 +45,17 @@ protected:
     QPointF velocity;
     QPointF acceleration = QPointF(0, 0);
 
-    QPointF prevPos;
+    QPoint prevPos;
 
 public:
-    explicit Bullet(QPointF initPos,
+    explicit Bullet(QPoint initPos,
                     double size,
                     double damage,
                     bool isPlayerSide,
                     int validTime,
                     QWidget *parent = nullptr);
+
+    QPoint &getPrevPos();
 
     void setAcceleration(QPointF a);
     void setVelocity(QPointF v);
@@ -65,7 +68,7 @@ public:
 
 class Slash : public Attack {
 public:
-    explicit Slash(QPointF pos,
+    explicit Slash(QPoint pos,
                    double size,
                    double startAngle,
                    double spanAngle,

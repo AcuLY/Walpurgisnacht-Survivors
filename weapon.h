@@ -58,7 +58,7 @@ public:
                           bool isPlayerSide,
                           QWidget *parent = nullptr);
 
-    Bullet *attack(QPointF pos, double degree);
+    Bullet *attack(QPoint pos, double degree);
 };
 
 class MeleeWeapon : public Weapon {
@@ -74,7 +74,7 @@ public:
                          bool isPlayerSide,
                          QWidget *parent = nullptr);
 
-    Slash *attack(QPointF pos, double degree);
+    Slash *attack(QPoint pos, double degree);
 };
 
 #endif // WEAPON_H

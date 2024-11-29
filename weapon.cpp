@@ -49,7 +49,7 @@ Weapon::WeaponType RemoteWeapon::getType() {
     return Weapon::WeaponType::Remote;
 }
 
-Bullet *RemoteWeapon::attack(QPointF pos, double degree) {
+Bullet *RemoteWeapon::attack(QPoint pos, double degree) {
     if (isOnCooldown) {
         return nullptr;
     }
@@ -79,7 +79,7 @@ MeleeWeapon::MeleeWeapon(double damage,
     range = new CircleRange(rangeSize);
 }
 
-Slash *MeleeWeapon::attack(QPointF pos, double degree) {
+Slash *MeleeWeapon::attack(QPoint pos, double degree) {
     if (isOnCooldown) {
         return nullptr;
     }
