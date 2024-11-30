@@ -5,6 +5,7 @@
 #include <QObject>
 #include <QRandomGenerator>
 #include <QSet>
+#include <QTime>
 
 #include "direction.h"
 #include "magicalgirl.h"
@@ -38,6 +39,7 @@ public:
     void movePlayer(Direction dir);
     void moveWitches();
     void moveBullets();
+    void updateMapFlowField();
 
     void handleCharacterCollision();
 

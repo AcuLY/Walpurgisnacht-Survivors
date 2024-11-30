@@ -48,14 +48,27 @@ void GameLogic::movePlayer(Direction dir) {
 
 void GameLogic::moveWitches() {
     for (auto witchIt = witches.begin(); witchIt != witches.end(); ++witchIt) {
-        (*witchIt)->moveActively(player);
-        (*witchIt)->applyFriction(map->getFriction());
+        Direction dir = map->getFlow((*witchIt)->getPos());
+        (*witchIt)->moveActively(dir, player);
     }
 }
 
 void GameLogic::moveBullets() {
     for (auto it = bullets.begin(); it != bullets.end(); ++it) {
         (*it)->moveActively();
+    }
+}
+
+void GameLogic::updateMapFlowField() {
+    static QTime lastCallTime = QTime::currentTime(); // 静态变量记录上次调用的时间
+    QTime currentTime = QTime::currentTime();         // 获取当前时间
+
+    int interval = 1000; // 设置时间间隔为 1000 毫秒，即 1 秒
+
+    // 如果当前时间与上次调用时间的差值大于间隔
+    if (lastCallTime.msecsTo(currentTime) >= interval) {
+        lastCallTime = currentTime;             // 更新上次调用时间
+        map->updateFlowField(player->getPos()); // 更新流场
     }
 }
 
@@ -84,7 +97,7 @@ void GameLogic::addWitch(QPoint& viewport) {
 
     RemoteWeapon* weapon = new RemoteWeapon(3, 10, 3, 3000, 800, false, map);
     //MeleeWeapon* weapon = new MeleeWeapon(5, 200, 100, false, map);
-    auto newWitch = new Witch("witch", 30, 50, 5, 1, 0.6, 0.5, 1000, weapon, map);
+    auto newWitch = new Witch("witch", 30, 50, 5, 10, 1, 0.5, 1000, weapon, map);
 
     connect(newWitch, &Witch::attackPerformed, this, &GameLogic::storeAttack);
 

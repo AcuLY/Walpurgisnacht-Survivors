@@ -9,7 +9,7 @@
 #include "map.h"
 #include "weapon.h"
 
-const int REBOUND_PADDING = 1;
+const int REBOUND_PADDING = 0;
 
 class Character : public QWidget {
     Q_OBJECT
@@ -48,7 +48,7 @@ public:
     QString getName() const;
     double getHealth() const;
     QPoint getPos() const;
-    double getVelocity() const;
+    double getComposedVelocity() const;
     AttackRange *getRange() const;
     double getFacingDegree() const;
     bool getAttacking() const;

@@ -1,4 +1,5 @@
 #include "map.h"
+#include "utils.h"
 
 Map::Map(double friction, QWidget *parent) : QWidget{parent}, friction(friction) {
     setFixedSize(MAP_WIDTH, MAP_HEIGHT);
@@ -6,16 +7,56 @@ Map::Map(double friction, QWidget *parent) : QWidget{parent}, friction(friction)
 
     obstacleCache = QVector<QVector<bool>>(CACHE_HEIGHT / GRID_SIZE,
                                            QVector<bool>(CACHE_WIDTH / GRID_SIZE));
+    obstaclePaddingCache = QVector<QVector<bool>>(CACHE_HEIGHT / GRID_SIZE,
+                                                  QVector<bool>(CACHE_WIDTH / GRID_SIZE));
+
+    integrationField = QVector<QVector<int>>(FLOW_HEIGHT / FLOW_GRID_SIZE,
+                                             QVector<int>(FLOW_WIDTH / FLOW_GRID_SIZE));
+    flowField = QVector<QVector<Direction>>(FLOW_HEIGHT / FLOW_GRID_SIZE,
+                                            QVector<Direction>(FLOW_WIDTH / FLOW_GRID_SIZE,
+                                                               Direction::Center));
 }
 
 Map::~Map() {
     delete pn;
 }
 
-QPoint Map::getOffset(const QPoint pos) const {
-    int offsetX = pos.x() < 0 ? pos.x() % GRID_SIZE + GRID_SIZE : pos.x() % GRID_SIZE;
-    int offsetY = pos.y() < 0 ? pos.y() % GRID_SIZE + GRID_SIZE : pos.y() % GRID_SIZE;
+QPoint Map::getOffset(const QPoint &pos) const {
+    int offsetX = (pos.x() % GRID_SIZE + GRID_SIZE) % GRID_SIZE;
+    int offsetY = (pos.y() % GRID_SIZE + GRID_SIZE) % GRID_SIZE;
     return QPoint(offsetX, offsetY);
+}
+
+QPoint Map::getFlowFieldOffset(const QPoint &pos) const {
+    int offsetX = (pos.x() % FLOW_GRID_SIZE + FLOW_GRID_SIZE) % FLOW_GRID_SIZE;
+    int offsetY = (pos.y() % FLOW_GRID_SIZE + FLOW_GRID_SIZE) % FLOW_GRID_SIZE;
+    return QPoint(offsetX, offsetY);
+}
+
+QPoint Map::getIndex(const QPoint &pos) const {
+    QPoint offset = getOffset(pos);
+    QPoint grid = pos - offset;
+    int xIndex = (grid.x() - lastViewPoint.x() + CACHE_WIDTH / 2) / GRID_SIZE;
+    int yIndex = (grid.y() - lastViewPoint.y() + CACHE_HEIGHT / 2) / GRID_SIZE;
+
+    // 边界检查
+    xIndex = qBound(0, xIndex, CACHE_WIDTH / GRID_SIZE - 1);
+    yIndex = qBound(0, yIndex, CACHE_HEIGHT / GRID_SIZE - 1);
+
+    return QPoint(xIndex, yIndex);
+}
+
+QPoint Map::getFlowFieldIndex(const QPoint &pos) const {
+    QPoint offset = getFlowFieldOffset(pos);
+    QPoint grid = pos - offset;
+    int xIndex = (grid.x() - lastViewPoint.x() + FLOW_WIDTH / 2) / FLOW_GRID_SIZE;
+    int yIndex = (grid.y() - lastViewPoint.y() + FLOW_HEIGHT / 2) / FLOW_GRID_SIZE;
+
+    // 边界检查
+    xIndex = qBound(0, xIndex, FLOW_WIDTH / FLOW_GRID_SIZE - 1);
+    yIndex = qBound(0, yIndex, FLOW_HEIGHT / FLOW_GRID_SIZE - 1);
+
+    return QPoint(xIndex, yIndex);
 }
 
 bool Map::setObstacle(int x, int y) {
@@ -26,6 +67,91 @@ bool Map::setObstacle(int x, int y) {
 
     double noise = pn->noise(x * NOISE_SCALE, y * NOISE_SCALE, NOISE_SCALE);
     return noise < OBSTACLE_PROPORTION;
+}
+
+void Map::updateIntegrationField(const QPoint &targetPos) {
+    for (int i = 0; i < FLOW_WIDTH / FLOW_GRID_SIZE; i++) {
+        for (int j = 0; j < FLOW_HEIGHT / FLOW_GRID_SIZE; j++) {
+            integrationField[j][i] = -1;
+        }
+    }
+
+    QQueue<QPoint> queue;
+
+    QPoint targetIndex = getFlowFieldIndex(targetPos);
+    integrationField[targetIndex.y()][targetIndex.x()] = 0;
+
+    queue.enqueue(targetPos);
+
+    while (!queue.empty()) {
+        QPoint curPos = queue.dequeue();
+        QPoint curIndex = getFlowFieldIndex(curPos);
+        int curCost = integrationField[curIndex.y()][curIndex.x()];
+
+        for (auto &dir : fourDirections) {
+            auto [dx, dy] = ~dir;
+
+            QPoint neighborPos = curPos + QPoint(dx * FLOW_GRID_SIZE, dy * FLOW_GRID_SIZE);
+            QPoint neighborIndex = getFlowFieldIndex(neighborPos);
+
+            if (neighborIndex.x() < 0 || neighborIndex.x() >= CACHE_WIDTH / GRID_SIZE
+                || neighborIndex.y() < 0 || neighborIndex.y() >= CACHE_HEIGHT / GRID_SIZE) {
+                continue;
+            }
+
+            if (isObstacle(neighborPos)
+                || integrationField[neighborIndex.y()][neighborIndex.x()] != -1) {
+                continue;
+            }
+
+            if (isObstaclePadding(neighborPos)) {
+                integrationField[neighborIndex.y()][neighborIndex.x()] = INF;
+                continue;
+            }
+
+            integrationField[neighborIndex.y()][neighborIndex.x()] = curCost + 1;
+            queue.enqueue(neighborPos);
+        }
+    }
+}
+
+void Map::updateFlowField(const QPoint &targetPos) {
+    updateIntegrationField(targetPos);
+
+    for (int i = 0; i < FLOW_WIDTH / FLOW_GRID_SIZE; i++) {
+        for (int j = 0; j < FLOW_HEIGHT / FLOW_GRID_SIZE; j++) {
+            if (integrationField[j][i] == -1) {
+                flowField[j][i] = Direction::Center;
+                continue;
+            }
+
+            int minCost = INF;
+            Direction optimalDir = Direction::Center;
+
+            for (auto &dir : eightDirections) {
+                auto [dx, dy] = ~dir;
+                QPoint neighborIndex = QPoint(i + dx, j + dy);
+
+                if (neighborIndex.x() < 0 || neighborIndex.x() >= FLOW_WIDTH / FLOW_GRID_SIZE
+                    || neighborIndex.y() < 0 || neighborIndex.y() >= FLOW_HEIGHT / FLOW_GRID_SIZE) {
+                    continue;
+                }
+
+                int neighborCost = integrationField[neighborIndex.y()][neighborIndex.x()];
+                if (neighborCost >= 0 && neighborCost < minCost) {
+                    minCost = neighborCost;
+                    optimalDir = dir;
+                }
+            }
+
+            flowField[j][i] = optimalDir;
+        }
+    }
+}
+
+Direction Map::getFlow(const QPoint &pos) const {
+    QPoint index = getFlowFieldIndex(pos);
+    return flowField[index.y()][index.x()];
 }
 
 double Map::getFriction() const {
@@ -45,12 +171,18 @@ void Map::render(QPainter *painter, const QPoint &viewpoint) const {
     // 取 +1 以渲染右边缘和下边缘
     for (int i = 0; i <= MAP_WIDTH / GRID_SIZE + 1; i++) {
         for (int j = 0; j <= MAP_HEIGHT / GRID_SIZE + 1; j++) {
-            int xIndex = (gridX - lastViewPoint.x() + CACHE_WIDTH / 2) / GRID_SIZE + i;
-            int yIndex = (gridY - lastViewPoint.y() + CACHE_HEIGHT / 2) / GRID_SIZE + j;
+            QPoint index = getIndex(QPoint(gridX + i * GRID_SIZE, gridY + j * GRID_SIZE));
 
-            if (!obstacleCache[yIndex][xIndex]) {
-                continue;
+            if (isObstaclePadding(QPoint(gridX + i * GRID_SIZE, gridY + j * GRID_SIZE))
+                && !obstacleCache[index.y()][index.x()]) {
+                painter->setBrush(Qt::yellow);
+            } else if (!obstacleCache[index.y()][index.x()]) {
+                //continue;
+                painter->setBrush(Qt::green);
+            } else {
+                painter->setBrush(Qt::gray);
             }
+
             QRect grid(gridX + i * GRID_SIZE, gridY + j * GRID_SIZE, GRID_SIZE, GRID_SIZE);
             painter->drawRect(grid);
 
@@ -61,17 +193,54 @@ void Map::render(QPainter *painter, const QPoint &viewpoint) const {
             // smallFont.setPointSize(6); // 设置字体大小为 6（可以根据需要调整）
 
             // painter->setFont(smallFont);
-            // painter->drawText(grid, Qt::AlignCenter, coordinates);
+
+            QPoint Findex = getFlowFieldIndex(QPoint(gridX + i * GRID_SIZE, gridY + j * GRID_SIZE));
+            QString coordinates = QString("");
+            if (flowField[Findex.y()][Findex.x()] == Direction::North) {
+                coordinates = QString("↑");
+            }
+            if (flowField[Findex.y()][Findex.x()] == Direction::NorthEast) {
+                coordinates = QString("↗");
+            }
+            if (flowField[Findex.y()][Findex.x()] == Direction::East) {
+                coordinates = QString("→");
+            }
+            if (flowField[Findex.y()][Findex.x()] == Direction::SouthEast) {
+                coordinates = QString("↘");
+            }
+            if (flowField[Findex.y()][Findex.x()] == Direction::South) {
+                coordinates = QString("↓");
+            }
+            if (flowField[Findex.y()][Findex.x()] == Direction::SouthWest) {
+                coordinates = QString("↙");
+            }
+            if (flowField[Findex.y()][Findex.x()] == Direction::West) {
+                coordinates = QString("←");
+            }
+            if (flowField[Findex.y()][Findex.x()] == Direction::NorthWest) {
+                coordinates = QString("↖");
+            }
+            painter->drawText(grid, Qt::AlignCenter, coordinates);
         }
     }
 }
 
-bool Map::isObstacle(const QPoint &pos) {
-    QPoint offset = getOffset(pos);
-    QPoint grid = pos - offset;
-    int xIndex = (grid.x() - lastViewPoint.x() + CACHE_WIDTH / 2) / GRID_SIZE;
-    int yIndex = (grid.y() - lastViewPoint.y() + CACHE_HEIGHT / 2) / GRID_SIZE;
-    return obstacleCache[yIndex][xIndex];
+bool Map::isObstacle(const QPoint &pos) const {
+    QPoint index = getIndex(pos);
+    return obstacleCache[index.y()][index.x()];
+}
+
+bool Map::isObstaclePadding(const QPoint &pos) const {
+    QPoint index = getIndex(pos);
+    return obstaclePaddingCache[index.y()][index.x()];
+}
+
+bool Map::isOnlyObstacle(const QPoint &pos) const {
+    return isObstacle(pos) && !isObstaclePadding(pos);
+}
+
+bool Map::isOnlyPadding(const QPoint &pos) const {
+    return !isObstacle(pos) && isObstaclePadding(pos);
 }
 
 void Map::updateObstacle(const QPoint &viewpoint) {
@@ -85,6 +254,10 @@ void Map::updateObstacle(const QPoint &viewpoint) {
         return;
     }
 
+    // 清空 padding
+    obstaclePaddingCache = QVector<QVector<bool>>(CACHE_HEIGHT / GRID_SIZE,
+                                                  QVector<bool>(CACHE_WIDTH / GRID_SIZE, false));
+
     lastViewPoint = viewpoint;
 
     QPoint offset = getOffset(viewpoint);
@@ -93,9 +266,25 @@ void Map::updateObstacle(const QPoint &viewpoint) {
 
     for (int i = 0; i < CACHE_WIDTH / GRID_SIZE; i++) {
         for (int j = 0; j < CACHE_HEIGHT / GRID_SIZE; j++) {
-            obstacleCache[j][i] = setObstacle(startX + i * GRID_SIZE, startY + j * GRID_SIZE);
+            bool obstacle = setObstacle(startX + i * GRID_SIZE, startY + j * GRID_SIZE);
+            obstacleCache[j][i] = obstacle;
+            if (!obstacle) {
+                continue;
+            }
+
+            obstacleCache[j][i] = true;
+            for (auto &dir : eightDirections) {
+                auto [dx, dy] = ~dir;
+                if (i + dx < 0 || i + dx >= CACHE_WIDTH / GRID_SIZE || j + dy < 0
+                    || j + dy >= CACHE_HEIGHT / GRID_SIZE) {
+                    continue;
+                }
+                obstaclePaddingCache[j + dy][i + dx] = true;
+            }
         }
     }
+
+    updateFlowField(viewpoint);
 }
 
 QPainterPath Map::getPartialPath(const QPoint begin, const QPoint end) {

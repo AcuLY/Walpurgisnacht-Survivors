@@ -27,15 +27,14 @@ public:
 
     void setValidity();
 
-    void moveActively(Character *player);
+    void moveActively(Direction dir, Character *player);
 
     void performAttack(Character *player);
 
 protected:
+    Direction prevDir;
     bool isValid = true;
     int attackWaitTime;
-
-    Direction chooseDirection(Character *player);
 
 signals:
 };

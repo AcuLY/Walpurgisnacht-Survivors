@@ -28,7 +28,7 @@ QPoint Character::getPos() const {
     return QPoint(this->x() + width / 2, this->y() + height / 2);
 }
 
-double Character::getVelocity() const {
+double Character::getComposedVelocity() const {
     return std::hypot(velocity.x(), velocity.y());
 }
 
@@ -58,7 +58,7 @@ void Character::updateAcceleration(BiDirection moveX, BiDirection moveY) {
     }
 
     // 当速度大于角色自身最大时只能做减速
-    if (getVelocity() > maxVelocity) {
+    if (getComposedVelocity() > maxVelocity) {
         if (acceleration.x() * velocity.x() > 0) {
             acceleration.setX(0);
         }
@@ -66,21 +66,19 @@ void Character::updateAcceleration(BiDirection moveX, BiDirection moveY) {
             acceleration.setY(0);
         }
     }
-
-    // 如果一个方向达到最大速度时往另一个方向加速, 则原方向减速
-    if (abs(velocity.x()) >= maxVelocity && moveY) {
-        acceleration.setX(0);
-        acceleration.setY(moveY * maxVelocity * accelerationFactor);
-    }
-    if (abs(velocity.y()) >= maxVelocity && moveX) {
-        acceleration.setY(0);
-        acceleration.setX(moveX * maxVelocity * accelerationFactor);
-    }
 }
 
 void Character::updateVelocity() {
+    double prevVelocity = getComposedVelocity();
+
     velocity.setX(velocity.x() + acceleration.x());
     velocity.setY(velocity.y() + acceleration.y());
+    double curVelocity = getComposedVelocity();
+
+    if (prevVelocity <= maxVelocity && curVelocity > maxVelocity) {
+        velocity.setX(velocity.x() * maxVelocity / curVelocity);
+        velocity.setY(velocity.y() * maxVelocity / curVelocity);
+    }
 
     if (velocity.x() || velocity.y()) {
         facingDegree = qAtan2(-velocity.y(), velocity.x());

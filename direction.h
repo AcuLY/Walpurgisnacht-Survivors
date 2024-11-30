@@ -8,17 +8,11 @@ const double DIAGONAL_FACTOR = 1 / std::sqrt(2.0);
 
 enum BiDirection { Negative = -1, Neutral = 0, Positive = 1 };
 
-enum Direction {
-    West = 'W',
-    South = 'S',
-    North = 'N',
-    East = 'E',
-    Center = 'C',
-    NorthEast = '1',
-    NorthWest = '2',
-    SouthEast = '3',
-    SouthWest = '4'
-};
+enum Direction { West, South, North, East, Center, NorthEast, NorthWest, SouthEast, SouthWest };
+
+const Direction fourDirections[4] = {North, East, South, West};
+const Direction eightDirections[8]
+    = {North, NorthEast, East, SouthEast, South, SouthWest, West, NorthWest};
 
 QPair<BiDirection, BiDirection> operator~(Direction dir);
 

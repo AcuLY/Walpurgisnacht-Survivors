@@ -69,6 +69,10 @@ void GameWindow::updateGameLogic() {
     qint64 movePlayerTime = timer.elapsed();
     timer.start();
 
+    gameLogic->updateMapFlowField();
+    qint64 updateFlowTime = timer.elapsed();
+    timer.start();
+
     gameLogic->moveWitches();
     qint64 moveWitchesTime = timer.elapsed();
     timer.start();
@@ -108,17 +112,18 @@ void GameWindow::updateGameLogic() {
     qint64 attackActionTime = timer.elapsed();
 
     // 最后统一输出所有时间
-    qDebug() << "add witch:" << addWitchTime;
-    qDebug() << "move player:" << movePlayerTime;
-    qDebug() << "move witch:" << moveWitchesTime;
-    qDebug() << "move bullets:" << moveBulletsTime;
-    qDebug() << "chara colli:" << charaColliTime;
-    qDebug() << "attack:" << attackTime;
-    qDebug() << "bullet map colli:" << bulletMapColliTime;
-    qDebug() << "dead witches:" << deadWitchesTime;
-    qDebug() << "invalid attack:" << invalidAttackTime;
-    qDebug() << "out of bound object:" << oobTime;
-    qDebug() << "attack action:" << attackActionTime;
+    // qDebug() << "add witch:" << addWitchTime;
+    // qDebug() << "move player:" << movePlayerTime;
+    // qDebug() << "update flow:" << updateFlowTime;
+    // qDebug() << "move witch:" << moveWitchesTime;
+    // qDebug() << "move bullets:" << moveBulletsTime;
+    // qDebug() << "chara colli:" << charaColliTime;
+    // qDebug() << "attack:" << attackTime;
+    // qDebug() << "bullet map colli:" << bulletMapColliTime;
+    // qDebug() << "dead witches:" << deadWitchesTime;
+    // qDebug() << "invalid attack:" << invalidAttackTime;
+    // qDebug() << "out of bound object:" << oobTime;
+    // qDebug() << "attack action:" << attackActionTime;
 
     updateViewport();
 }

@@ -24,6 +24,30 @@ QPair<BiDirection, BiDirection> operator~(Direction dir) {
     return {Neutral, Neutral};
 }
 
+Direction operator-(Direction dir) {
+    switch (dir) {
+        case West:
+            return East;
+        case South:
+            return North;
+        case North:
+            return South;
+        case East:
+            return West;
+        case Center:
+            return Center;
+        case NorthEast:
+            return SouthWest;
+        case NorthWest:
+            return SouthEast;
+        case SouthEast:
+            return NorthWest;
+        case SouthWest:
+            return NorthEast;
+    }
+    return Center;
+}
+
 Direction pairBiDirection(BiDirection d1, BiDirection d2) {
     if (d1 == Negative && d2 == Neutral)
         return West;
