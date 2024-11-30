@@ -44,6 +44,10 @@ bool Character::getAttacking() const {
     return isAttacking;
 }
 
+Weapon::WeaponType Character::getWeaponType() const {
+    return weapon->getType();
+}
+
 void Character::setAttacking() {
     isAttacking = !isAttacking;
 }
@@ -86,7 +90,17 @@ void Character::updateVelocity() {
 }
 
 void Character::updatePosition() {
-    this->move(this->x() + velocity.x(), this->y() + velocity.y());
+    // move 方法只能处理整型, 需要使用 accumulator 对浮点部分进行累加
+    moveAccumulator.setX(moveAccumulator.x() + modf(velocity.x(), nullptr));
+    moveAccumulator.setY(moveAccumulator.y() + modf(velocity.y(), nullptr));
+
+    int moveX = static_cast<int>(velocity.x()) + static_cast<int>(moveAccumulator.x());
+    int moveY = static_cast<int>(velocity.y()) + static_cast<int>(moveAccumulator.y());
+
+    this->move(this->x() + moveX, this->y() + moveY);
+
+    moveAccumulator.setX(modf(moveAccumulator.x(), nullptr));
+    moveAccumulator.setY(modf(moveAccumulator.y(), nullptr));
 }
 
 void Character::applyFriction(double friction) {

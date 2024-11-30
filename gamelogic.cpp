@@ -6,9 +6,9 @@ GameLogic::GameLogic(QObject* parent) : QObject{parent} {
     QPoint initViewpoint(10, 25);
     map->updateObstacle(initViewpoint);
 
-    RemoteWeapon* weapon = new RemoteWeapon(50, 10, 3, 100, 1000, true, map);
-    //MeleeWeapon* weapon = new MeleeWeapon(5, 200, 100, true, map);
-    player = new MagicalGirl("lufuck", 30, 50, 1, 5, 0.1, 0.1, 0, weapon, map);
+    //RemoteWeapon* weapon = new RemoteWeapon(50, 10, 3, 10, 1000, true, map);
+    MeleeWeapon* weapon = new MeleeWeapon(5, 200, 100, true, map);
+    player = new MagicalGirl("lufuck", 5, 10, 1, 5, 0.5, 0.1, 0, weapon, map);
 
     connect(player, &Character::attackPerformed, this, &GameLogic::storeAttack);
 }
@@ -49,7 +49,7 @@ void GameLogic::movePlayer(Direction dir) {
 void GameLogic::moveWitches() {
     for (auto witchIt = witches.begin(); witchIt != witches.end(); ++witchIt) {
         Direction dir = map->getFlow((*witchIt)->getPos());
-        (*witchIt)->moveActively(dir, player);
+        (*witchIt)->moveActively(dir);
     }
 }
 
@@ -60,15 +60,14 @@ void GameLogic::moveBullets() {
 }
 
 void GameLogic::updateMapFlowField() {
-    static QTime lastCallTime = QTime::currentTime(); // 静态变量记录上次调用的时间
-    QTime currentTime = QTime::currentTime();         // 获取当前时间
+    static QTime lastCallTime = QTime::currentTime();
+    QTime currentTime = QTime::currentTime();
 
-    int interval = 1000; // 设置时间间隔为 1000 毫秒，即 1 秒
+    int interval = 100;
 
-    // 如果当前时间与上次调用时间的差值大于间隔
     if (lastCallTime.msecsTo(currentTime) >= interval) {
-        lastCallTime = currentTime;             // 更新上次调用时间
-        map->updateFlowField(player->getPos()); // 更新流场
+        lastCallTime = currentTime;
+        map->updateFlowField(player->getPos());
     }
 }
 
@@ -77,6 +76,7 @@ void GameLogic::handleCharacterCollision() {
     for (auto witchIt = witches.begin(); witchIt != witches.end(); ++witchIt) {
         player->handleCollision(*witchIt);
     }
+    player->handleCollision(map);
 
     for (auto witchIt = witches.begin(); witchIt != witches.end(); ++witchIt) {
         (*witchIt)->handleCollision(map);
@@ -86,18 +86,19 @@ void GameLogic::handleCharacterCollision() {
                 (*witchIt)->handleCollision(*witchIt2);
             }
         }
+        (*witchIt)->handleCollision(map);
     }
 }
 
 void GameLogic::addWitch(QPoint& viewport) {
     int ifAddWitch = QRandomGenerator::global()->generate() % 100;
-    if (ifAddWitch < 98) {
+    if (ifAddWitch < 80) {
         return;
     }
 
     RemoteWeapon* weapon = new RemoteWeapon(3, 10, 3, 3000, 800, false, map);
-    //MeleeWeapon* weapon = new MeleeWeapon(5, 200, 100, false, map);
-    auto newWitch = new Witch("witch", 30, 50, 5, 10, 1, 0.5, 1000, weapon, map);
+    //MeleeWeapon* weapon = new MeleeWeapon(5, 200, 10, false, map);
+    auto newWitch = new Witch("witch", 10, 20, 1, 1, 1, 0.5, 1000, weapon, map);
 
     connect(newWitch, &Witch::attackPerformed, this, &GameLogic::storeAttack);
 
@@ -145,6 +146,11 @@ void GameLogic::addWitch(QPoint& viewport) {
     witches.insert(newWitch);
 }
 
+bool GameLogic::isBlocked(QPoint pos1, QPoint pos2) {
+    QPainterPath partialPath = map->getPartialPath(pos1, pos2);
+    return !partialPath.isEmpty();
+}
+
 Witch* GameLogic::playerSelectTarget() {
     double minDistance = INF;
     MagicalGirl* player = getPlayer();
@@ -152,6 +158,11 @@ Witch* GameLogic::playerSelectTarget() {
 
     Witch* target = nullptr;
     for (auto it = witches.begin(); it != witches.end(); it++) {
+        if (player->getWeaponType() == Weapon::WeaponType::Remote
+            && isBlocked(player->getPos(), (*it)->getPos())) {
+            continue;
+        }
+
         QPointF playerPos(player->x(), player->y()), witchPos((*it)->x(), (*it)->y());
         double distance = MathUtils::euclideanDistance(playerPos, witchPos);
 
@@ -171,6 +182,11 @@ void GameLogic::playerAttack() {
 
 void GameLogic::witchAttack() {
     for (auto it = witches.begin(); it != witches.end(); ++it) {
+        if ((*it)->getWeaponType() == Weapon::WeaponType::Remote
+            && isBlocked(player->getPos(), (*it)->getPos())) {
+            continue;
+        }
+
         (*it)->performAttack(player);
     }
 }

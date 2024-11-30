@@ -17,6 +17,8 @@ class Character : public QWidget {
 protected:
     QString name;
 
+    QPointF moveAccumulator; // 计算小数部分的位移
+
     int width;
     int height;
 
@@ -52,6 +54,7 @@ public:
     AttackRange *getRange() const;
     double getFacingDegree() const;
     bool getAttacking() const;
+    Weapon::WeaponType getWeaponType() const;
 
     void setAttacking();
 

@@ -43,6 +43,10 @@ RemoteWeapon::RemoteWeapon(double bulletVelocity,
     : Weapon(damage, attackInterval, rangeSize, isPlayerSide, parent),
       bulletVelocity(bulletVelocity), bulletSize(bulletSize) {
     range = new CircleRange(rangeSize);
+}
+
+double RemoteWeapon::getBulletSize() const {
+    return bulletSize;
 };
 
 Weapon::WeaponType RemoteWeapon::getType() {

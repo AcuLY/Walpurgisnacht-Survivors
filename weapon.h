@@ -58,6 +58,8 @@ public:
                           bool isPlayerSide,
                           QWidget *parent = nullptr);
 
+    double getBulletSize() const;
+
     Bullet *attack(QPoint pos, double degree);
 };
 

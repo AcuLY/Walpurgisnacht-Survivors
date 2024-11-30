@@ -24,6 +24,8 @@ private:
     QSet<Bullet *> bullets;
     QSet<Slash *> slashes;
 
+    bool isBlocked(QPoint pos1, QPoint pos2);
+
 public:
     explicit GameLogic(QObject *parent = nullptr);
     ~GameLogic();

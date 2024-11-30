@@ -27,7 +27,7 @@ public:
 
     void setValidity();
 
-    void moveActively(Direction dir, Character *player);
+    void moveActively(Direction dir);
 
     void performAttack(Character *player);
 

@@ -13,7 +13,6 @@
 #include "direction.h"
 
 const int GRID_SIZE = 20;
-const int FLOW_GRID_SIZE = 20;
 
 const int MAP_WIDTH = 1280;
 const int MAP_HEIGHT = 720;
@@ -21,13 +20,11 @@ const int MAP_HEIGHT = 720;
 const int INIT_WIDHT = 160;
 const int INIT_HEIGHT = 160;
 
-const int CACHE_MAGNIFICATION = 7;
+const int CACHE_MAGNIFICATION = 5;
 const int CACHE_WIDTH = MAP_WIDTH * CACHE_MAGNIFICATION;
 const int CACHE_HEIGHT = MAP_HEIGHT * CACHE_MAGNIFICATION;
-
-const int FLOW_MAGNIFICATION = 7;
-const int FLOW_WIDTH = MAP_WIDTH * FLOW_MAGNIFICATION;
-const int FLOW_HEIGHT = MAP_HEIGHT * FLOW_MAGNIFICATION;
+const int CACHE_COL = CACHE_WIDTH / GRID_SIZE;
+const int CACHE_ROW = CACHE_HEIGHT / GRID_SIZE;
 
 const double FRICTION = 0.2;
 
@@ -48,9 +45,7 @@ private:
     QPoint lastViewPoint = QPoint(99999, 99999); // 设一个比较大的初值, 使初始化的时候可以生成
 
     QPoint getOffset(const QPoint &pos) const;
-    QPoint getFlowFieldOffset(const QPoint &pos) const;
     QPoint getIndex(const QPoint &pos) const;
-    QPoint getFlowFieldIndex(const QPoint &pos) const;
 
     bool setObstacle(int x, int y);
     void updateIntegrationField(const QPoint &targetPos);

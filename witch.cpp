@@ -60,22 +60,12 @@ void Witch::performAttack(Character *player) {
     });
 }
 
-void Witch::moveActively(Direction dir, Character *player) {
+void Witch::moveActively(Direction dir) {
     // 防卡死
     if (dir == Direction::Center) {
-        double minDistance = INF;
-
-        for (auto &d : fourDirections) {
-            auto [moveX, moveY] = ~d;
-            int newX = moveX * maxVelocity + this->x(), newY = moveY * maxVelocity + this->y();
-            QPointF playerPos(player->x(), player->y()), newPos(newX, newY);
-            double distance = MathUtils::euclideanDistance(playerPos, newPos);
-
-            if (distance < minDistance) {
-                minDistance = distance;
-                dir = d;
-            }
-        }
+        dir = prevDir;
+    } else {
+        prevDir = dir;
     }
 
     auto [moveX, moveY] = ~dir;
