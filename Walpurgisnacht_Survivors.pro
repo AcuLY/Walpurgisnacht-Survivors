@@ -13,6 +13,7 @@ SOURCES += \
     attackrange.cpp \
     character.cpp \
     direction.cpp \
+    enhancement.cpp \
     gamelogic.cpp \
     gamewindow.cpp \
     magicalgirl.cpp \
@@ -29,6 +30,7 @@ HEADERS += \
     attackrange.h \
     character.h \
     direction.h \
+    enhancement.h \
     gamelogic.h \
     gamewindow.h \
     magicalgirl.h \
@@ -46,3 +48,6 @@ FORMS += \
 qnx: target.path = /tmp/$${TARGET}/bin
 else: unix:!android: target.path = /opt/$${TARGET}/bin
 !isEmpty(target.path): INSTALLS += target
+
+DISTFILES += \
+    data/enhancement/normal_enhancement.json

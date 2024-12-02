@@ -22,7 +22,8 @@ protected:
     int width;
     int height;
 
-    double health;
+    double currentHealth;
+    double maxHealth;
 
     double maxVelocity;
     double accelerationFactor;
@@ -40,20 +41,24 @@ public:
     explicit Character(QString name,
                        int width,
                        int height,
-                       double health,
+                       double maxHealth,
                        double maxVelocity,
                        double accelerationFactor,
                        double reboundFactor,
                        Weapon *weapon,
                        QWidget *parent = nullptr);
+    ~Character();
 
     QString getName() const;
     double getHealth() const;
+    double getMaxHealth() const;
     QPoint getPos() const;
     double getComposedVelocity() const;
+    double getMaxVelocity() const;
     AttackRange *getRange() const;
     double getFacingDegree() const;
     bool getAttacking() const;
+    Weapon *getWeapon() const;
     Weapon::WeaponType getWeaponType() const;
 
     void setAttacking();

@@ -18,10 +18,12 @@ public:
                    double maxVelocity,
                    double accelerationFactor,
                    double reboundFactor,
+                   int exp,
                    int attackWaitTime,
                    Weapon *weapon,
                    QWidget *parent = nullptr);
 
+    int getExp();
     bool getValidity();
     int getAttackWaitTime();
 
@@ -32,6 +34,7 @@ public:
     void performAttack(Character *player);
 
 protected:
+    int exp;
     Direction prevDir;
     bool isValid = true;
     int attackWaitTime;

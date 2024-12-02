@@ -8,21 +8,27 @@
 #include <QTime>
 
 #include "direction.h"
+#include "enhancement.h"
 #include "magicalgirl.h"
 #include "map.h"
 #include "witch.h"
-
-const double VALID_MAP_MAGNIFICATION = 5;
 
 class GameLogic : public QObject {
     Q_OBJECT
 
 private:
-    Map *map;
     MagicalGirl *player;
     QSet<Witch *> witches;
+
+    Map *map;
+
     QSet<Bullet *> bullets;
     QSet<Slash *> slashes;
+
+    int level = 1;
+    int currentExp = 0;
+    int nextLevelExp = 100;
+    EnhancementManager *enhancementManager;
 
     bool isBlocked(QPoint pos1, QPoint pos2);
 
@@ -31,6 +37,10 @@ public:
     ~GameLogic();
 
     void startGame();
+
+    int getLevel();
+    int getCurrentExp();
+    int getNextLevelExp();
 
     Map *getMap() const;
     MagicalGirl *getPlayer() const;
@@ -57,7 +67,10 @@ public:
 
     void handleDeadWitches();
     void handleInvalidAttack();
-    void handleOutOfBoundObject(QPoint &viewport);
+    void handleOutOfBoundryObject();
+
+    void updateExp(int exp);
+    void handleLevelUp();
 
 signals:
     void gameOver();

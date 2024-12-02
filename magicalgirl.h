@@ -26,6 +26,8 @@ public:
                          Weapon *weapon,
                          QWidget *parent = nullptr);
 
+    void setMaxHealth(double newMaxHealth);
+
 signals:
 };
 

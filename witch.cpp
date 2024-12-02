@@ -7,6 +7,7 @@ Witch::Witch(QString name,
              double maxVelocity,
              double accelerationFactor,
              double reboundFactor,
+             int exp,
              int attackWaitTime,
              Weapon *weapon,
              QWidget *parent)
@@ -19,7 +20,12 @@ Witch::Witch(QString name,
                 reboundFactor,
                 weapon,
                 parent),
-      attackWaitTime(attackWaitTime) {};
+      exp(exp), attackWaitTime(attackWaitTime) {
+}
+
+int Witch::getExp() {
+    return exp;
+};
 
 bool Witch::getValidity() {
     return isValid;

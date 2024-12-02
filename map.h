@@ -58,6 +58,8 @@ public:
 
     void render(QPainter *painter, const QPoint &pos) const;
 
+    bool isOutOfBoundry(const QPoint &pos) const;
+
     bool isObstacle(const QPoint &pos) const;
     bool isObstaclePadding(const QPoint &pos) const;
     bool isOnlyObstacle(const QPoint &pos) const;

@@ -19,4 +19,9 @@ MagicalGirl::MagicalGirl(QString name,
                 reboundFactor,
                 weapon,
                 parent),
-      mana(mana) {};
+      mana(mana) {
+}
+
+void MagicalGirl::setMaxHealth(double newMaxHealth) {
+    maxHealth = newMaxHealth;
+};

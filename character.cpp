@@ -4,16 +4,21 @@
 Character::Character(QString name,
                      int width,
                      int height,
-                     double health,
+                     double maxHealth,
                      double maxVelocity,
                      double accelerationFactor,
                      double reboundFactor,
                      Weapon *weapon,
                      QWidget *parent)
-    : QWidget(parent), name(name), width(width), height(height), health(health),
+    : QWidget(parent), name(name), width(width), height(height), maxHealth(maxHealth),
       maxVelocity(maxVelocity), accelerationFactor(accelerationFactor),
       reboundFactor(reboundFactor), weapon(weapon) {
     setFixedSize(width, height);
+    currentHealth = maxHealth;
+}
+
+Character::~Character() {
+    delete weapon;
 };
 
 QString Character::getName() const {
@@ -21,7 +26,11 @@ QString Character::getName() const {
 }
 
 double Character::getHealth() const {
-    return health;
+    return currentHealth;
+}
+
+double Character::getMaxHealth() const {
+    return maxHealth;
 }
 
 QPoint Character::getPos() const {
@@ -30,6 +39,10 @@ QPoint Character::getPos() const {
 
 double Character::getComposedVelocity() const {
     return std::hypot(velocity.x(), velocity.y());
+}
+
+double Character::getMaxVelocity() const {
+    return maxVelocity;
 }
 
 AttackRange *Character::getRange() const {
@@ -42,6 +55,10 @@ double Character::getFacingDegree() const {
 
 bool Character::getAttacking() const {
     return isAttacking;
+}
+
+Weapon *Character::getWeapon() const {
+    return weapon;
 }
 
 Weapon::WeaponType Character::getWeaponType() const {
@@ -255,5 +272,5 @@ Attack *Character::regularAttack(double degree) {
 }
 
 void Character::receiveDamage(double damage) {
-    health -= damage;
+    currentHealth -= damage;
 }

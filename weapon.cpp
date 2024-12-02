@@ -33,6 +33,10 @@ bool Weapon::getSide() {
     return isPlayerSide;
 }
 
+void Weapon::setDamage(double newDamage) {
+    damage = newDamage;
+}
+
 RemoteWeapon::RemoteWeapon(double bulletVelocity,
                            double bulletSize,
                            double damage,

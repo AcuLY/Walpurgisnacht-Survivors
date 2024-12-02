@@ -2,20 +2,38 @@
 
 GameLogic::GameLogic(QObject* parent) : QObject{parent} {
     QWidget* window = qobject_cast<QWidget*>(parent);
+
     map = new Map(FRICTION, window);
-    QPoint initViewpoint(10, 25);
-    map->updateObstacle(initViewpoint);
 
     //RemoteWeapon* weapon = new RemoteWeapon(50, 10, 3, 10, 1000, true, map);
     MeleeWeapon* weapon = new MeleeWeapon(5, 200, 100, true, map);
     player = new MagicalGirl("lufuck", 5, 10, 1, 5, 0.5, 0.1, 0, weapon, map);
+    connect(player, &Character::attackPerformed, this, &GameLogic::storeAttack); // 角色攻击
 
-    connect(player, &Character::attackPerformed, this, &GameLogic::storeAttack);
+    // 设置初始中心位置
+    QPoint initViewpoint(player->geometry().width() / 2, player->geometry().height() / 2);
+    map->updateObstacle(initViewpoint);
+
+    // 局内强化系统
+    enhancementManager = new EnhancementManager(player, window);
 }
 
 GameLogic::~GameLogic() {
     delete map;
     delete player;
+    delete enhancementManager;
+}
+
+int GameLogic::getLevel() {
+    return level;
+}
+
+int GameLogic::getCurrentExp() {
+    return currentExp;
+}
+
+int GameLogic::getNextLevelExp() {
+    return nextLevelExp;
 }
 
 Map* GameLogic::getMap() const {
@@ -98,7 +116,7 @@ void GameLogic::addWitch(QPoint& viewport) {
 
     RemoteWeapon* weapon = new RemoteWeapon(3, 10, 3, 3000, 800, false, map);
     //MeleeWeapon* weapon = new MeleeWeapon(5, 200, 10, false, map);
-    auto newWitch = new Witch("witch", 10, 20, 1, 1, 1, 0.5, 1000, weapon, map);
+    auto newWitch = new Witch("witch", 10, 20, 1, 1, 1, 0.5, 20, 1000, weapon, map);
 
     connect(newWitch, &Witch::attackPerformed, this, &GameLogic::storeAttack);
 
@@ -263,6 +281,9 @@ void GameLogic::handleBulletMapCollision() {
 void GameLogic::handleDeadWitches() {
     for (auto witchIt = witches.begin(); witchIt != witches.end();) {
         if ((*witchIt)->getHealth() <= 0) {
+            int witchExp = (*witchIt)->getExp();
+            updateExp(witchExp);
+
             delete *witchIt;
             witchIt = witches.erase(witchIt);
         } else {
@@ -291,14 +312,9 @@ void GameLogic::handleInvalidAttack() {
     }
 }
 
-void GameLogic::handleOutOfBoundObject(QPoint& viewport) {
-    QRect validRange(viewport.x() - MAP_WIDTH * (VALID_MAP_MAGNIFICATION - 1) / 2,
-                     viewport.y() - MAP_HEIGHT * (VALID_MAP_MAGNIFICATION - 1) / 2,
-                     MAP_WIDTH * VALID_MAP_MAGNIFICATION,
-                     MAP_HEIGHT * VALID_MAP_MAGNIFICATION);
-
+void GameLogic::handleOutOfBoundryObject() {
     for (auto witchIt = witches.begin(); witchIt != witches.end();) {
-        if (!validRange.contains(QPoint((*witchIt)->x(), (*witchIt)->y()))) {
+        if (map->isOutOfBoundry((*witchIt)->getPos())) {
             delete *witchIt;
             witchIt = witches.erase(witchIt);
         } else {
@@ -307,13 +323,30 @@ void GameLogic::handleOutOfBoundObject(QPoint& viewport) {
     }
 
     for (auto bulletIt = bullets.begin(); bulletIt != bullets.end();) {
-        if (!validRange.contains(QPoint((*bulletIt)->x(), (*bulletIt)->y()))) {
+        if (map->isOutOfBoundry((*bulletIt)->getPos())) {
             delete *bulletIt;
             bulletIt = bullets.erase(bulletIt);
         } else {
             ++bulletIt;
         }
     }
+}
+
+void GameLogic::updateExp(int exp) {
+    currentExp += exp;
+
+    if (currentExp > nextLevelExp) {
+        currentExp %= nextLevelExp;
+        handleLevelUp();
+    }
+    qDebug() << "exp+" << exp;
+}
+
+void GameLogic::handleLevelUp() {
+    level++;
+
+    Enhancement* e = enhancementManager->generateNormalEnhancement(level);
+    qDebug() << level << e->getDescription();
 }
 
 void GameLogic::storeAttack(Attack* attack) {

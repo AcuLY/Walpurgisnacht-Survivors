@@ -195,6 +195,14 @@ void Map::render(QPainter *painter, const QPoint &viewpoint) const {
     }
 }
 
+bool Map::isOutOfBoundry(const QPoint &pos) const {
+    QRect validRange(lastViewPoint.x() - CACHE_WIDTH / 2,
+                     lastViewPoint.y() - CACHE_HEIGHT / 2,
+                     CACHE_WIDTH,
+                     CACHE_HEIGHT);
+    return !validRange.contains(pos);
+}
+
 bool Map::isObstacle(const QPoint &pos) const {
     QPoint index = getIndex(pos);
     return obstacleCache[index.y()][index.x()];

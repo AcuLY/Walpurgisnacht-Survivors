@@ -35,9 +35,10 @@ public:
     double getAttackInterval();
     AttackRange *getRange();
     bool isCooldownFinished();
-
     bool getSide();
     virtual WeaponType getType() = 0;
+
+    void setDamage(double newDamage);
 
 signals:
 };
