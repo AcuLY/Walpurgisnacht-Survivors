@@ -5,9 +5,9 @@ GameLogic::GameLogic(QObject* parent) : QObject{parent} {
 
     map = new Map(FRICTION, window);
 
-    //RemoteWeapon* weapon = new RemoteWeapon(50, 10, 3, 10, 1000, true, map);
-    MeleeWeapon* weapon = new MeleeWeapon(5, 200, 100, true, map);
-    player = new MagicalGirl("lufuck", 5, 10, 1, 5, 0.5, 0.1, 0, weapon, map);
+    RemoteWeapon* weapon = new RemoteWeapon(50, 10, 3, 10, 1000, true, true, map);
+    //MeleeWeapon* weapon = new MeleeWeapon(5, 200, 100, true, map);
+    player = new Madoka("lufuck", 5, 10, 1, 5, 0.5, 0.1, 0, weapon, map);
     connect(player, &Character::attackPerformed, this, &GameLogic::storeAttack); // 角色攻击
 
     // 设置初始中心位置
@@ -81,7 +81,7 @@ void GameLogic::updateMapFlowField() {
     static QTime lastCallTime = QTime::currentTime();
     QTime currentTime = QTime::currentTime();
 
-    int interval = 100;
+    int interval = 1000;
 
     if (lastCallTime.msecsTo(currentTime) >= interval) {
         lastCallTime = currentTime;
@@ -114,8 +114,8 @@ void GameLogic::addWitch(QPoint& viewport) {
         return;
     }
 
-    RemoteWeapon* weapon = new RemoteWeapon(3, 10, 3, 3000, 800, false, map);
-    //MeleeWeapon* weapon = new MeleeWeapon(5, 200, 10, false, map);
+    //RemoteWeapon* weapon = new RemoteWeapon(3, 10, 3, 3000, 800, false, map);
+    MeleeWeapon* weapon = new MeleeWeapon(5, 200, 10, false, map);
     auto newWitch = new Witch("witch", 10, 20, 1, 1, 1, 0.5, 20, 1000, weapon, map);
 
     connect(newWitch, &Witch::attackPerformed, this, &GameLogic::storeAttack);
@@ -232,11 +232,13 @@ void GameLogic::handleAttack() {
             if ((*bulletIt)->getPlayerSide() && (*bulletIt)->isHit((*witchIt)->geometry())) {
                 (*witchIt)->receiveDamage((*bulletIt)->getDamage());
 
-                delete *bulletIt;
-                bulletIt = bullets.erase(bulletIt);
+                if (!(*bulletIt)->isPenetrable()) {
+                    delete *bulletIt;
+                    bulletIt = bullets.erase(bulletIt);
 
-                bulletHit = true;
-                break;
+                    bulletHit = true;
+                    break;
+                }
             }
         }
 

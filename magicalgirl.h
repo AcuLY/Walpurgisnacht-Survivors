@@ -4,6 +4,7 @@
 #include <QWidget>
 
 #include "character.h"
+#include "skill.h"
 #include "weapon.h"
 
 class MagicalGirl : public Character {
@@ -12,13 +13,17 @@ class MagicalGirl : public Character {
 protected:
     int mana;
 
-    Weapon *weapon;
+    SkillManager *dodgeSkill;
+    SkillManager *attackSkill1;
+    SkillManager *ultimateSkill;
+
+    void loadSkill();
 
 public:
     explicit MagicalGirl(QString name,
                          int width,
                          int height,
-                         double health,
+                         double maxHealth,
                          double maxVelocity,
                          double accelerationFactor,
                          double reboundFactor,
@@ -28,7 +33,25 @@ public:
 
     void setMaxHealth(double newMaxHealth);
 
+    virtual AttackRange *useDodgeSkill() = 0;
+
 signals:
+};
+
+class Madoka : public MagicalGirl {
+public:
+    explicit Madoka(QString name,
+                    int width,
+                    int height,
+                    double maxHealth,
+                    double maxVelocity,
+                    double accelerationFactor,
+                    double reboundFactor,
+                    int mana,
+                    Weapon *weapon,
+                    QWidget *parent = nullptr);
+
+    AttackRange *useDodgeSkill() override;
 };
 
 #endif // MAGICALGIRL_H

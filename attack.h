@@ -45,6 +45,8 @@ protected:
     QPointF velocity;
     QPointF acceleration = QPointF(0, 0);
 
+    bool penetrability;
+
     QPoint prevPos;
 
 public:
@@ -53,9 +55,12 @@ public:
                     double damage,
                     bool isPlayerSide,
                     int validTime,
+                    bool penetrability,
                     QWidget *parent = nullptr);
 
     QPoint &getPrevPos();
+
+    bool isPenetrable();
 
     void setAcceleration(QPointF a);
     void setVelocity(QPointF v);

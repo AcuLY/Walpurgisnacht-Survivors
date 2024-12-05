@@ -48,15 +48,18 @@ protected:
     double bulletVelocity;
     double bulletSize;
 
+    bool penetrability;
+
     WeaponType getType() override;
 
 public:
     explicit RemoteWeapon(double bulletVelociy,
                           double bulletSize,
                           double damage,
-                          double attackSpeed,
+                          double attackInterval,
                           double rangeSize,
                           bool isPlayerSide,
+                          bool penetrability,
                           QWidget *parent = nullptr);
 
     double getBulletSize() const;
@@ -78,6 +81,26 @@ public:
                          QWidget *parent = nullptr);
 
     Slash *attack(QPoint pos, double degree);
+};
+
+class Bow : public RemoteWeapon {
+private:
+    int maxCastTime;
+    bool isCasting = false;
+    int arrowNumberPerShot;
+    QTimer castTimer;
+
+public:
+    explicit Bow(double bulletVelociy,
+                 double bulletSize,
+                 double damage,
+                 double attackSpeed,
+                 double rangeSize,
+                 bool isPlayerSide,
+                 bool penetrability,
+                 int maxCastTime,
+                 int arrowNumberPerShot,
+                 QWidget *parent = nullptr);
 };
 
 #endif // WEAPON_H

@@ -43,9 +43,10 @@ RemoteWeapon::RemoteWeapon(double bulletVelocity,
                            double attackInterval,
                            double rangeSize,
                            bool isPlayerSide,
+                           bool penetrability,
                            QWidget *parent)
     : Weapon(damage, attackInterval, rangeSize, isPlayerSide, parent),
-      bulletVelocity(bulletVelocity), bulletSize(bulletSize) {
+      bulletVelocity(bulletVelocity), bulletSize(bulletSize), penetrability(penetrability) {
     range = new CircleRange(rangeSize);
 }
 
@@ -66,7 +67,7 @@ Bullet *RemoteWeapon::attack(QPoint pos, double degree) {
     cooldownTimer.start();
 
     int validTime = rangeSize / bulletVelocity * 16;
-    auto newBullet = new Bullet(pos, bulletSize, damage, isPlayerSide, validTime);
+    auto newBullet = new Bullet(pos, bulletSize, damage, isPlayerSide, validTime, penetrability);
 
     QPointF v = MathUtils::velocityDecomQPointF(bulletVelocity, degree);
     newBullet->setVelocity(v);

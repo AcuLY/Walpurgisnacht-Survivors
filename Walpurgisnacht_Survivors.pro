@@ -20,6 +20,7 @@ SOURCES += \
     main.cpp \
     mainwindow.cpp \
     map.cpp \
+    skill.cpp \
     third_party/perlinnoise.cpp \
     utils.cpp \
     weapon.cpp \
@@ -36,6 +37,7 @@ HEADERS += \
     magicalgirl.h \
     mainwindow.h \
     map.h \
+    skill.h \
     third_party/perlinnoise.h \
     utils.h \
     weapon.h \
@@ -50,4 +52,7 @@ else: unix:!android: target.path = /opt/$${TARGET}/bin
 !isEmpty(target.path): INSTALLS += target
 
 DISTFILES += \
-    data/enhancement/normal_enhancement.json
+    data/enhancement/normal_enhancements.json \
+    data/magical_girl/basic.json \
+    data/magical_girl/skills.json \
+    data/magical_girl/weapon.json

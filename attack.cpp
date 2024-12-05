@@ -52,8 +52,9 @@ Bullet::Bullet(QPoint initPos,
                double damage,
                bool isPlayerSide,
                int validTime,
+               bool penetrability,
                QWidget *parent)
-    : Attack(initPos, size, damage, isPlayerSide, validTime, parent) {
+    : Attack(initPos, size, damage, isPlayerSide, validTime, parent), penetrability(penetrability) {
     range = new CircleRange(size);
 
     prevPos.setX(initPos.x() - size);
@@ -62,6 +63,10 @@ Bullet::Bullet(QPoint initPos,
 
 QPoint &Bullet::getPrevPos() {
     return prevPos;
+}
+
+bool Bullet::isPenetrable() {
+    return penetrability;
 }
 
 void Bullet::setAcceleration(QPointF a) {
