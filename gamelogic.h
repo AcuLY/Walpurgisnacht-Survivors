@@ -5,6 +5,7 @@
 #include <QObject>
 #include <QRandomGenerator>
 #include <QSet>
+#include <QThread>
 #include <QTime>
 
 #include "direction.h"
@@ -29,6 +30,8 @@ private:
     int currentExp = 0;
     int nextLevelExp = 100;
     EnhancementManager *enhancementManager;
+
+    QThread *workerThread;
 
     bool isBlocked(QPoint pos1, QPoint pos2);
 

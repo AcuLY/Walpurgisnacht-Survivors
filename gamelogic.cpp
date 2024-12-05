@@ -3,10 +3,12 @@
 GameLogic::GameLogic(QObject* parent) : QObject{parent} {
     QWidget* window = qobject_cast<QWidget*>(parent);
 
+    workerThread = new QThread;
+
     map = new Map(FRICTION, window);
 
-    //RemoteWeapon* weapon = new RemoteWeapon(50, 10, 3, 10, 1000, true, map);
-    MeleeWeapon* weapon = new MeleeWeapon(5, 200, 100, true, map);
+    RemoteWeapon* weapon = new RemoteWeapon(500, 5, 3, 10, 1000, true, map);
+    //MeleeWeapon* weapon = new MeleeWeapon(5, 200, 100, true, map);
     player = new MagicalGirl("lufuck", 5, 10, 1, 5, 0.5, 0.1, 0, weapon, map);
     connect(player, &Character::attackPerformed, this, &GameLogic::storeAttack); // 角色攻击
 
@@ -85,7 +87,26 @@ void GameLogic::updateMapFlowField() {
 
     if (lastCallTime.msecsTo(currentTime) >= interval) {
         lastCallTime = currentTime;
-        map->updateFlowField(player->getPos());
+    } else {
+        return;
+    }
+
+    if (!workerThread || !workerThread->isRunning()) {
+        if (workerThread) {
+            workerThread->quit();
+            workerThread->wait();
+            delete workerThread;
+        }
+
+        workerThread = new QThread;
+        FlowFieldWorker* worker = new FlowFieldWorker(map, player->getPos());
+        worker->moveToThread(workerThread);
+
+        connect(workerThread, &QThread::started, worker, &FlowFieldWorker::updateFlowField);
+        connect(worker, &FlowFieldWorker::flowFieldUpdated, workerThread, &QThread::quit);
+        connect(workerThread, &QThread::finished, worker, &FlowFieldWorker::deleteLater);
+
+        workerThread->start();
     }
 }
 
@@ -110,12 +131,12 @@ void GameLogic::handleCharacterCollision() {
 
 void GameLogic::addWitch(QPoint& viewport) {
     int ifAddWitch = QRandomGenerator::global()->generate() % 100;
-    if (ifAddWitch < 80) {
+    if (ifAddWitch < 90) {
         return;
     }
 
-    RemoteWeapon* weapon = new RemoteWeapon(3, 10, 3, 3000, 800, false, map);
-    //MeleeWeapon* weapon = new MeleeWeapon(5, 200, 10, false, map);
+    //RemoteWeapon* weapon = new RemoteWeapon(3, 10, 3, 3000, 800, false, map);
+    MeleeWeapon* weapon = new MeleeWeapon(5, 200, 10, false, map);
     auto newWitch = new Witch("witch", 10, 20, 1, 1, 1, 0.5, 20, 1000, weapon, map);
 
     connect(newWitch, &Witch::attackPerformed, this, &GameLogic::storeAttack);
@@ -339,14 +360,12 @@ void GameLogic::updateExp(int exp) {
         currentExp %= nextLevelExp;
         handleLevelUp();
     }
-    qDebug() << "exp+" << exp;
 }
 
 void GameLogic::handleLevelUp() {
     level++;
 
     Enhancement* e = enhancementManager->generateNormalEnhancement(level);
-    qDebug() << level << e->getDescription();
 }
 
 void GameLogic::storeAttack(Attack* attack) {

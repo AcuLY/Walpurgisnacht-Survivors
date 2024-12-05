@@ -1,8 +1,8 @@
 #include "map.h"
+#include "qthread.h"
 #include "utils.h"
 
 Map::Map(double friction, QWidget *parent) : QWidget{parent}, friction(friction) {
-    setFixedSize(MAP_WIDTH, MAP_HEIGHT);
     pn = new PerlinNoise(QDateTime::currentSecsSinceEpoch());
 
     obstacleCache = QVector<QVector<bool>>(CACHE_ROW, QVector<bool>(CACHE_COL));
@@ -124,6 +124,8 @@ void Map::updateFlowField(const QPoint &targetPos) {
             flowField[j][i] = optimalDir;
         }
     }
+
+    qDebug() << "update flow" << QDateTime::currentDateTime();
 }
 
 Direction Map::getFlow(const QPoint &pos) const {
@@ -283,4 +285,13 @@ QPainterPath Map::getPartialPath(const QPoint begin, const QPoint end) {
     }
 
     return path;
+}
+
+FlowFieldWorker::FlowFieldWorker(Map *map, const QPoint &targetPos)
+    : map(map), targetPos(targetPos) {
+}
+
+void FlowFieldWorker::updateFlowField() {
+    map->updateFlowField(targetPos);
+    emit flowFieldUpdated();
 }

@@ -72,4 +72,20 @@ public:
     Direction getFlow(const QPoint &pos) const;
 };
 
+class FlowFieldWorker : public QObject {
+    Q_OBJECT
+
+private:
+    Map *map;
+    QPoint targetPos;
+
+public:
+    explicit FlowFieldWorker(Map *map, const QPoint &targetPos);
+
+    void updateFlowField();
+
+signals:
+    void flowFieldUpdated();
+};
+
 #endif // MAP_H
