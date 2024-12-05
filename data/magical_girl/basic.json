@@ -1,0 +1,12 @@
+[
+    {
+        "name": "Madoka",
+        "width": 10,
+        "height": 15,
+        "maxHealth": 100,
+        "maxVelocity": 3,
+        "accelerationFactor": 0.2,
+        "reboundFactor": 0.8,
+        "mana": 10
+    }
+]

@@ -14,7 +14,7 @@ public:
     explicit Witch(QString name,
                    int width,
                    int height,
-                   double health,
+                   double maxHealth,
                    double maxVelocity,
                    double accelerationFactor,
                    double reboundFactor,

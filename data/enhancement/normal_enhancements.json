@@ -1,0 +1,4 @@
+[
+    { "type": "damageEnhancement", "description": "Increases damage", "parameters": [1.5] },
+    { "type": "healthEnhancement", "description": "Increases health", "parameters": [20.0] }
+]

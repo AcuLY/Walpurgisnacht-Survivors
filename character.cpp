@@ -87,6 +87,10 @@ void Character::updateAcceleration(BiDirection moveX, BiDirection moveY) {
             acceleration.setY(0);
         }
     }
+
+    if (moveX || moveY) {
+        facingDegree = qAtan2((double) -moveY, (double) moveX);
+    }
 }
 
 void Character::updateVelocity() {
@@ -99,10 +103,6 @@ void Character::updateVelocity() {
     if (prevVelocity <= maxVelocity && curVelocity > maxVelocity) {
         velocity.setX(velocity.x() * maxVelocity / curVelocity);
         velocity.setY(velocity.y() * maxVelocity / curVelocity);
-    }
-
-    if (velocity.x() || velocity.y()) {
-        facingDegree = qAtan2(-velocity.y(), velocity.x());
     }
 }
 

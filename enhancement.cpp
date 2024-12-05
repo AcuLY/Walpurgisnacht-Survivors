@@ -28,7 +28,7 @@ QString Enhancement::getDescription() {
 EnhancementManager::EnhancementManager(MagicalGirl *player, QObject *parent)
     : QObject(parent), player(player) {
     QJsonArray normalEnhancementJsons = FileUtils::loadJsonFile(
-        "./data/enhancement/normal_enhancement.json");
+        "./data/enhancement/normal_enhancements.json");
     for (const QJsonValue &value : normalEnhancementJsons) {
         QJsonObject json = value.toObject();
         Enhancement *e = new Enhancement(json);

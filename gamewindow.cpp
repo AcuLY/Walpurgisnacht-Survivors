@@ -57,75 +57,88 @@ void GameWindow::updateViewport() {
 }
 
 void GameWindow::updateGameLogic() {
+    static qint64 totalAddWitchTime = 0;
+    static qint64 totalMovePlayerTime = 0;
+    static qint64 totalUpdateFlowTime = 0;
+    static qint64 totalMoveWitchesTime = 0;
+    static qint64 totalMoveBulletsTime = 0;
+    static qint64 totalCharaColliTime = 0;
+    static qint64 totalAttackTime = 0;
+    static qint64 totalBulletMapColliTime = 0;
+    static qint64 totalDeadWitchesTime = 0;
+    static qint64 totalInvalidAttackTime = 0;
+    static qint64 totalOobTime = 0;
+    static qint64 totalAttackActionTime = 0;
+
     QElapsedTimer timer;
-    timer.start();
 
     // 逻辑操作
+    timer.start();
     gameLogic->addWitch(viewport);
-    qint64 addWitchTime = timer.elapsed();
-    timer.start();
+    totalAddWitchTime += timer.elapsed();
 
+    timer.start();
     gameLogic->movePlayer(getPlayerMovement());
-    qint64 movePlayerTime = timer.elapsed();
-    timer.start();
+    totalMovePlayerTime += timer.elapsed();
 
+    timer.start();
     gameLogic->updateMapFlowField();
-    qint64 updateFlowTime = timer.elapsed();
-    timer.start();
+    totalUpdateFlowTime += timer.elapsed();
 
+    timer.start();
     gameLogic->moveWitches();
-    qint64 moveWitchesTime = timer.elapsed();
-    timer.start();
+    totalMoveWitchesTime += timer.elapsed();
 
+    timer.start();
     gameLogic->moveBullets();
-    qint64 moveBulletsTime = timer.elapsed();
-    timer.start();
+    totalMoveBulletsTime += timer.elapsed();
 
+    timer.start();
     gameLogic->handleCharacterCollision();
-    qint64 charaColliTime = timer.elapsed();
-    timer.start();
+    totalCharaColliTime += timer.elapsed();
 
+    timer.start();
     gameLogic->handleAttack();
-    qint64 attackTime = timer.elapsed();
-    timer.start();
+    totalAttackTime += timer.elapsed();
 
+    timer.start();
     gameLogic->handleBulletMapCollision();
-    qint64 bulletMapColliTime = timer.elapsed();
-    timer.start();
+    totalBulletMapColliTime += timer.elapsed();
 
+    timer.start();
     gameLogic->handleDeadWitches();
-    qint64 deadWitchesTime = timer.elapsed();
-    timer.start();
+    totalDeadWitchesTime += timer.elapsed();
 
+    timer.start();
     gameLogic->handleInvalidAttack();
-    qint64 invalidAttackTime = timer.elapsed();
-    timer.start();
+    totalInvalidAttackTime += timer.elapsed();
 
-    gameLogic->handleOutOfBoundObject(viewport);
-    qint64 oobTime = timer.elapsed();
     timer.start();
+    gameLogic->handleOutOfBoundryObject();
+    totalOobTime += timer.elapsed();
 
+    timer.start();
     if (getPlayerAttack()) {
         gameLogic->playerAttack();
     }
     gameLogic->witchAttack();
-    qint64 attackActionTime = timer.elapsed();
-
-    // 最后统一输出所有时间
-    // qDebug() << "add witch:" << addWitchTime;
-    // qDebug() << "move player:" << movePlayerTime;
-    // qDebug() << "update flow:" << updateFlowTime;
-    // qDebug() << "move witch:" << moveWitchesTime;
-    // qDebug() << "move bullets:" << moveBulletsTime;
-    // qDebug() << "chara colli:" << charaColliTime;
-    // qDebug() << "attack:" << attackTime;
-    // qDebug() << "bullet map colli:" << bulletMapColliTime;
-    // qDebug() << "dead witches:" << deadWitchesTime;
-    // qDebug() << "invalid attack:" << invalidAttackTime;
-    // qDebug() << "out of bound object:" << oobTime;
-    // qDebug() << "attack action:" << attackActionTime;
+    totalAttackActionTime += timer.elapsed();
 
     updateViewport();
+
+    // 输出时间
+    // qDebug() << "add witch:" << totalAddWitchTime;
+    // qDebug() << "move player:" << totalMovePlayerTime;
+    // qDebug() << "update flow:" << totalUpdateFlowTime;
+    // qDebug() << "move witch:" << totalMoveWitchesTime;
+    // qDebug() << "move bullets:" << totalMoveBulletsTime;
+    // qDebug() << "chara colli:" << totalCharaColliTime;
+    // qDebug() << "attack:" << totalAttackTime;
+    // qDebug() << "bullet map colli:" << totalBulletMapColliTime;
+    // qDebug() << "dead witches:" << totalDeadWitchesTime;
+    // qDebug() << "invalid attack:" << totalInvalidAttackTime;
+    // qDebug() << "out of bound object:" << totalOobTime;
+    // qDebug() << "attack action:" << totalAttackActionTime;
 }
 
 void GameWindow::paintEvent(QPaintEvent *event) {

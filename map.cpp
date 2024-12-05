@@ -47,8 +47,8 @@ bool Map::setObstacle(int x, int y) {
 }
 
 void Map::updateIntegrationField(const QPoint &targetPos) {
-    for (int i = 0; i < CACHE_COL; i++) {
-        for (int j = 0; j < CACHE_ROW; j++) {
+    for (int j = 0; j < CACHE_ROW; j++) {
+        for (int i = 0; i < CACHE_COL; i++) {
             integrationField[j][i] = -1;
         }
     }
@@ -95,8 +95,8 @@ void Map::updateIntegrationField(const QPoint &targetPos) {
 void Map::updateFlowField(const QPoint &targetPos) {
     updateIntegrationField(targetPos);
 
-    for (int i = 0; i < CACHE_COL; i++) {
-        for (int j = 0; j < CACHE_ROW; j++) {
+    for (int j = 0; j < CACHE_ROW; j++) {
+        for (int i = 0; i < CACHE_COL; i++) {
             if (integrationField[j][i] == -1) {
                 flowField[j][i] = Direction::Center;
                 continue;
@@ -146,8 +146,8 @@ void Map::render(QPainter *painter, const QPoint &viewpoint) const {
     painter->setBrush(Qt::gray);
 
     // 取 +1 以渲染右边缘和下边缘
-    for (int i = 0; i <= MAP_WIDTH / GRID_SIZE + 1; i++) {
-        for (int j = 0; j <= MAP_HEIGHT / GRID_SIZE + 1; j++) {
+    for (int j = 0; j <= MAP_HEIGHT / GRID_SIZE + 1; j++) {
+        for (int i = 0; i <= MAP_WIDTH / GRID_SIZE + 1; i++) {
             QPoint index = getIndex(QPoint(gridX + i * GRID_SIZE, gridY + j * GRID_SIZE));
             if (!obstacleCache[index.y()][index.x()]) {
                 continue;
@@ -241,8 +241,8 @@ void Map::updateObstacle(const QPoint &viewpoint) {
     int startX = viewpoint.x() - offset.x() - CACHE_WIDTH / 2;
     int startY = viewpoint.y() - offset.y() - CACHE_HEIGHT / 2;
 
-    for (int i = 0; i < CACHE_COL; i++) {
-        for (int j = 0; j < CACHE_ROW; j++) {
+    for (int j = 0; j < CACHE_ROW; j++) {
+        for (int i = 0; i < CACHE_COL; i++) {
             bool obstacle = setObstacle(startX + i * GRID_SIZE, startY + j * GRID_SIZE);
             obstacleCache[j][i] = obstacle;
             if (!obstacle) {

@@ -14,7 +14,7 @@
 const int WINDOW_WIDTH = 1280;
 const int WINDOW_HEIGHT = 720;
 
-const int RENDER_FPS = 120;
+const int RENDER_FPS = 60;
 const int RENDER_FRAME_TIME = 1000 / RENDER_FPS;
 
 const int LOGIC_FPS = 60;
