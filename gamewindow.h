@@ -10,6 +10,7 @@
 #include <cmath>
 
 #include "gamelogic.h"
+#include "pausewindow.h"
 
 const int WINDOW_WIDTH = 1280;
 const int WINDOW_HEIGHT = 720;
@@ -32,6 +33,10 @@ private:
 
     QTimer *logicTimer;
     QTimer *renderTimer;
+    QTimer *survivalTimer;
+
+    bool isGamePaused = false;
+    PauseWindow *pauseWindow;
 
 public:
     explicit GameWindow(QWidget *parent = nullptr);
@@ -49,6 +54,13 @@ protected:
 private slots:
     void updateGameLogic();
     void renderFrame();
+
+public slots:
+    void onClosePauseWindow(bool isGameContinued);
+    void onGameWin();
+
+signals:
+    void startNewGame();
 };
 
 #endif // GAMEWINDOW_H

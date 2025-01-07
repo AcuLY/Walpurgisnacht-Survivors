@@ -3,6 +3,10 @@
 
 #include <QMainWindow>
 
+#include "characterselectwindow.h"
+#include "gamewindow.h"
+#include "magicalgirl.h"
+
 QT_BEGIN_NAMESPACE
 namespace Ui {
 class MainWindow;
@@ -18,5 +22,14 @@ public:
 
 private:
     Ui::MainWindow *ui;
+
+    CharacterSelectWindow *characterSelectWindow;
+    GameWindow *gameWindow;
+
+    void onGameStart();
+
+public slots:
+    void onPlayerSelected(MagicalGirlEnum player);
+    void onRestartGame();
 };
 #endif // MAINWINDOW_H

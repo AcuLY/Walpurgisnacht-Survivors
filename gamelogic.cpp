@@ -61,6 +61,14 @@ QSet<Slash*>& GameLogic::getSlashes() {
 void GameLogic::startGame() {
 }
 
+void GameLogic::updateSurvivalTime() {
+    survivalTime -= 1;
+
+    if (survivalTime < 0) {
+        emit gameWin();
+    }
+}
+
 void GameLogic::movePlayer(Direction dir) {
     player->moveActively(dir);
     player->applyFriction(map->getFriction());
@@ -365,7 +373,7 @@ void GameLogic::updateExp(int exp) {
 void GameLogic::handleLevelUp() {
     level++;
 
-    Enhancement* e = enhancementManager->generateNormalEnhancement(level);
+    //Enhancement* e = enhancementManager->generateNormalEnhancement(level);
 }
 
 void GameLogic::storeAttack(Attack* attack) {

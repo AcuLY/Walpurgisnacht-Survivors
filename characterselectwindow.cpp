@@ -1,0 +1,38 @@
+#include "characterselectwindow.h"
+#include "ui_characterselectwindow.h"
+
+CharacterSelectWindow::CharacterSelectWindow(QWidget *parent)
+    : QWidget(parent), ui(new Ui::CharacterSelectWindow) {
+    ui->setupUi(this);
+
+    this->setFixedSize(parent->geometry().width(), parent->geometry().height());
+    this->setAutoFillBackground(true); // 防止新窗口和旧窗口重叠
+
+    // 返回
+    connect(ui->exit, &QPushButton::clicked, this, [this] { this->hide(); });
+
+    // 选择角色事件
+    connect(ui->madoka, &QPushButton::clicked, this, [this] {
+        onPlayerSelected(MagicalGirlEnum::Madoka);
+    });
+    connect(ui->homura, &QPushButton::clicked, this, [this] {
+        onPlayerSelected(MagicalGirlEnum::Homura);
+    });
+    connect(ui->sayaka, &QPushButton::clicked, this, [this] {
+        onPlayerSelected(MagicalGirlEnum::Sayaka);
+    });
+    connect(ui->mami, &QPushButton::clicked, this, [this] {
+        onPlayerSelected(MagicalGirlEnum::Mami);
+    });
+    connect(ui->kyouko, &QPushButton::clicked, this, [this] {
+        onPlayerSelected(MagicalGirlEnum::Kyouko);
+    });
+}
+
+CharacterSelectWindow::~CharacterSelectWindow() {
+    delete ui;
+}
+
+void CharacterSelectWindow::onPlayerSelected(MagicalGirlEnum player) {
+    emit playerSelectedSignal(player);
+}

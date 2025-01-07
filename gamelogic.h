@@ -31,6 +31,8 @@ private:
     int nextLevelExp = 100;
     EnhancementManager *enhancementManager;
 
+    int survivalTime = 10;
+
     QThread *workerThread;
 
     bool isBlocked(QPoint pos1, QPoint pos2);
@@ -40,6 +42,8 @@ public:
     ~GameLogic();
 
     void startGame();
+
+    void updateSurvivalTime();
 
     int getLevel();
     int getCurrentExp();
@@ -76,6 +80,7 @@ public:
     void handleLevelUp();
 
 signals:
+    void gameWin();
     void gameOver();
 
 private slots:

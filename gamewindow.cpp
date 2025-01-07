@@ -2,11 +2,14 @@
 #include <QDebug>
 
 GameWindow::GameWindow(QWidget *parent) : QWidget{parent} {
-    setFixedSize(MAP_WIDTH, MAP_HEIGHT);
+    this->setFixedSize(parent->geometry().width(), parent->geometry().height());
+    this->setAutoFillBackground(true); // 防止新窗口和旧窗口重叠
 
     setFocusPolicy(Qt::StrongFocus);
+    setFocus(); // 获取焦点
 
     gameLogic = new GameLogic();
+    connect(gameLogic, &GameLogic::gameWin, this, &GameWindow::onGameWin);
 
     logicTimer = new QTimer(this);
     connect(logicTimer, &QTimer::timeout, this, &GameWindow::updateGameLogic);
@@ -15,9 +18,29 @@ GameWindow::GameWindow(QWidget *parent) : QWidget{parent} {
     renderTimer = new QTimer(this);
     connect(renderTimer, &QTimer::timeout, this, &GameWindow::renderFrame);
     renderTimer->start(RENDER_FRAME_TIME);
+
+    survivalTimer = new QTimer(this);
+    connect(survivalTimer, &QTimer::timeout, this, [this] {
+        if (!isGamePaused) {
+            gameLogic->updateSurvivalTime();
+        }
+    });
+    survivalTimer->start(1000);
+
+    pauseWindow = new PauseWindow(this);
+    pauseWindow->move((WINDOW_WIDTH - pauseWindow->geometry().width()) / 2,
+                      (WINDOW_HEIGHT - pauseWindow->geometry().height()) / 2);
+    pauseWindow->hide();
+    connect(pauseWindow, &PauseWindow::closePauseWindow, this, &GameWindow::onClosePauseWindow);
 }
 
 void GameWindow::keyPressEvent(QKeyEvent *event) {
+    if (event->key() == Qt::Key_Escape) {
+        pauseWindow->setStatus(PauseStatus::GamePause);
+        pauseWindow->show();
+        isGamePaused = true;
+    }
+
     pressedKeys.insert(event->key());
 }
 
@@ -57,6 +80,10 @@ void GameWindow::updateViewport() {
 }
 
 void GameWindow::updateGameLogic() {
+    if (isGamePaused) {
+        return;
+    }
+
     static qint64 totalAddWitchTime = 0;
     static qint64 totalMovePlayerTime = 0;
     static qint64 totalUpdateFlowTime = 0;
@@ -191,4 +218,30 @@ void GameWindow::paintEvent(QPaintEvent *event) {
 
 void GameWindow::renderFrame() {
     update();
+}
+
+void GameWindow::onClosePauseWindow(bool isGameContinued) {
+    if (isGameContinued) {
+        pauseWindow->hide();
+        this->setFocus();
+
+        PauseStatus status = pauseWindow->getStatus();
+
+        if (status == PauseStatus::GamePause) {
+            isGamePaused = false;
+        } else {
+            this->close();
+
+            emit startNewGame();
+        }
+    } else {
+        this->close();
+    }
+}
+
+void GameWindow::onGameWin() {
+    pauseWindow->setStatus(PauseStatus::GameWin);
+    pauseWindow->show();
+
+    isGamePaused = true;
 }

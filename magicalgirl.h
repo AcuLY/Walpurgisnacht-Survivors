@@ -6,6 +6,8 @@
 #include "character.h"
 #include "weapon.h"
 
+enum class MagicalGirlEnum { Madoka, Homura, Sayaka, Mami, Kyouko };
+
 class MagicalGirl : public Character {
     Q_OBJECT
 
