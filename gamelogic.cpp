@@ -56,6 +56,10 @@ QSet<Slash*>& GameLogic::getSlashes() {
     return slashes;
 }
 
+QSet<Loot*>& GameLogic::getLoots() {
+    return loots;
+}
+
 void GameLogic::startGame() {
 }
 
@@ -82,6 +86,19 @@ void GameLogic::moveWitches() {
 void GameLogic::moveBullets() {
     for (auto it = bullets.begin(); it != bullets.end(); ++it) {
         (*it)->moveActively();
+    }
+}
+
+void GameLogic::moveLoots() {
+    for (auto it = loots.begin(); it != loots.end();) {
+        (*it)->moveToPlayer(player->getPos());
+
+        if ((*it)->getIsPicked()) {
+            delete *it;
+            it = loots.erase(it);
+        } else {
+            ++it;
+        }
     }
 }
 
@@ -139,6 +156,16 @@ void GameLogic::handleCharacterCollision() {
             }
         }
         (*witchIt)->handleCollision(map);
+    }
+}
+
+void GameLogic::handleInRangeLoots() {
+    for (auto it = loots.begin(); it != loots.end(); ++it) {
+        CircleRange* pickRange = player->getPickRange();
+
+        if (pickRange->contains(player->getPos(), (*it)->geometry())) {
+            (*it)->inPickRange();
+        }
     }
 }
 
@@ -313,7 +340,9 @@ void GameLogic::handleDeadWitches() {
     for (auto witchIt = witches.begin(); witchIt != witches.end();) {
         if ((*witchIt)->getHealth() <= 0) {
             int witchExp = (*witchIt)->getExp();
-            updateExp(witchExp);
+            Experience* exp = new Experience(witchExp, (*witchIt)->getPos(), map);
+            connect(exp, &Experience::experiencePicked, this, &GameLogic::updateExp);
+            loots.insert(exp);
 
             delete *witchIt;
             witchIt = witches.erase(witchIt);

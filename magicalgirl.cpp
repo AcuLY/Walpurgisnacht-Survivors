@@ -107,6 +107,10 @@ bool MagicalGirl::getIsReadyToRecover() const {
     return !isInAttack && !isOnRecoverCooldown;
 }
 
+CircleRange *MagicalGirl::getPickRange() const {
+    return pickRange;
+}
+
 void MagicalGirl::receiveDamage(double damage) {
     if (currentHealth == 0) {
         currentMana -= damage;

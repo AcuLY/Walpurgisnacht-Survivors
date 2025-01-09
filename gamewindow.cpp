@@ -108,6 +108,8 @@ void GameWindow::updateGameLogic() {
     gameLogic->movePlayer(getPlayerMovement());
     totalMovePlayerTime += timer.elapsed();
 
+    gameLogic->handleInRangeLoots();
+
     timer.start();
     gameLogic->updateMapFlowField();
     totalUpdateFlowTime += timer.elapsed();
@@ -119,6 +121,8 @@ void GameWindow::updateGameLogic() {
     timer.start();
     gameLogic->moveBullets();
     totalMoveBulletsTime += timer.elapsed();
+
+    gameLogic->moveLoots();
 
     timer.start();
     gameLogic->handleCharacterCollision();
@@ -211,6 +215,11 @@ void GameWindow::paintEvent(QPaintEvent *event) {
         painter.fillPath((*it)->createPath(), Qt::red);
     }
     qint64 renderSlashesTime = timer.elapsed();
+
+    auto loots = gameLogic->getLoots();
+    for (auto it = loots.begin(); it != loots.end(); ++it) {
+        painter.fillRect((*it)->geometry(), Qt::yellow);
+    }
 
     // 最后统一输出所有时间
     // qDebug() << "render map:" << renderMapTime;

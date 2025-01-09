@@ -17,6 +17,7 @@ SOURCES += \
     enhancement.cpp \
     gamelogic.cpp \
     gamewindow.cpp \
+    loot.cpp \
     magicalgirl.cpp \
     main.cpp \
     mainwindow.cpp \
@@ -36,6 +37,7 @@ HEADERS += \
     enhancement.h \
     gamelogic.h \
     gamewindow.h \
+    loot.h \
     magicalgirl.h \
     mainwindow.h \
     map.h \

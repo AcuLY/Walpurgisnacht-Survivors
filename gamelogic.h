@@ -10,6 +10,7 @@
 
 #include "direction.h"
 #include "enhancement.h"
+#include "loot.h"
 #include "magicalgirl.h"
 #include "map.h"
 #include "witch.h"
@@ -29,6 +30,8 @@ private:
 
     QSet<Bullet *> bullets;
     QSet<Slash *> slashes;
+
+    QSet<Loot *> loots;
 
     int level = 1;
     int currentExp = 0;
@@ -58,13 +61,18 @@ public:
     QSet<Witch *> &getWitches();
     QSet<Bullet *> &getBullets();
     QSet<Slash *> &getSlashes();
+    QSet<Loot *> &getLoots();
 
     void movePlayer(Direction dir);
     void moveWitches();
     void moveBullets();
+    void moveLoots();
+
     void updateMapFlowField();
 
     void handleCharacterCollision();
+
+    void handleInRangeLoots();
 
     void addWitch(QPoint &viewport);
 

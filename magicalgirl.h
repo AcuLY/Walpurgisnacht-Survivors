@@ -13,6 +13,7 @@ enum class MagicalGirlEnum { Madoka, Homura, Sayaka, Mami, Kyouko };
 const int defaultOutAttackInterval = 5000;
 const int defaultRecoverInterval = 1000;
 const int defaultRecoverManaCost = 3;
+const int defaultPickRangeSize = 300;
 
 class MagicalGirl : public Character {
     Q_OBJECT
@@ -35,6 +36,9 @@ protected:
 
     Weapon *weapon;
 
+    int pickRangeSize = defaultPickRangeSize;
+    CircleRange *pickRange = new CircleRange(defaultPickRangeSize);
+
 public:
     explicit MagicalGirl(QString name,
                          int width,
@@ -54,6 +58,8 @@ public:
     int getCurrentMana() const;
     double getRecoverRate() const;
     bool getIsReadyToRecover() const;
+
+    CircleRange *getPickRange() const;
 
     void receiveDamage(double damage);
 
