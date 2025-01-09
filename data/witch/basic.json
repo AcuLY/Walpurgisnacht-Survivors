@@ -1,0 +1,14 @@
+[
+    {
+        "name": "tsukaima0",
+        "width": 20,
+        "height": 30,
+        "maxHealth": 20,
+        "maxVelocity": 1,
+        "accelerationFactor": 0.2,
+        "attackMoveDecayFactor": 0.5,
+        "reboundFactor": 0.8,
+        "exp": 5,
+        "attackWaitTime": 200
+    }
+]

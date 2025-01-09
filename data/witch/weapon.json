@@ -1,0 +1,8 @@
+[
+    {
+        "isRemoteWeapon": false,
+        "damage": 3,
+        "attackInterval": 3000,
+        "rangeSize": 50
+    }
+]

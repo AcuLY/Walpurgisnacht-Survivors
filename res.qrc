@@ -1,0 +1,24 @@
+<RCC>
+    <qresource prefix="/images/character_selection">
+        <file alias="madoka_selected">res/images/character_selection/madoka.png</file>
+        <file alias="sayaka_selected">res/images/character_selection/sayaka.png</file>
+        <file alias="homura_selected">res/images/character_selection/homura.png</file>
+        <file alias="madoka_unselected">res/images/character_selection/madoka2.png</file>
+        <file alias="homura_unselected">res/images/character_selection/homura2.png</file>
+        <file alias="sayaka_unselected">res/images/character_selection/sayaka2.png</file>
+        <file alias="mami_unselected">res/images/character_selection/mami2.png</file>
+        <file alias="kyouko_unselected">res/images/character_selection/kyouko2.png</file>
+    </qresource>
+    <qresource prefix="/images/ui">
+        <file alias="border">res/images/ui/border.png</file>
+        <file alias="background">res/images/ui/background.png</file>
+    </qresource>
+    <qresource prefix="/data/magical_girls">
+        <file alias="magical_girls_basic_jsons">data/magical_girl/basic.json</file>
+        <file alias="magical_girls_weapons_jsons">data/magical_girl/weapon.json</file>
+    </qresource>
+    <qresource prefix="/data/witch">
+        <file alias="witches_basic_jsons">data/witch/basic.json</file>
+        <file alias="witches_weapons_jsons">data/witch/weapon.json</file>
+    </qresource>
+</RCC>

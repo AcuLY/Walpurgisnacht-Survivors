@@ -6,6 +6,7 @@ Witch::Witch(QString name,
              double maxHealth,
              double maxVelocity,
              double accelerationFactor,
+             double attackMoveDecayFactor,
              double reboundFactor,
              int exp,
              int attackWaitTime,
@@ -17,10 +18,78 @@ Witch::Witch(QString name,
                 maxHealth,
                 maxVelocity,
                 accelerationFactor,
+                attackMoveDecayFactor,
                 reboundFactor,
                 weapon,
                 parent),
       exp(exp), attackWaitTime(attackWaitTime) {
+}
+
+int Witch::chooseWitch(double progress) {
+    //
+    double rand = QRandomGenerator::global()->bounded(1.0);
+
+    if (rand < progress) {
+        return 0;
+    }
+
+    return -1;
+}
+
+Witch *Witch::loadWitchFromJson(int typeIndex, Map *map) {
+    QJsonArray basicJsons = FileUtils::loadJsonFile(":/data/witch/witches_basic_jsons");
+    QJsonArray weaponJsons = FileUtils::loadJsonFile(":/data/witch/witches_weapons_jsons");
+
+    QJsonObject basicJson = basicJsons[typeIndex].toObject();
+    QJsonObject weaponJson = weaponJsons[typeIndex].toObject();
+
+    Weapon *weapon;
+    if (weaponJson["isRemoteWeapon"].toBool()) {
+        int bulletVelocity = weaponJson["bulletVelocity"].toInt();
+        int bulletSize = weaponJson["bulletSize"].toInt();
+        int damage = weaponJson["damage"].toInt();
+        int attackInterval = weaponJson["attackInterval"].toInt();
+        int rangeSize = weaponJson["rangeSize"].toInt();
+        bool isPlayerSide = false;
+        weapon = new RemoteWeapon(bulletVelocity,
+                                  bulletSize,
+                                  damage,
+                                  attackInterval,
+                                  rangeSize,
+                                  isPlayerSide,
+                                  map);
+    } else {
+        int damage = weaponJson["damage"].toInt();
+        int attackInterval = weaponJson["attackInterval"].toInt();
+        int rangeSize = weaponJson["rangeSize"].toInt();
+        bool isPlayerSide = false;
+        weapon = new MeleeWeapon(damage, attackInterval, rangeSize, isPlayerSide, map);
+    }
+
+    QString name = basicJson["name"].toString();
+    int width = basicJson["width"].toInt();
+    int height = basicJson["height"].toInt();
+    int maxHealth = basicJson["maxHealth"].toInt();
+    double maxVelocity = basicJson["maxVelocity"].toDouble();
+    double accelerationFactor = basicJson["accelerationFactor"].toDouble();
+    double attackMoveDecayFactor = basicJson["attackMoveDecayFactor"].toDouble();
+    double reboundFactor = basicJson["reboundFactor"].toDouble();
+    int exp = basicJson["exp"].toInt();
+    int attackWaitTime = basicJson["attackWaitTime"].toInt();
+
+    Witch *witch = new Witch(name,
+                             width,
+                             height,
+                             maxHealth,
+                             maxVelocity,
+                             accelerationFactor,
+                             attackMoveDecayFactor,
+                             reboundFactor,
+                             exp,
+                             attackWaitTime,
+                             weapon,
+                             map);
+    return witch;
 }
 
 int Witch::getExp() {

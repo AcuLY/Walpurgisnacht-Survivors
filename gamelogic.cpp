@@ -1,20 +1,18 @@
 #include "gamelogic.h"
 
-GameLogic::GameLogic(QObject* parent) : QObject{parent} {
+GameLogic::GameLogic(MagicalGirlEnum playerSelection, QObject* parent) : QObject{parent} {
     QWidget* window = qobject_cast<QWidget*>(parent);
 
     workerThread = new QThread;
 
     map = new Map(FRICTION, window);
 
-    RemoteWeapon* weapon = new RemoteWeapon(500, 5, 3, 10, 1000, true, map);
-    //MeleeWeapon* weapon = new MeleeWeapon(5, 200, 100, true, map);
-    player = new MagicalGirl("lufuck", 5, 10, 1, 5, 0.5, 0.1, 0, weapon, map);
+    player = MagicalGirl::loadMagicalGirlFromJson(playerSelection, map);
     connect(player, &Character::attackPerformed, this, &GameLogic::storeAttack); // 角色攻击
 
     // 设置初始中心位置
-    QPoint initViewpoint(player->geometry().width() / 2, player->geometry().height() / 2);
-    map->updateObstacle(initViewpoint);
+    QPoint initViewport(player->geometry().width() / 2, player->geometry().height() / 2);
+    map->updateObstacle(initViewport);
 
     // 局内强化系统
     enhancementManager = new EnhancementManager(player, window);
@@ -62,9 +60,9 @@ void GameLogic::startGame() {
 }
 
 void GameLogic::updateSurvivalTime() {
-    survivalTime -= 1;
+    survivalTimeLeft -= 1;
 
-    if (survivalTime < 0) {
+    if (survivalTimeLeft < 0) {
         emit gameWin();
     }
 }
@@ -88,10 +86,15 @@ void GameLogic::moveBullets() {
 }
 
 void GameLogic::updateMapFlowField() {
+    // 如果玩家两次在一个格子就不更新流场
+    if (map->getGridCornerPos(player->getPos()) == lastPlayerPos) {
+        return;
+    }
+
     static QTime lastCallTime = QTime::currentTime();
     QTime currentTime = QTime::currentTime();
 
-    int interval = 100;
+    int interval = 200;
 
     if (lastCallTime.msecsTo(currentTime) >= interval) {
         lastCallTime = currentTime;
@@ -116,6 +119,8 @@ void GameLogic::updateMapFlowField() {
 
         workerThread->start();
     }
+
+    lastPlayerPos = map->getGridCornerPos(player->getPos());
 }
 
 void GameLogic::handleCharacterCollision() {
@@ -138,15 +143,12 @@ void GameLogic::handleCharacterCollision() {
 }
 
 void GameLogic::addWitch(QPoint& viewport) {
-    int ifAddWitch = QRandomGenerator::global()->generate() % 100;
-    if (ifAddWitch < 90) {
+    int typeIndex = Witch::chooseWitch((survivalTime - survivalTimeLeft) / survivalTime);
+    if (typeIndex == -1) {
         return;
     }
 
-    //RemoteWeapon* weapon = new RemoteWeapon(3, 10, 3, 3000, 800, false, map);
-    MeleeWeapon* weapon = new MeleeWeapon(5, 200, 10, false, map);
-    auto newWitch = new Witch("witch", 10, 20, 1, 1, 1, 0.5, 20, 1000, weapon, map);
-
+    Witch* newWitch = Witch::loadWitchFromJson(typeIndex, map);
     connect(newWitch, &Witch::attackPerformed, this, &GameLogic::storeAttack);
 
     int edge = QRandomGenerator::global()->bounded(0, 4);
@@ -358,6 +360,20 @@ void GameLogic::handleOutOfBoundryObject() {
         } else {
             ++bulletIt;
         }
+    }
+}
+
+void GameLogic::handlePlayerRecover() {
+    if (player->getIsReadyToRecover()) {
+        player->recoverHealth();
+    }
+}
+
+void GameLogic::checkIfPlayerDie() {
+    int manaLeft = player->getCurrentMana();
+
+    if (manaLeft <= 0) {
+        emit gameOver();
     }
 }
 

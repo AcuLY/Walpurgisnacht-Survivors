@@ -12,6 +12,7 @@ SOURCES += \
     attack.cpp \
     attackrange.cpp \
     character.cpp \
+    characterselectwindow.cpp \
     direction.cpp \
     enhancement.cpp \
     gamelogic.cpp \
@@ -20,6 +21,7 @@ SOURCES += \
     main.cpp \
     mainwindow.cpp \
     map.cpp \
+    pausewindow.cpp \
     third_party/perlinnoise.cpp \
     utils.cpp \
     weapon.cpp \
@@ -29,6 +31,7 @@ HEADERS += \
     attack.h \
     attackrange.h \
     character.h \
+    characterselectwindow.h \
     direction.h \
     enhancement.h \
     gamelogic.h \
@@ -36,13 +39,16 @@ HEADERS += \
     magicalgirl.h \
     mainwindow.h \
     map.h \
+    pausewindow.h \
     third_party/perlinnoise.h \
     utils.h \
     weapon.h \
     witch.h
 
 FORMS += \
-    mainwindow.ui
+    characterselectwindow.ui \
+    mainwindow.ui \
+    pausewindow.ui
 
 # Default rules for deployment.
 qnx: target.path = /tmp/$${TARGET}/bin
@@ -51,3 +57,6 @@ else: unix:!android: target.path = /opt/$${TARGET}/bin
 
 DISTFILES += \
     data/enhancement/normal_enhancement.json
+
+RESOURCES += \
+    res.qrc

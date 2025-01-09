@@ -1,0 +1,13 @@
+[
+    {
+        
+    },
+    {
+        "isRemoteWeapon": true,
+        "bulletVelocity": 20,
+        "bulletSize": 5,
+        "damage": 5,
+        "attackInterval": 500,
+        "rangeSize": 1000
+    }
+]

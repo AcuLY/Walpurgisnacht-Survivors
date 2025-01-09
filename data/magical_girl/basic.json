@@ -6,7 +6,20 @@
         "maxHealth": 100,
         "maxVelocity": 3,
         "accelerationFactor": 0.2,
+        "attackMoveDecayFactor": 0.5,
         "reboundFactor": 0.8,
         "mana": 10
+    },
+    {
+        "name": "Homura",
+        "width": 10,
+        "height": 15,
+        "maxHealth": 100,
+        "maxVelocity": 2,
+        "accelerationFactor": 0.3,
+        "attackMoveDecayFactor": 0.5,
+        "reboundFactor": 0.8,
+        "maxMana": 100,
+        "recoverRate": 0.01
     }
 ]
