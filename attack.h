@@ -11,7 +11,7 @@ class Attack : public QWidget {
     Q_OBJECT
 
 protected:
-    QPoint pos;
+    QPoint pos; // 是中心位置不是左上角位置
     double size;
     AttackRange *range;
     double damage;

@@ -66,7 +66,7 @@ public:
 
 class MeleeWeapon : public Weapon {
 protected:
-    int validTime = 200;
+    int validTime = 16;
 
     WeaponType getType() override;
 

@@ -1,15 +1,15 @@
 #include "gamewindow.h"
 #include <QDebug>
 
-GameWindow::GameWindow(QWidget *parent) : QWidget{parent} {
+GameWindow::GameWindow(MagicalGirlEnum playerSelection, QWidget *parent) : QWidget{parent} {
     this->setFixedSize(parent->geometry().width(), parent->geometry().height());
-    this->setAutoFillBackground(true); // 防止新窗口和旧窗口重叠
 
     setFocusPolicy(Qt::StrongFocus);
     setFocus(); // 获取焦点
 
-    gameLogic = new GameLogic();
+    gameLogic = new GameLogic(playerSelection);
     connect(gameLogic, &GameLogic::gameWin, this, &GameWindow::onGameWin);
+    connect(gameLogic, &GameLogic::gameOver, this, &GameWindow::onGameOver);
 
     logicTimer = new QTimer(this);
     connect(logicTimer, &QTimer::timeout, this, &GameWindow::updateGameLogic);
@@ -128,6 +128,10 @@ void GameWindow::updateGameLogic() {
     gameLogic->handleAttack();
     totalAttackTime += timer.elapsed();
 
+    gameLogic->checkIfPlayerDie();
+
+    gameLogic->handlePlayerRecover();
+
     timer.start();
     gameLogic->handleBulletMapCollision();
     totalBulletMapColliTime += timer.elapsed();
@@ -230,17 +234,24 @@ void GameWindow::onClosePauseWindow(bool isGameContinued) {
         if (status == PauseStatus::GamePause) {
             isGamePaused = false;
         } else {
-            this->close();
-
+            this->deleteLater();
             emit startNewGame();
         }
     } else {
-        this->close();
+        qDebug() << "end game";
+        this->deleteLater();
     }
 }
 
 void GameWindow::onGameWin() {
     pauseWindow->setStatus(PauseStatus::GameWin);
+    pauseWindow->show();
+
+    isGamePaused = true;
+}
+
+void GameWindow::onGameOver() {
+    pauseWindow->setStatus(PauseStatus::GameLose);
     pauseWindow->show();
 
     isGamePaused = true;

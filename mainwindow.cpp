@@ -21,11 +21,14 @@ void MainWindow::onGameStart() {
     connect(characterSelectWindow,
             &CharacterSelectWindow::playerSelectedSignal,
             this,
-            &MainWindow::onPlayerSelected);
+            &MainWindow::onPlayerSelected,
+            Qt::UniqueConnection); // 使用 uniqueconnnection，不然会重复绑定
 }
 
-void MainWindow::onPlayerSelected(MagicalGirlEnum player) {
-    gameWindow = new GameWindow(this);
+void MainWindow::onPlayerSelected(MagicalGirlEnum playerSelection) {
+    lastPlayerSelection = playerSelection;
+
+    gameWindow = new GameWindow(playerSelection, this);
     connect(gameWindow, &GameWindow::startNewGame, this, &MainWindow::onRestartGame); // 重开
     gameWindow->show();
 
@@ -33,7 +36,7 @@ void MainWindow::onPlayerSelected(MagicalGirlEnum player) {
 }
 
 void MainWindow::onRestartGame() {
-    gameWindow = new GameWindow(this);
+    gameWindow = new GameWindow(lastPlayerSelection, this);
     connect(gameWindow, &GameWindow::startNewGame, this, &MainWindow::onRestartGame); // 重开
     gameWindow->show();
 }

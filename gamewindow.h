@@ -39,7 +39,7 @@ private:
     PauseWindow *pauseWindow;
 
 public:
-    explicit GameWindow(QWidget *parent = nullptr);
+    explicit GameWindow(MagicalGirlEnum playerSelection, QWidget *parent = nullptr);
 
 protected:
     void keyPressEvent(QKeyEvent *event) override;
@@ -58,6 +58,7 @@ private slots:
 public slots:
     void onClosePauseWindow(bool isGameContinued);
     void onGameWin();
+    void onGameOver();
 
 signals:
     void startNewGame();

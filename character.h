@@ -27,6 +27,7 @@ protected:
 
     double maxVelocity;
     double accelerationFactor;
+    double attackMoveDecayFactor;
     double reboundFactor;
 
     QPointF velocity = QPointF(0, 0);
@@ -44,6 +45,7 @@ public:
                        double maxHealth,
                        double maxVelocity,
                        double accelerationFactor,
+                       double attackMoveDecayFactor,
                        double reboundFactor,
                        Weapon *weapon,
                        QWidget *parent = nullptr);

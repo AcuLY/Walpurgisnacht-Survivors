@@ -56,8 +56,8 @@ Bullet::Bullet(QPoint initPos,
     : Attack(initPos, size, damage, isPlayerSide, validTime, parent) {
     range = new CircleRange(size);
 
-    prevPos.setX(initPos.x() - size);
-    prevPos.setY(initPos.y() - size);
+    prevPos.setX(initPos.x());
+    prevPos.setY(initPos.y());
 }
 
 QPoint &Bullet::getPrevPos() {
@@ -73,23 +73,23 @@ void Bullet::setVelocity(QPointF v) {
 }
 
 void Bullet::moveActively() {
-    prevPos.setX(this->x());
-    prevPos.setY(this->y());
+    prevPos.setX(pos.x());
+    prevPos.setY(pos.y());
     this->move(this->x() + velocity.x(), this->y() + velocity.y());
-    pos.setX(this->x());
-    pos.setY(this->y());
+    pos.setX(pos.x() + velocity.x());
+    pos.setY(pos.y() + velocity.y());
 
     velocity += acceleration;
 }
 
 bool Bullet::isHit(const QRectF &targetRect) {
-    QPointF curPos(this->x(), this->y());
+    QPointF curPos = pos;
     QPainterPath track = range->createTrack(curPos, prevPos);
     return track.intersects(targetRect);
 }
 
 bool Bullet::isHit(const QPainterPath &path) {
-    QPointF curPos(this->x(), this->y());
+    QPointF curPos = pos;
     QPainterPath track = range->createTrack(curPos, prevPos);
 
     return track.intersects(path);

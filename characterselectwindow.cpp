@@ -3,6 +3,7 @@
 
 CharacterSelectWindow::CharacterSelectWindow(QWidget *parent)
     : QWidget(parent), ui(new Ui::CharacterSelectWindow) {
+    qDebug() << "create select window";
     ui->setupUi(this);
 
     this->setFixedSize(parent->geometry().width(), parent->geometry().height());
@@ -33,6 +34,6 @@ CharacterSelectWindow::~CharacterSelectWindow() {
     delete ui;
 }
 
-void CharacterSelectWindow::onPlayerSelected(MagicalGirlEnum player) {
-    emit playerSelectedSignal(player);
+void CharacterSelectWindow::onPlayerSelected(MagicalGirlEnum playerSelection) { // 传递角色编号
+    emit playerSelectedSignal(playerSelection);
 }

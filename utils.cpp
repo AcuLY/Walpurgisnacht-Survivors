@@ -21,8 +21,6 @@ QJsonArray FileUtils::loadJsonFile(const QString &path) {
     if (!file.open(QIODevice::ReadOnly)) {
         qWarning() << "Failed to open file:" << path;
 
-        qDebug() << QFile::exists("ui_mainwindow.h");
-
         return QJsonArray();
     }
 

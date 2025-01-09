@@ -29,11 +29,11 @@ EnhancementManager::EnhancementManager(MagicalGirl *player, QObject *parent)
     : QObject(parent), player(player) {
     QJsonArray normalEnhancementJsons = FileUtils::loadJsonFile(
         "./data/enhancement/normal_enhancements.json");
-    for (const QJsonValue &value : normalEnhancementJsons) {
-        QJsonObject json = value.toObject();
-        Enhancement *e = new Enhancement(json);
-        normalEnhancements.append(e);
-    }
+    // for (const QJsonValue &value : normalEnhancementJsons) {
+    //     QJsonObject json = value.toObject();
+    //     Enhancement *e = new Enhancement(json);
+    //     normalEnhancements.append(e);
+    // }
 }
 
 Enhancement *EnhancementManager::generateNormalEnhancement(int level) {
@@ -53,9 +53,4 @@ void EnhancementManager::damageEnhancement(double enhancement) {
     Weapon *weapon = player->getWeapon();
     double curDamage = weapon->getDamage();
     weapon->setDamage(curDamage + enhancement);
-}
-
-void EnhancementManager::healthEnhancement(double enhancement) {
-    double curMaxHealth = player->getMaxHealth();
-    player->setMaxHealth(curMaxHealth + enhancement);
 }

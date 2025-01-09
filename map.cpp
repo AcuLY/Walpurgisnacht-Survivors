@@ -17,6 +17,10 @@ Map::~Map() {
     delete pn;
 }
 
+QPoint Map::getGridCornerPos(QPoint pos) const {
+    return pos - getOffset(pos);
+}
+
 QPoint Map::getOffset(const QPoint &pos) const {
     int offsetX = (pos.x() % GRID_SIZE + GRID_SIZE) % GRID_SIZE;
     int offsetY = (pos.y() % GRID_SIZE + GRID_SIZE) % GRID_SIZE;
@@ -26,8 +30,8 @@ QPoint Map::getOffset(const QPoint &pos) const {
 QPoint Map::getIndex(const QPoint &pos) const {
     QPoint offset = getOffset(pos);
     QPoint grid = pos - offset;
-    int xIndex = (grid.x() - lastViewPoint.x() + CACHE_WIDTH / 2) / GRID_SIZE;
-    int yIndex = (grid.y() - lastViewPoint.y() + CACHE_HEIGHT / 2) / GRID_SIZE;
+    int xIndex = (grid.x() - lastViewPort.x() + CACHE_WIDTH / 2) / GRID_SIZE;
+    int yIndex = (grid.y() - lastViewPort.y() + CACHE_HEIGHT / 2) / GRID_SIZE;
 
     // 边界检查
     xIndex = qBound(0, xIndex, CACHE_COL - 1);
@@ -124,8 +128,6 @@ void Map::updateFlowField(const QPoint &targetPos) {
             flowField[j][i] = optimalDir;
         }
     }
-
-    qDebug() << "update flow" << QDateTime::currentDateTime();
 }
 
 Direction Map::getFlow(const QPoint &pos) const {
@@ -137,12 +139,12 @@ double Map::getFriction() const {
     return friction;
 }
 
-void Map::render(QPainter *painter, const QPoint &viewpoint) const {
+void Map::render(QPainter *painter, const QPoint &viewport) const {
     painter->setPen(Qt::black);
     painter->setBrush(Qt::green);
 
-    int gridX = viewpoint.x() - viewpoint.x() % GRID_SIZE - GRID_SIZE;
-    int gridY = viewpoint.y() - viewpoint.y() % GRID_SIZE - GRID_SIZE;
+    int gridX = viewport.x() - viewport.x() % GRID_SIZE - GRID_SIZE;
+    int gridY = viewport.y() - viewport.y() % GRID_SIZE - GRID_SIZE;
 
     painter->drawRect(QRect(gridX, gridY, MAP_WIDTH + GRID_SIZE * 10, MAP_HEIGHT * 10));
     painter->setBrush(Qt::gray);
@@ -198,8 +200,8 @@ void Map::render(QPainter *painter, const QPoint &viewpoint) const {
 }
 
 bool Map::isOutOfBoundry(const QPoint &pos) const {
-    QRect validRange(lastViewPoint.x() - CACHE_WIDTH / 2,
-                     lastViewPoint.y() - CACHE_HEIGHT / 2,
+    QRect validRange(lastViewPort.x() - CACHE_WIDTH / 2,
+                     lastViewPort.y() - CACHE_HEIGHT / 2,
                      CACHE_WIDTH,
                      CACHE_HEIGHT);
     return !validRange.contains(pos);
@@ -223,25 +225,25 @@ bool Map::isOnlyPadding(const QPoint &pos) const {
     return !isObstacle(pos) && isObstaclePadding(pos);
 }
 
-void Map::updateObstacle(const QPoint &viewpoint) {
+void Map::updateObstacle(const QPoint &viewport) {
     int safeWidth = MAP_WIDTH * (CACHE_MAGNIFICATION - 2) / 2,
         safeHeight = MAP_HEIGHT * (CACHE_MAGNIFICATION - 2) / 2;
-    QRect safeRange(lastViewPoint.x() - safeWidth / 2,
-                    lastViewPoint.y() - safeHeight / 2,
+    QRect safeRange(lastViewPort.x() - safeWidth / 2,
+                    lastViewPort.y() - safeHeight / 2,
                     safeWidth,
                     safeHeight);
-    if (safeRange.contains(viewpoint)) {
+    if (safeRange.contains(viewport)) {
         return;
     }
 
     // 清空 padding
     obstaclePaddingCache = QVector<QVector<bool>>(CACHE_ROW, QVector<bool>(CACHE_COL, false));
 
-    lastViewPoint = viewpoint;
+    lastViewPort = viewport;
 
-    QPoint offset = getOffset(viewpoint);
-    int startX = viewpoint.x() - offset.x() - CACHE_WIDTH / 2;
-    int startY = viewpoint.y() - offset.y() - CACHE_HEIGHT / 2;
+    QPoint offset = getOffset(viewport);
+    int startX = viewport.x() - offset.x() - CACHE_WIDTH / 2;
+    int startY = viewport.y() - offset.y() - CACHE_HEIGHT / 2;
 
     for (int j = 0; j < CACHE_ROW; j++) {
         for (int i = 0; i < CACHE_COL; i++) {
@@ -262,7 +264,7 @@ void Map::updateObstacle(const QPoint &viewpoint) {
         }
     }
 
-    updateFlowField(viewpoint);
+    updateFlowField(viewport);
 }
 
 QPainterPath Map::getPartialPath(const QPoint begin, const QPoint end) {

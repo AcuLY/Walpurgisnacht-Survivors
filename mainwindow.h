@@ -23,6 +23,8 @@ public:
 private:
     Ui::MainWindow *ui;
 
+    MagicalGirlEnum lastPlayerSelection; // 记录上次选择的角色，用于直接重开
+
     CharacterSelectWindow *characterSelectWindow;
     GameWindow *gameWindow;
 

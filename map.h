@@ -42,7 +42,7 @@ private:
     double friction;
 
     PerlinNoise *pn;
-    QPoint lastViewPoint = QPoint(99999, 99999); // 设一个比较大的初值, 使初始化的时候可以生成
+    QPoint lastViewPort = QPoint(99999, 99999); // 设一个比较大的初值, 使初始化的时候可以生成地图
 
     QPoint getOffset(const QPoint &pos) const;
     QPoint getIndex(const QPoint &pos) const;
@@ -54,6 +54,8 @@ public:
     explicit Map(double friction, QWidget *parent = nullptr);
     ~Map();
 
+    QPoint getGridCornerPos(QPoint pos) const; // 获得当前这格左上角的位置
+
     double getFriction() const;
 
     void render(QPainter *painter, const QPoint &pos) const;
@@ -64,7 +66,7 @@ public:
     bool isObstaclePadding(const QPoint &pos) const;
     bool isOnlyObstacle(const QPoint &pos) const;
     bool isOnlyPadding(const QPoint &pos) const;
-    void updateObstacle(const QPoint &viewpoint);
+    void updateObstacle(const QPoint &viewport);
 
     QPainterPath getPartialPath(const QPoint begin, const QPoint end);
 

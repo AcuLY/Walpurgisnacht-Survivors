@@ -21,7 +21,7 @@ void PauseWindow::setStatus(PauseStatus status) {
     // 根据游戏状态调整按钮
     if (status == PauseStatus::GamePause) {
         ui->label->setText("游戏暂停");
-        ui->continueGame->setText("重新游戏");
+        ui->continueGame->setText("继续游戏");
     }
     if (status == PauseStatus::GameLose) {
         ui->label->setText("游戏失败");

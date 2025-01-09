@@ -7,12 +7,13 @@ Character::Character(QString name,
                      double maxHealth,
                      double maxVelocity,
                      double accelerationFactor,
+                     double attackMoveDecayFactor,
                      double reboundFactor,
                      Weapon *weapon,
                      QWidget *parent)
     : QWidget(parent), name(name), width(width), height(height), maxHealth(maxHealth),
       maxVelocity(maxVelocity), accelerationFactor(accelerationFactor),
-      reboundFactor(reboundFactor), weapon(weapon) {
+      attackMoveDecayFactor(attackMoveDecayFactor), reboundFactor(reboundFactor), weapon(weapon) {
     setFixedSize(width, height);
     currentHealth = maxHealth;
 }
@@ -103,6 +104,12 @@ void Character::updateVelocity() {
     if (prevVelocity <= maxVelocity && curVelocity > maxVelocity) {
         velocity.setX(velocity.x() * maxVelocity / curVelocity);
         velocity.setY(velocity.y() * maxVelocity / curVelocity);
+    }
+
+    // 攻击时移动衰减
+    if (!weapon->isCooldownFinished()) {
+        velocity.setX(velocity.x() * attackMoveDecayFactor);
+        velocity.setY(velocity.y() * attackMoveDecayFactor);
     }
 }
 
@@ -249,7 +256,7 @@ void Character::performAttack(Character *target) {
 
     double degree = facingDegree;
     if (target) {
-        degree = MathUtils::calculateDegree(this->getPos(), target->getPos());
+        degree = MathUtils::calculateDegree(getPos(), target->getPos());
     }
 
     if (weapon->getType() == Weapon::WeaponType::Remote) {
