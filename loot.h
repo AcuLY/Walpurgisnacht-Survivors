@@ -17,8 +17,8 @@ public:
     void moveToPlayer(QPoint&& playerPos);
 
 private:
-    double velocity;
-    double acceleration = 0.5;
+    double velocity = -5;
+    double acceleration = 1;
 
     bool isInPickRange = false; // 进入拾取范围
     bool isPicked = false;      // 拾取完毕

@@ -11,7 +11,7 @@ class Attack : public QWidget {
     Q_OBJECT
 
 protected:
-    QPoint pos; // 是中心位置不是左上角位置
+    QPointF pos; // 是中心位置不是左上角位置
     double size;
     AttackRange *range;
     double damage;
@@ -45,7 +45,7 @@ protected:
     QPointF velocity;
     QPointF acceleration = QPointF(0, 0);
 
-    QPoint prevPos;
+    QPointF prevPos;
 
 public:
     explicit Bullet(QPoint initPos,
@@ -55,7 +55,7 @@ public:
                     int validTime,
                     QWidget *parent = nullptr);
 
-    QPoint &getPrevPos();
+    QPoint getPrevPos();
 
     void setAcceleration(QPointF a);
     void setVelocity(QPointF v);

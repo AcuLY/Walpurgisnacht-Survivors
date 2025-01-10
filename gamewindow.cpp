@@ -191,6 +191,11 @@ void GameWindow::paintEvent(QPaintEvent *event) {
     qint64 renderMapTime = timer.elapsed();
     timer.start();
 
+    auto loots = gameLogic->getLoots();
+    for (auto it = loots.begin(); it != loots.end(); ++it) {
+        painter.fillRect((*it)->geometry(), Qt::yellow);
+    }
+
     MagicalGirl *player = gameLogic->getPlayer();
     painter.fillRect(player->geometry(), Qt::white);
     qint64 renderPlayerTime = timer.elapsed();
@@ -215,11 +220,6 @@ void GameWindow::paintEvent(QPaintEvent *event) {
         painter.fillPath((*it)->createPath(), Qt::red);
     }
     qint64 renderSlashesTime = timer.elapsed();
-
-    auto loots = gameLogic->getLoots();
-    for (auto it = loots.begin(); it != loots.end(); ++it) {
-        painter.fillRect((*it)->geometry(), Qt::yellow);
-    }
 
     // 最后统一输出所有时间
     // qDebug() << "render map:" << renderMapTime;

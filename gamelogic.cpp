@@ -390,6 +390,16 @@ void GameLogic::handleOutOfBoundryObject() {
             ++bulletIt;
         }
     }
+
+    for (auto it = loots.begin(); it != loots.end();) {
+        QPoint pos((*it)->x(), (*it)->y());
+        if (map->isOutOfBoundry(pos)) {
+            delete *it;
+            it = loots.erase(it);
+        } else {
+            ++it;
+        }
+    }
 }
 
 void GameLogic::handlePlayerRecover() {

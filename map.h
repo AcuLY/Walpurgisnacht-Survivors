@@ -68,7 +68,7 @@ public:
     bool isOnlyPadding(const QPoint &pos) const;
     void updateObstacle(const QPoint &viewport);
 
-    QPainterPath getPartialPath(const QPoint begin, const QPoint end);
+    QPainterPath getPartialPath(const QPoint start, const QPoint end);
 
     void updateFlowField(const QPoint &targetPos);
     Direction getFlow(const QPoint &pos) const;

@@ -267,22 +267,37 @@ void Map::updateObstacle(const QPoint &viewport) {
     updateFlowField(viewport);
 }
 
-QPainterPath Map::getPartialPath(const QPoint begin, const QPoint end) {
+QPainterPath Map::getPartialPath(const QPoint start, const QPoint end) {
     QPainterPath path;
 
-    QPoint beginOffset = getOffset(begin), endOffset = getOffset(end);
+    QPoint startOffset = getOffset(start), endOffset = getOffset(end);
+    QPoint startGrid = start - startOffset, endGrid = end - endOffset;
 
-    int stepX = (end - begin).x() > 0 ? GRID_SIZE : -GRID_SIZE;
-    int stepY = (end - begin).y() > 0 ? GRID_SIZE : -GRID_SIZE;
+    int dx = std::abs(startGrid.x() - endGrid.x()), dy = std::abs(startGrid.y() - endGrid.y());
+    int err = dx - dy;
 
-    int endX = (end - endOffset).x();
-    int endY = (end - endOffset).y();
+    int stepX = (end - start).x() > 0 ? GRID_SIZE : -GRID_SIZE;
+    int stepY = (end - start).y() > 0 ? GRID_SIZE : -GRID_SIZE;
 
-    for (int x = (begin - beginOffset).x(); (stepX > 0 ? x <= endX : x >= endX); x += stepX) {
-        for (int y = (begin - beginOffset).y(); (stepY > 0 ? y <= endY : y >= endY); y += stepY) {
-            if (isObstacle(QPoint(x, y))) {
-                path.addRect(x, y, GRID_SIZE, GRID_SIZE);
-            }
+    QPoint cur = startGrid;
+    // 使用 Bresenham 算法计算两格之间是否有障碍物
+    while (true) {
+        if (isObstacle(cur)) {
+            path.addRect(cur.x(), cur.y(), GRID_SIZE, GRID_SIZE);
+        }
+
+        if (cur == endGrid) {
+            break;
+        }
+
+        int e2 = 2 * err;
+        if (e2 > -dy) {
+            err -= dy;
+            cur.setX(cur.x() + stepX);
+        }
+        if (e2 < dx) {
+            err += dx;
+            cur.setY(cur.y() + stepY);
         }
     }
 

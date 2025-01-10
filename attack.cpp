@@ -20,7 +20,7 @@ Attack::~Attack() {
 }
 
 QPoint Attack::getPos() const {
-    return pos;
+    return QPoint(pos.x(), pos.y());
 }
 
 AttackRange *Attack::getRange() const {
@@ -56,12 +56,11 @@ Bullet::Bullet(QPoint initPos,
     : Attack(initPos, size, damage, isPlayerSide, validTime, parent) {
     range = new CircleRange(size);
 
-    prevPos.setX(initPos.x());
-    prevPos.setY(initPos.y());
+    prevPos = initPos;
 }
 
-QPoint &Bullet::getPrevPos() {
-    return prevPos;
+QPoint Bullet::getPrevPos() {
+    return QPoint(prevPos.x(), prevPos.y());
 }
 
 void Bullet::setAcceleration(QPointF a) {
@@ -73,9 +72,10 @@ void Bullet::setVelocity(QPointF v) {
 }
 
 void Bullet::moveActively() {
-    prevPos.setX(pos.x());
-    prevPos.setY(pos.y());
-    this->move(this->x() + velocity.x(), this->y() + velocity.y());
+    prevPos = pos;
+
+    this->move(pos.x() + velocity.x() - size / 2, pos.y() + velocity.y() - size / 2); //
+
     pos.setX(pos.x() + velocity.x());
     pos.setY(pos.y() + velocity.y());
 
@@ -85,6 +85,7 @@ void Bullet::moveActively() {
 bool Bullet::isHit(const QRectF &targetRect) {
     QPointF curPos = pos;
     QPainterPath track = range->createTrack(curPos, prevPos);
+
     return track.intersects(targetRect);
 }
 

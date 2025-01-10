@@ -18,17 +18,15 @@ void Loot::moveToPlayer(QPoint &&playerPos) {
         return;
     }
 
-    QPoint prevPos(this->x(), this->y());
+    QPoint curPos(this->x(), this->y());
+    int dis = MathUtils::euclideanDistance(curPos, playerPos);
 
     double degree = MathUtils::calculateDegree(QPoint(this->x(), this->y()), playerPos);
     QPointF movement = MathUtils::velocityDecomQPointF(velocity, degree);
     this->move(this->x() + movement.x(), this->y() + movement.y());
 
-    QPoint curPos(this->x(), this->y());
-
-    // 是否穿过了玩家位置，即被拾取
-    if ((playerPos.x() - curPos.x()) * (playerPos.x() - prevPos.x()) < 0
-        || (playerPos.y() - curPos.x()) * (playerPos.y() - prevPos.y()) < 0) {
+    // 与玩家的距离小于速度时必定被拾取
+    if (dis < velocity) {
         isPicked = true;
         onLootPicked();
     }
