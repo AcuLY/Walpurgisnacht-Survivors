@@ -29,11 +29,20 @@ MagicalGirl::MagicalGirl(QString name,
     inAttackTimer->setInterval(outAttackInterval);
     inAttackTimer->setSingleShot(true);
     connect(inAttackTimer, &QTimer::timeout, this, [this] { isInAttack = false; });
+    // 受击后无敌帧计时器
+    invincibleTimer = new QTimer(this);
+    invincibleTimer->setInterval(invincibleFrameInterval);
+    invincibleTimer->setSingleShot(true);
+    connect(invincibleTimer, &QTimer::timeout, this, [this] { isInvincible = false; });
     // 回血间隔计算器
     recoverTimer = new QTimer(this);
     recoverTimer->setInterval(recoverInterval);
     recoverTimer->setSingleShot(true);
     connect(recoverTimer, &QTimer::timeout, this, [this] { isOnRecoverCooldown = false; });
+    // 连击间隔计算器
+    multiAttackTimer = new QTimer(this);
+    multiAttackTimer->setInterval(multiAttackInterval);
+    multiAttackTimer->setSingleShot(false);
 }
 
 MagicalGirl *MagicalGirl::loadMagicalGirlFromJson(MagicalGirlEnum playerSelection, Map *map) {
@@ -111,7 +120,70 @@ CircleRange *MagicalGirl::getPickRange() const {
     return pickRange;
 }
 
+void MagicalGirl::performSingleAttack(double targetDegree) {
+    double degree = targetDegree == INF ? facingDegree : targetDegree;
+
+    if (Character::weapon->getType() == Weapon::WeaponType::Remote) {
+        Bullet *bullet = (Bullet *) this->regularAttack(degree);
+        emit attackPerformed(bullet);
+    } else {
+        Slash *slash = (Slash *) this->regularAttack(degree);
+        emit attackPerformed(slash);
+    }
+}
+
+void MagicalGirl::performAttack(QVector<double> targetWitchDegrees) {
+    qDebug() << Character::weapon->isCooldownFinished() << isAttacking;
+    if (!Character::weapon->isCooldownFinished() || isAttacking) {
+        return;
+    }
+
+    isAttacking = true;
+
+    targetDegrees = targetWitchDegrees;
+    targetDegreesIt = targetDegrees.begin();
+    attackTimeLeft = multiAttackTime;
+
+    auto singleAttack = [&] {
+        if (!attackTimeLeft) {
+            Character::weapon->setMultiAttackMode(false);
+            isAttacking = false;
+            multiAttackTimer->stop();
+            return;
+        }
+
+        if (!targetDegrees.empty()) {
+            ++targetDegreesIt;
+
+            if (targetDegreesIt == targetDegrees.end()) {
+                targetDegreesIt = targetDegrees.begin();
+            }
+
+            currentTargetDegree = *targetDegreesIt;
+        }
+
+        if (attackTimeLeft < multiAttackTime) {
+            Character::weapon->setMultiAttackMode(true);
+        }
+
+        performSingleAttack(currentTargetDegree);
+        attackTimeLeft -= 1;
+    };
+
+    connect(multiAttackTimer, &QTimer::timeout, this, singleAttack);
+
+    singleAttack();
+    multiAttackTimer->start();
+}
+
 void MagicalGirl::receiveDamage(double damage) {
+    if (isInvincible) {
+        return;
+    } else {
+        isInvincible = true;
+        invincibleTimer->start();
+    }
+
     if (currentHealth == 0) {
         currentMana -= damage;
         qDebug() << "receive mana damage: " << damage << ", mana left: " << currentMana;
@@ -141,4 +213,8 @@ void MagicalGirl::recoverHealth() {
 
     isOnRecoverCooldown = true;
     recoverTimer->start();
+}
+
+void MagicalGirl::recoverMana(int mana) {
+    currentMana += mana;
 }

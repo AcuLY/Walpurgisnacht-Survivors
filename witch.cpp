@@ -10,6 +10,7 @@ Witch::Witch(QString name,
              double reboundFactor,
              int exp,
              int attackWaitTime,
+             bool isPlayerDirected,
              Weapon *weapon,
              QWidget *parent)
     : Character(name,
@@ -22,18 +23,24 @@ Witch::Witch(QString name,
                 reboundFactor,
                 weapon,
                 parent),
-      exp(exp), attackWaitTime(attackWaitTime) {
+      exp(exp), attackWaitTime(attackWaitTime), isPlayerDirected(isPlayerDirected) {
 }
 
 int Witch::chooseWitch(double progress) {
     //
     double rand = QRandomGenerator::global()->bounded(1.0);
 
-    if (rand < progress) {
+    if (rand < 0.05) {
         return 0;
     }
 
     return -1;
+}
+
+bool Witch::ifDropGriefSeedFragment() {
+    double rand = QRandomGenerator::global()->bounded(1.0);
+
+    return rand < griefSeedFragmentPossibility;
 }
 
 Witch *Witch::loadWitchFromJson(int typeIndex, Map *map) {
@@ -76,6 +83,7 @@ Witch *Witch::loadWitchFromJson(int typeIndex, Map *map) {
     double reboundFactor = basicJson["reboundFactor"].toDouble();
     int exp = basicJson["exp"].toInt();
     int attackWaitTime = basicJson["attackWaitTime"].toInt();
+    bool isPlayerDirected = basicJson["isPlayerDirected"].toBool();
 
     Witch *witch = new Witch(name,
                              width,
@@ -87,6 +95,7 @@ Witch *Witch::loadWitchFromJson(int typeIndex, Map *map) {
                              reboundFactor,
                              exp,
                              attackWaitTime,
+                             isPlayerDirected,
                              weapon,
                              map);
     return witch;
@@ -136,15 +145,33 @@ void Witch::performAttack(Character *player) {
 }
 
 void Witch::moveActively(Direction dir) {
-    // 防卡死
-    if (dir == Direction::Center) {
-        dir = prevDir;
-    } else {
+    if (isPlayerDirected || prevDir == Direction::Center) {
+        auto [moveX, moveY] = ~dir;
+        updateAcceleration(moveX, moveY);
         prevDir = dir;
+    } else {
+        if (isBlocked) {
+            BiDirection moveX = BiDirection::Neutral, moveY = BiDirection::Neutral;
+            while (moveX != BiDirection::Neutral || moveY != BiDirection::Neutral) {
+                int randX = QRandomGenerator::global()->bounded(3),
+                    randY = QRandomGenerator::global()->bounded(3);
+                moveX = static_cast<BiDirection>(randX - 1);
+                moveY = static_cast<BiDirection>(randY - 1);
+            }
+
+            isBlocked = false;
+            updateAcceleration(moveX, moveY);
+            prevDir = pairBiDirection(moveX, moveY);
+        } else {
+            auto [moveX, moveY] = ~prevDir;
+            updateAcceleration(moveX, moveY);
+        }
     }
 
-    auto [moveX, moveY] = ~dir;
-    updateAcceleration(moveX, moveY);
     updateVelocity();
     updatePosition();
+}
+
+void Witch::blocked() {
+    isBlocked = true;
 }

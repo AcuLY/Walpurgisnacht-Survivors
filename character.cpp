@@ -161,6 +161,8 @@ QPair<bool, bool> Character::handleCollision(QRect &otherRect) {
     bool moveX = false, moveY = false;
 
     if (thisRect.intersects(otherRect)) {
+        isBlocked = true;
+
         QRect intersection = thisRect.intersected(otherRect);
 
         if (intersection.width() > intersection.height()) {

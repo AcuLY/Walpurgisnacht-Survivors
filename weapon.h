@@ -17,6 +17,7 @@ protected:
     double rangeSize;
     AttackRange *range;
 
+    bool isMultiAttacking = false;
     bool isOnCooldown = false;
     QTimer cooldownTimer;
 
@@ -38,6 +39,7 @@ public:
     bool getSide();
     virtual WeaponType getType() = 0;
 
+    void setMultiAttackMode(bool isMulti);
     void setDamage(double newDamage);
 
 signals:

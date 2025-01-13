@@ -33,6 +33,10 @@ bool Weapon::getSide() {
     return isPlayerSide;
 }
 
+void Weapon::setMultiAttackMode(bool isMulti) {
+    isMultiAttacking = isMulti;
+}
+
 void Weapon::setDamage(double newDamage) {
     damage = newDamage;
 }
@@ -58,12 +62,14 @@ Weapon::WeaponType RemoteWeapon::getType() {
 }
 
 Bullet *RemoteWeapon::attack(QPoint pos, double degree) {
-    if (isOnCooldown) {
-        return nullptr;
-    }
+    if (!isMultiAttacking) {
+        if (isOnCooldown) {
+            return nullptr;
+        }
 
-    isOnCooldown = true;
-    cooldownTimer.start();
+        isOnCooldown = true;
+        cooldownTimer.start();
+    }
 
     int validTime = rangeSize / bulletVelocity * 16;
     auto newBullet = new Bullet(pos, bulletSize, damage, isPlayerSide, validTime);

@@ -10,6 +10,7 @@
 
 #include "direction.h"
 #include "enhancement.h"
+#include "enhancementwindow.h"
 #include "loot.h"
 #include "magicalgirl.h"
 #include "map.h"
@@ -37,6 +38,7 @@ private:
     int currentExp = 0;
     int nextLevelExp = 100;
     EnhancementManager *enhancementManager;
+    QVector<Enhancement *> randomEnhancements;
 
     double survivalTimeLeft = survivalTime;
 
@@ -76,7 +78,7 @@ public:
 
     void addWitch(QPoint &viewport);
 
-    Witch *playerSelectTarget();
+    QVector<double> playerSelectTarget();
     void playerAttack();
 
     void witchAttack();
@@ -88,7 +90,8 @@ public:
     void handleInvalidAttack();
     void handleOutOfBoundryObject();
 
-    void handlePlayerRecover();
+    void handlePlayerHealthRecover();
+    void handlePlayerManaRecover();
     void checkIfPlayerDie();
 
     void updateExp(int exp);
@@ -98,8 +101,14 @@ signals:
     void gameWin();
     void gameOver();
 
+    void levelUp(QVector<Enhancement *> &enhancements);
+    void levelUpFinish();
+
 private slots:
     void storeAttack(Attack *attack);
+
+public slots:
+    void enhancementSelected(int index);
 };
 
 #endif // GAMELOGIC_H

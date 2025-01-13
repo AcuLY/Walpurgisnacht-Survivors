@@ -44,3 +44,10 @@ Experience::Experience(int value, QPoint pos, QWidget *parent) : Loot(pos, paren
 void Experience::onLootPicked() {
     emit experiencePicked(value);
 }
+
+GriefSeedFragment::GriefSeedFragment(QPoint pos, QWidget *parent) : Loot(pos, parent) {
+}
+
+void GriefSeedFragment::onLootPicked() {
+    emit griefSeedFragmentPicked();
+}

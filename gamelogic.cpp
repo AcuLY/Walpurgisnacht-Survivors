@@ -1,4 +1,5 @@
 #include "gamelogic.h"
+#include <queue>
 
 GameLogic::GameLogic(MagicalGirlEnum playerSelection, QObject* parent) : QObject{parent} {
     QWidget* window = qobject_cast<QWidget*>(parent);
@@ -227,12 +228,14 @@ bool GameLogic::isBlocked(QPoint pos1, QPoint pos2) {
     return !partialPath.isEmpty();
 }
 
-Witch* GameLogic::playerSelectTarget() {
-    double minDistance = INF;
+QVector<double> GameLogic::playerSelectTarget() {
     MagicalGirl* player = getPlayer();
     AttackRange* range = player->getRange();
 
-    Witch* target = nullptr;
+    std::priority_queue<QPair<double, Witch*>,
+                        std::vector<QPair<double, Witch*>>,
+                        std::greater<QPair<double, Witch*>>>
+        distances;
     for (auto it = witches.begin(); it != witches.end(); it++) {
         if (player->getWeaponType() == Weapon::WeaponType::Remote
             && isBlocked(player->getPos(), (*it)->getPos())) {
@@ -242,18 +245,26 @@ Witch* GameLogic::playerSelectTarget() {
         QPointF playerPos(player->x(), player->y()), witchPos((*it)->x(), (*it)->y());
         double distance = MathUtils::euclideanDistance(playerPos, witchPos);
 
-        if (distance < minDistance && range->contains(playerPos, (*it)->geometry())) {
-            minDistance = distance;
-            target = (*it);
+        if (!range->contains(playerPos, (*it)->geometry())) {
+            continue;
         }
+
+        distances.push(qMakePair(distance, (*it)));
     }
 
-    return target;
+    QVector<double> targetWitchDegrees;
+    while (!distances.empty()) {
+        targetWitchDegrees.append(
+            MathUtils::calculateDegree(player->getPos(), distances.top().second->getPos()));
+        distances.pop();
+    }
+
+    return targetWitchDegrees;
 }
 
 void GameLogic::playerAttack() {
-    Witch* target = playerSelectTarget();
-    player->performAttack(target);
+    QVector<double> targetWitchDegrees = playerSelectTarget();
+    player->performAttack(targetWitchDegrees);
 }
 
 void GameLogic::witchAttack() {
@@ -339,10 +350,22 @@ void GameLogic::handleBulletMapCollision() {
 void GameLogic::handleDeadWitches() {
     for (auto witchIt = witches.begin(); witchIt != witches.end();) {
         if ((*witchIt)->getHealth() <= 0) {
+            // 经验掉落
             int witchExp = (*witchIt)->getExp();
             Experience* exp = new Experience(witchExp, (*witchIt)->getPos(), map);
             connect(exp, &Experience::experiencePicked, this, &GameLogic::updateExp);
             loots.insert(exp);
+
+            // 悲叹之种碎片掉落
+            if (Witch::ifDropGriefSeedFragment()) {
+                GriefSeedFragment* gsf = new GriefSeedFragment((*witchIt)->getPos() + QPoint(5, 5),
+                                                               map); // 偏移一点，防止和经验重合
+                connect(gsf,
+                        &GriefSeedFragment::griefSeedFragmentPicked,
+                        this,
+                        &GameLogic::handlePlayerManaRecover);
+                loots.insert(gsf);
+            }
 
             delete *witchIt;
             witchIt = witches.erase(witchIt);
@@ -402,10 +425,14 @@ void GameLogic::handleOutOfBoundryObject() {
     }
 }
 
-void GameLogic::handlePlayerRecover() {
+void GameLogic::handlePlayerHealthRecover() {
     if (player->getIsReadyToRecover()) {
         player->recoverHealth();
     }
+}
+
+void GameLogic::handlePlayerManaRecover() {
+    player->recoverMana(griefSeedFragmentMana);
 }
 
 void GameLogic::checkIfPlayerDie() {
@@ -419,7 +446,7 @@ void GameLogic::checkIfPlayerDie() {
 void GameLogic::updateExp(int exp) {
     currentExp += exp;
 
-    if (currentExp > nextLevelExp) {
+    if (currentExp >= nextLevelExp) {
         currentExp %= nextLevelExp;
         handleLevelUp();
     }
@@ -428,7 +455,8 @@ void GameLogic::updateExp(int exp) {
 void GameLogic::handleLevelUp() {
     level++;
 
-    //Enhancement* e = enhancementManager->generateNormalEnhancement(level);
+    randomEnhancements = enhancementManager->generateEnhancement(player);
+    emit levelUp(randomEnhancements);
 }
 
 void GameLogic::storeAttack(Attack* attack) {
@@ -437,4 +465,10 @@ void GameLogic::storeAttack(Attack* attack) {
     } else if (auto slash = dynamic_cast<Slash*>(attack)) {
         slashes.insert(slash);
     }
+}
+
+void GameLogic::enhancementSelected(int index) {
+    qDebug() << randomEnhancements[index]->getDescription();
+
+    emit levelUpFinish();
 }

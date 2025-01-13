@@ -74,7 +74,9 @@ void Bullet::setVelocity(QPointF v) {
 void Bullet::moveActively() {
     prevPos = pos;
 
-    this->move(pos.x() + velocity.x() - size / 2, pos.y() + velocity.y() - size / 2); //
+    this->move(pos.x() + velocity.x() - size / 2,
+               pos.y() + velocity.y()
+                   - size / 2); // 这里必须用 pos 来计算，不然会出现负数舍入错误的情况
 
     pos.setX(pos.x() + velocity.x());
     pos.setY(pos.y() + velocity.y());

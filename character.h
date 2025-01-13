@@ -29,6 +29,7 @@ protected:
     double accelerationFactor;
     double attackMoveDecayFactor;
     double reboundFactor;
+    bool isBlocked = false;
 
     QPointF velocity = QPointF(0, 0);
     QPointF acceleration = QPointF(0, 0);

@@ -7,13 +7,16 @@
 #include "character.h"
 #include "utils.h"
 #include "weapon.h"
+#include "witch.h"
 
 enum class MagicalGirlEnum { Madoka, Homura, Sayaka, Mami, Kyouko };
 
-const int defaultOutAttackInterval = 5000;
-const int defaultRecoverInterval = 1000;
-const int defaultRecoverManaCost = 3;
-const int defaultPickRangeSize = 300;
+const int defaultOutAttackInterval = 5000; // 脱战时间
+const int defaultIFrameInterval = 2000;    // 无敌帧时间
+const int defaultRecoverInterval = 1000;   // 回血的间隔
+const int defaultRecoverManaCost = 3;      // 回血消耗的蓝
+const int defaultPickRangeSize = 300;      // 拾取范围
+const int multiAttackInterval = 32;        // 连击间隔
 
 class MagicalGirl : public Character {
     Q_OBJECT
@@ -28,11 +31,22 @@ protected:
     bool isInAttack = false;
     QTimer *inAttackTimer;
 
+    bool isInvincible = false;
+    int invincibleFrameInterval = defaultIFrameInterval;
+    QTimer *invincibleTimer;
+
     bool isOnRecoverCooldown = false;
     QTimer *recoverTimer;
 
     int recoverManaCost = defaultRecoverManaCost;
     double recoverRate;
+
+    QVector<double> targetDegrees;
+    QVector<double>::Iterator targetDegreesIt;
+    double currentTargetDegree = INF;
+    int attackTimeLeft;
+    int multiAttackTime = 3; // 连击次数
+    QTimer *multiAttackTimer;
 
     Weapon *weapon;
 
@@ -61,9 +75,13 @@ public:
 
     CircleRange *getPickRange() const;
 
+    void performSingleAttack(double targetDegree);
+    void performAttack(QVector<double> targetWitchDegrees);
+
     void receiveDamage(double damage);
 
     void recoverHealth();
+    void recoverMana(int mana);
 
 signals:
 };

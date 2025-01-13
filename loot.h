@@ -41,4 +41,15 @@ signals:
     void experiencePicked(int value);
 };
 
+class GriefSeedFragment : public Loot {
+    Q_OBJECT
+public:
+    explicit GriefSeedFragment(QPoint pos, QWidget* parent = nullptr);
+
+private:
+    void onLootPicked() override;
+signals:
+    void griefSeedFragmentPicked();
+};
+
 #endif // LOOT_H
