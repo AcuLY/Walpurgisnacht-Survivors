@@ -10,6 +10,7 @@
 #include <cmath>
 
 #include "gamelogic.h"
+#include "global.h"
 #include "pausewindow.h"
 
 const int WINDOW_WIDTH = 1280;
@@ -27,6 +28,7 @@ class GameWindow : public QWidget {
 private:
     QPoint viewport = QPoint(0, 0);
 
+    Global *global;
     GameLogic *gameLogic;
 
     QSet<int> pressedKeys;
@@ -41,7 +43,7 @@ private:
     EnhancementWindow *enhancementWindow;
 
 public:
-    explicit GameWindow(MagicalGirlEnum playerSelection, QWidget *parent = nullptr);
+    explicit GameWindow(Global *global, MagicalGirlEnum playerSelection, QWidget *parent = nullptr);
 
 protected:
     void keyPressEvent(QKeyEvent *event) override;

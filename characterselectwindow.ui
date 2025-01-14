@@ -29,10 +29,27 @@
    <enum>Qt::LayoutDirection::LeftToRight</enum>
   </property>
   <property name="autoFillBackground">
-   <bool>true</bool>
+   <bool>false</bool>
   </property>
   <property name="styleSheet">
-   <string notr="true">QPushButton#madoka {
+   <string notr="true">QWidget#CharacterSelectWindow {
+	background-color: white;
+    background-image: url(:/images/ui/background);
+    background-position: center;
+    background-repeat: no-repeat;
+    background-attachment: fixed;
+}
+
+QLabel {
+    background: transparent; 
+}
+
+QPushButton#exit {
+	text-align: center;
+    background: transparent; 
+}
+
+QPushButton#madoka {
 	border-width: 10;
 	border-image: url(:/images/ui/border) 50 stretch
 }
@@ -80,8 +97,8 @@ QPushButton#kyouko {
       <widget class="QPushButton" name="exit">
        <property name="font">
         <font>
-         <family>Wingdings</family>
-         <pointsize>21</pointsize>
+         <family>汉仪像素入侵 U</family>
+         <pointsize>24</pointsize>
         </font>
        </property>
        <property name="styleSheet">
@@ -102,7 +119,7 @@ QPushButton#kyouko {
        </property>
        <property name="sizeHint" stdset="0">
         <size>
-         <width>300</width>
+         <width>250</width>
          <height>20</height>
         </size>
        </property>
@@ -118,7 +135,7 @@ QPushButton#kyouko {
        </property>
        <property name="font">
         <font>
-         <family>Wingdings</family>
+         <family>汉仪像素入侵 U</family>
          <pointsize>64</pointsize>
         </font>
        </property>

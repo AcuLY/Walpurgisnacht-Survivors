@@ -40,7 +40,10 @@ public:
     virtual WeaponType getType() = 0;
 
     void setMultiAttackMode(bool isMulti);
-    void setDamage(double newDamage);
+
+    void increaseDamage(double value);         // 提高伤害，加法
+    void decreaseAttackInterval(double value); // 提高攻速，乘法
+    void increaseRangeSize(double value);      // 扩大范围，乘法
 
 signals:
 };
@@ -64,6 +67,9 @@ public:
     double getBulletSize() const;
 
     Bullet *attack(QPoint pos, double degree);
+
+    void increaseBulletVelocity(double value); // 增加子弹大小，乘法
+    void increaseBulletSize(double value);     // 增加子弹速度，乘法
 };
 
 class MeleeWeapon : public Weapon {

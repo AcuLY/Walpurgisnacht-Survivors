@@ -96,6 +96,7 @@ public:
     void decreaseOutAttackInterval(double value);  // 减少脱战时间，乘法
     void increaseInvincibleInterval(double value); // 增加无敌时间，乘法
     void increaseManaRecoverBonus(int value);      // 增加回蓝量，加法
+    void increaseMaxMana(int value);               // 增加最大蓝量，加法
     void increaseMaxVelocity(int value);           // 增加最大移速，加法
     void decreaseAttackDecay(double value);        // 减少攻击移速衰减，加法
     void increasePickRange(double value);          // 增加拾取范围，乘法

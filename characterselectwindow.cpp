@@ -7,10 +7,12 @@ CharacterSelectWindow::CharacterSelectWindow(QWidget *parent)
     ui->setupUi(this);
 
     this->setFixedSize(parent->geometry().width(), parent->geometry().height());
-    this->setAutoFillBackground(true); // 防止新窗口和旧窗口重叠
 
     // 返回
-    connect(ui->exit, &QPushButton::clicked, this, [this] { this->hide(); });
+    connect(ui->exit, &QPushButton::clicked, this, [this] {
+        this->hide();
+        emit backToMenu();
+    });
 
     // 选择角色事件
     connect(ui->madoka, &QPushButton::clicked, this, [this] {

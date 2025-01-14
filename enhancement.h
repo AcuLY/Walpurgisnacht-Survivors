@@ -58,6 +58,7 @@ private:
     void healthRecoverManaCostEnhancement(double value); // 增加回血耗蓝
     void outAttackIntervalEnhancement(double value);     // 增加脱战速度
     void invincibilityIntervalEnhancement(double value); // 增加无敌时间长度
+    void maxManaEnhancement(double value);               // 提高最大蓝量
     void manaRecoverEnhancement(double value);           // 增加回蓝速度
 
     // 移动类

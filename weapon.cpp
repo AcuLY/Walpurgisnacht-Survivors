@@ -37,8 +37,19 @@ void Weapon::setMultiAttackMode(bool isMulti) {
     isMultiAttacking = isMulti;
 }
 
-void Weapon::setDamage(double newDamage) {
-    damage = newDamage;
+void Weapon::increaseDamage(double value) {
+    damage += value;
+}
+
+void Weapon::decreaseAttackInterval(double value) {
+    attackInterval *= value;
+    cooldownTimer.setInterval(attackInterval);
+}
+
+void Weapon::increaseRangeSize(double value) {
+    rangeSize *= value;
+    delete range;
+    range = new CircleRange(rangeSize);
 }
 
 RemoteWeapon::RemoteWeapon(double bulletVelocity,
@@ -78,6 +89,14 @@ Bullet *RemoteWeapon::attack(QPoint pos, double degree) {
     newBullet->setVelocity(v);
 
     return newBullet;
+}
+
+void RemoteWeapon::increaseBulletVelocity(double value) {
+    bulletVelocity *= value;
+}
+
+void RemoteWeapon::increaseBulletSize(double value) {
+    bulletSize *= value;
 }
 
 Weapon::WeaponType MeleeWeapon::getType() {

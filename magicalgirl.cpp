@@ -228,6 +228,7 @@ void MagicalGirl::recoverHealth() {
 
 void MagicalGirl::recoverMana(int mana) {
     currentMana += mana + manaRecoverBonus;
+    currentMana = qMin(currentMana, maxMana);
 }
 
 void MagicalGirl::increaseAttackSpeed(double value) {
@@ -271,6 +272,10 @@ void MagicalGirl::increaseInvincibleInterval(double value) {
 
 void MagicalGirl::increaseManaRecoverBonus(int value) {
     manaRecoverBonus += value;
+}
+
+void MagicalGirl::increaseMaxMana(int value) {
+    maxMana += value;
 }
 
 void MagicalGirl::increaseMaxVelocity(int value) {

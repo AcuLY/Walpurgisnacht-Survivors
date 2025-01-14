@@ -1,13 +1,14 @@
 #include "gamewindow.h"
 #include <QDebug>
 
-GameWindow::GameWindow(MagicalGirlEnum playerSelection, QWidget *parent) : QWidget{parent} {
+GameWindow::GameWindow(Global *global, MagicalGirlEnum playerSelection, QWidget *parent)
+    : QWidget{parent}, global(global) {
     this->setFixedSize(parent->geometry().width(), parent->geometry().height());
 
     setFocusPolicy(Qt::StrongFocus);
     setFocus(); // 获取焦点
 
-    gameLogic = new GameLogic(playerSelection);
+    gameLogic = new GameLogic(global, playerSelection);
     connect(gameLogic, &GameLogic::gameWin, this, &GameWindow::onGameWin);
     connect(gameLogic, &GameLogic::gameOver, this, &GameWindow::onGameOver);
     connect(gameLogic, &GameLogic::levelUp, this, &GameWindow::onLevelUp);
@@ -59,16 +60,16 @@ void GameWindow::keyReleaseEvent(QKeyEvent *event) {
 
 Direction GameWindow::getPlayerMovement() {
     BiDirection moveX = BiDirection::Neutral, moveY = BiDirection::Neutral;
-    if (pressedKeys.contains(Qt::Key_W)) {
+    if (pressedKeys.contains(global->getKeyboardMapping()[GameKey::up])) {
         moveY = BiDirection::Negative;
     }
-    if (pressedKeys.contains(Qt::Key_S)) {
+    if (pressedKeys.contains(global->getKeyboardMapping()[GameKey::down])) {
         moveY = moveY ? BiDirection::Neutral : BiDirection::Positive;
     }
-    if (pressedKeys.contains(Qt::Key_A)) {
+    if (pressedKeys.contains(global->getKeyboardMapping()[GameKey::left])) {
         moveX = BiDirection::Negative;
     }
-    if (pressedKeys.contains(Qt::Key_D)) {
+    if (pressedKeys.contains(global->getKeyboardMapping()[GameKey::right])) {
         moveX = moveX ? BiDirection::Neutral : BiDirection::Positive;
     }
 
@@ -76,7 +77,7 @@ Direction GameWindow::getPlayerMovement() {
 }
 
 bool GameWindow::getPlayerAttack() {
-    return pressedKeys.contains(Qt::Key_Space);
+    return pressedKeys.contains(global->getKeyboardMapping()[GameKey::attack]);
 }
 
 void GameWindow::updateViewport() {
@@ -242,6 +243,10 @@ void GameWindow::paintEvent(QPaintEvent *event) {
 }
 
 void GameWindow::renderFrame() {
+    if (isGamePaused) {
+        return;
+    }
+
     update();
 }
 

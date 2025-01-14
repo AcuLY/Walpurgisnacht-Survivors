@@ -18,6 +18,7 @@ public:
     ~CharacterSelectWindow();
 
 signals:
+    void backToMenu();
     void playerSelectedSignal(MagicalGirlEnum player);
 
 private:

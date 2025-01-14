@@ -63,37 +63,56 @@ void EnhancementManager::applyEnhancement(Enhancement *e) {
 
     if (type == "damageEnhancement") {
         damageEnhancement(e->parameters[0]);
-    } else if (type == "attackSpeedEnhancement") {
+    }
+    if (type == "attackSpeedEnhancement") {
         attackSpeedEnhancement(e->parameters[0]);
-    } else if (type == "attackRangeEnhancement") {
+    }
+    if (type == "attackRangeEnhancement") {
         attackRangeEnhancement(e->parameters[0]);
-    } else if (type == "bulletVelocityEnhancement") {
+    }
+    if (type == "bulletVelocityEnhancement") {
         bulletVelocityEnhancement(e->parameters[0]);
-    } else if (type == "bulletSizeEnhancement") {
+    }
+    if (type == "bulletSizeEnhancement") {
         bulletSizeEnhancement(e->parameters[0]);
-    } else if (type == "multiAttackTimeEnhancement") {
+    }
+    if (type == "multiAttackTimeEnhancement") {
         multiAttackTimeEnhancement(e->parameters[0]);
-    } else if (type == "maxHealthEnhancement") {
+    }
+    if (type == "maxHealthEnhancement") {
         maxHealthEnhancement(e->parameters[0]);
-    } else if (type == "healthRecoverIntervalEnhancement") {
+    }
+    if (type == "healthRecoverIntervalEnhancement") {
         healthRecoverIntervalEnhancement(e->parameters[0]);
-    } else if (type == "healthRecoverRateEnhancement") {
+    }
+    if (type == "healthRecoverRateEnhancement") {
         healthRecoverRateEnhancement(e->parameters[0]);
-    } else if (type == "healthRecoverManaCostEnhancement") {
+    }
+    if (type == "healthRecoverManaCostEnhancement") {
         healthRecoverManaCostEnhancement(e->parameters[0]);
-    } else if (type == "outAttackIntervalEnhancement") {
+    }
+    if (type == "outAttackIntervalEnhancement") {
         outAttackIntervalEnhancement(e->parameters[0]);
-    } else if (type == "invincibilityIntervalEnhancement") {
+    }
+    if (type == "invincibilityIntervalEnhancement") {
         invincibilityIntervalEnhancement(e->parameters[0]);
-    } else if (type == "manaRecoverEnhancement") {
+    }
+    if (type == "maxManaEnhancement") {
+        maxManaEnhancement(e->parameters[0]);
+    }
+    if (type == "manaRecoverEnhancement") {
         manaRecoverEnhancement(e->parameters[0]);
-    } else if (type == "maxVelocityEnhancement") {
+    }
+    if (type == "maxVelocityEnhancement") {
         maxVelocityEnhancement(e->parameters[0]);
-    } else if (type == "attackDecayEnhancement") {
+    }
+    if (type == "attackDecayEnhancement") {
         attackDecayEnhancement(e->parameters[0]);
-    } else if (type == "pickupRangeEnhancement") {
+    }
+    if (type == "pickupRangeEnhancement") {
         pickupRangeEnhancement(e->parameters[0]);
-    } else if (type == "experienceGainEnhancement") {
+    }
+    if (type == "experienceGainEnhancement") {
         experienceGainEnhancement(e->parameters[0]);
     }
 }
@@ -144,6 +163,10 @@ void EnhancementManager::outAttackIntervalEnhancement(double value) {
 
 void EnhancementManager::invincibilityIntervalEnhancement(double value) {
     player->increaseInvincibleInterval(value);
+}
+
+void EnhancementManager::maxManaEnhancement(double value) {
+    player->increaseMaxMana(value);
 }
 
 void EnhancementManager::manaRecoverEnhancement(double value) {
