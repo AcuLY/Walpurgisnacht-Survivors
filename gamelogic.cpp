@@ -444,10 +444,12 @@ void GameLogic::checkIfPlayerDie() {
 }
 
 void GameLogic::updateExp(int exp) {
-    currentExp += exp;
+    currentExp += exp + player->getExperienceBonus();
 
     if (currentExp >= nextLevelExp) {
         currentExp %= nextLevelExp;
+        nextLevelExp *= nextLevelExpFactor;
+
         handleLevelUp();
     }
 }
@@ -468,7 +470,7 @@ void GameLogic::storeAttack(Attack* attack) {
 }
 
 void GameLogic::enhancementSelected(int index) {
-    qDebug() << randomEnhancements[index]->getDescription();
+    enhancementManager->applyEnhancement(randomEnhancements[index]);
 
     emit levelUpFinish();
 }

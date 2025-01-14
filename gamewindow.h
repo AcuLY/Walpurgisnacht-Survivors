@@ -38,6 +38,8 @@ private:
     bool isGamePaused = false;
     PauseWindow *pauseWindow;
 
+    EnhancementWindow *enhancementWindow;
+
 public:
     explicit GameWindow(MagicalGirlEnum playerSelection, QWidget *parent = nullptr);
 
@@ -59,6 +61,9 @@ public slots:
     void onClosePauseWindow(bool isGameContinued);
     void onGameWin();
     void onGameOver();
+
+    void onLevelUp(QVector<Enhancement *> &enhancements);
+    void onLevelUpFinished();
 
 signals:
     void startNewGame();

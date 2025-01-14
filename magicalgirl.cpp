@@ -116,6 +116,10 @@ bool MagicalGirl::getIsReadyToRecover() const {
     return !isInAttack && !isOnRecoverCooldown;
 }
 
+int MagicalGirl::getExperienceBonus() const {
+    return experienceBonus;
+}
+
 CircleRange *MagicalGirl::getPickRange() const {
     return pickRange;
 }
@@ -123,7 +127,7 @@ CircleRange *MagicalGirl::getPickRange() const {
 void MagicalGirl::performSingleAttack(double targetDegree) {
     double degree = targetDegree == INF ? facingDegree : targetDegree;
 
-    if (Character::weapon->getType() == Weapon::WeaponType::Remote) {
+    if (weapon->getType() == Weapon::WeaponType::Remote) {
         Bullet *bullet = (Bullet *) this->regularAttack(degree);
         emit attackPerformed(bullet);
     } else {
@@ -133,20 +137,20 @@ void MagicalGirl::performSingleAttack(double targetDegree) {
 }
 
 void MagicalGirl::performAttack(QVector<double> targetWitchDegrees) {
-    qDebug() << Character::weapon->isCooldownFinished() << isAttacking;
-    if (!Character::weapon->isCooldownFinished() || isAttacking) {
+    if (!weapon->isCooldownFinished() || isAttacking) {
         return;
     }
 
     isAttacking = true;
 
     targetDegrees = targetWitchDegrees;
+    targetDegreeUpdated = true;
     targetDegreesIt = targetDegrees.begin();
     attackTimeLeft = multiAttackTime;
 
     auto singleAttack = [&] {
         if (!attackTimeLeft) {
-            Character::weapon->setMultiAttackMode(false);
+            weapon->setMultiAttackMode(false);
             isAttacking = false;
             multiAttackTimer->stop();
             return;
@@ -162,8 +166,15 @@ void MagicalGirl::performAttack(QVector<double> targetWitchDegrees) {
             currentTargetDegree = *targetDegreesIt;
         }
 
+        if (targetDegreeUpdated && !targetDegrees.empty()) {
+            targetDegreesIt = targetDegrees.begin();
+            currentTargetDegree = *targetDegreesIt;
+
+            targetDegreeUpdated = false;
+        }
+
         if (attackTimeLeft < multiAttackTime) {
-            Character::weapon->setMultiAttackMode(true);
+            weapon->setMultiAttackMode(true);
         }
 
         performSingleAttack(currentTargetDegree);
@@ -216,5 +227,66 @@ void MagicalGirl::recoverHealth() {
 }
 
 void MagicalGirl::recoverMana(int mana) {
-    currentMana += mana;
+    currentMana += mana + manaRecoverBonus;
+}
+
+void MagicalGirl::increaseAttackSpeed(double value) {
+    weapon->decreaseAttackInterval(value);
+
+    multiAttackInterval *= value;
+    multiAttackTimer->setInterval(multiAttackInterval);
+}
+
+void MagicalGirl::increaseMultiAttackTime(int value) {
+    multiAttackTime += value;
+}
+
+void MagicalGirl::increaseMaxHealth(int value) {
+    maxHealth += value;
+}
+
+void MagicalGirl::decreaseRecoverInterval(double value) {
+    recoverInterval *= value;
+    recoverTimer->setInterval(recoverInterval);
+}
+
+void MagicalGirl::increaseRecoverRate(double value) {
+    recoverRate += value;
+}
+
+void MagicalGirl::decreaseRecoverManaCost(int value) {
+    recoverManaCost -= value;
+    recoverManaCost = qMax(recoverManaCost, 1);
+}
+
+void MagicalGirl::decreaseOutAttackInterval(double value) {
+    outAttackInterval *= value;
+    inAttackTimer->setInterval(outAttackInterval);
+}
+
+void MagicalGirl::increaseInvincibleInterval(double value) {
+    invincibleFrameInterval *= value;
+    invincibleTimer->setInterval(invincibleFrameInterval);
+}
+
+void MagicalGirl::increaseManaRecoverBonus(int value) {
+    manaRecoverBonus += value;
+}
+
+void MagicalGirl::increaseMaxVelocity(int value) {
+    maxVelocity += value;
+}
+
+void MagicalGirl::decreaseAttackDecay(double value) {
+    attackMoveDecayFactor += value;
+}
+
+void MagicalGirl::increasePickRange(double value) {
+    pickRangeSize *= value;
+    delete pickRange;
+    pickRange = new CircleRange(pickRangeSize);
+}
+
+void MagicalGirl::increaseExperienceBonus(int value) {
+    experienceBonus += value;
 }

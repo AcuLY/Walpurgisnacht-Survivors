@@ -13,10 +13,10 @@ enum class MagicalGirlEnum { Madoka, Homura, Sayaka, Mami, Kyouko };
 
 const int defaultOutAttackInterval = 5000; // 脱战时间
 const int defaultIFrameInterval = 2000;    // 无敌帧时间
-const int defaultRecoverInterval = 1000;   // 回血的间隔
+const int defaultRecoverInterval = 3000;   // 回血的间隔
 const int defaultRecoverManaCost = 3;      // 回血消耗的蓝
-const int defaultPickRangeSize = 300;      // 拾取范围
-const int multiAttackInterval = 32;        // 连击间隔
+const int defaultPickRangeSize = 100;      // 拾取范围
+const int defaultMultiAttackInterval = 32; // 连击间隔
 
 class MagicalGirl : public Character {
     Q_OBJECT
@@ -41,14 +41,17 @@ protected:
     int recoverManaCost = defaultRecoverManaCost;
     double recoverRate;
 
+    int manaRecoverBonus = 0;
+    int experienceBonus = 0;
+
     QVector<double> targetDegrees;
     QVector<double>::Iterator targetDegreesIt;
+    bool targetDegreeUpdated = false;
     double currentTargetDegree = INF;
     int attackTimeLeft;
+    int multiAttackInterval = defaultMultiAttackInterval;
     int multiAttackTime = 3; // 连击次数
     QTimer *multiAttackTimer;
-
-    Weapon *weapon;
 
     int pickRangeSize = defaultPickRangeSize;
     CircleRange *pickRange = new CircleRange(defaultPickRangeSize);
@@ -72,6 +75,7 @@ public:
     int getCurrentMana() const;
     double getRecoverRate() const;
     bool getIsReadyToRecover() const;
+    int getExperienceBonus() const;
 
     CircleRange *getPickRange() const;
 
@@ -82,6 +86,20 @@ public:
 
     void recoverHealth();
     void recoverMana(int mana);
+
+    void increaseAttackSpeed(double value);        // 增加攻速，乘法
+    void increaseMultiAttackTime(int value);       // 增加连击次数，加法
+    void increaseMaxHealth(int value);             // 增加最大生命，加法
+    void decreaseRecoverInterval(double value);    // 增加回血频率，乘法
+    void increaseRecoverRate(double value);        // 增加每次回血量，加法
+    void decreaseRecoverManaCost(int value);       // 减少回血耗蓝，减法
+    void decreaseOutAttackInterval(double value);  // 减少脱战时间，乘法
+    void increaseInvincibleInterval(double value); // 增加无敌时间，乘法
+    void increaseManaRecoverBonus(int value);      // 增加回蓝量，加法
+    void increaseMaxVelocity(int value);           // 增加最大移速，加法
+    void decreaseAttackDecay(double value);        // 减少攻击移速衰减，加法
+    void increasePickRange(double value);          // 增加拾取范围，乘法
+    void increaseExperienceBonus(int value);       // 增加经验获取，加法
 
 signals:
 };

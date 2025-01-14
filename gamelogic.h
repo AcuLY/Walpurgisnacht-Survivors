@@ -17,6 +17,7 @@
 #include "witch.h"
 
 const double survivalTime = 600.0;
+const double nextLevelExpFactor = 1.2;
 
 class GameLogic : public QObject {
     Q_OBJECT
@@ -36,7 +37,7 @@ private:
 
     int level = 1;
     int currentExp = 0;
-    int nextLevelExp = 100;
+    int nextLevelExp = 50;
     EnhancementManager *enhancementManager;
     QVector<Enhancement *> randomEnhancements;
 

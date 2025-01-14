@@ -10,6 +10,8 @@ GameWindow::GameWindow(MagicalGirlEnum playerSelection, QWidget *parent) : QWidg
     gameLogic = new GameLogic(playerSelection);
     connect(gameLogic, &GameLogic::gameWin, this, &GameWindow::onGameWin);
     connect(gameLogic, &GameLogic::gameOver, this, &GameWindow::onGameOver);
+    connect(gameLogic, &GameLogic::levelUp, this, &GameWindow::onLevelUp);
+    connect(gameLogic, &GameLogic::levelUpFinish, this, &GameWindow::onLevelUpFinished);
 
     logicTimer = new QTimer(this);
     connect(logicTimer, &QTimer::timeout, this, &GameWindow::updateGameLogic);
@@ -32,6 +34,13 @@ GameWindow::GameWindow(MagicalGirlEnum playerSelection, QWidget *parent) : QWidg
                       (WINDOW_HEIGHT - pauseWindow->geometry().height()) / 2);
     pauseWindow->hide();
     connect(pauseWindow, &PauseWindow::closePauseWindow, this, &GameWindow::onClosePauseWindow);
+
+    enhancementWindow = new EnhancementWindow(this);
+    connect(enhancementWindow,
+            &EnhancementWindow::selectEnhancement,
+            gameLogic,
+            &GameLogic::enhancementSelected);
+    enhancementWindow->hide();
 }
 
 void GameWindow::keyPressEvent(QKeyEvent *event) {
@@ -134,7 +143,7 @@ void GameWindow::updateGameLogic() {
 
     gameLogic->checkIfPlayerDie();
 
-    gameLogic->handlePlayerRecover();
+    gameLogic->handlePlayerHealthRecover();
 
     timer.start();
     gameLogic->handleBulletMapCollision();
@@ -156,6 +165,9 @@ void GameWindow::updateGameLogic() {
     if (getPlayerAttack()) {
         gameLogic->playerAttack();
     }
+
+    gameLogic->handleDeadWitches();
+
     gameLogic->witchAttack();
     totalAttackActionTime += timer.elapsed();
 
@@ -264,4 +276,18 @@ void GameWindow::onGameOver() {
     pauseWindow->show();
 
     isGamePaused = true;
+}
+
+void GameWindow::onLevelUp(QVector<Enhancement *> &enhancements) {
+    enhancementWindow->setDescriptions(enhancements);
+    enhancementWindow->show();
+
+    isGamePaused = true;
+}
+
+void GameWindow::onLevelUpFinished() {
+    enhancementWindow->hide();
+    this->setFocus();
+
+    isGamePaused = false;
 }
