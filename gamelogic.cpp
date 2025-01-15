@@ -1,7 +1,8 @@
 #include "gamelogic.h"
 #include <queue>
 
-GameLogic::GameLogic(MagicalGirlEnum playerSelection, QObject* parent) : QObject{parent} {
+GameLogic::GameLogic(Global* global, MagicalGirlEnum playerSelection, QObject* parent)
+    : QObject{parent}, global(global) {
     QWidget* window = qobject_cast<QWidget*>(parent);
 
     workerThread = new QThread;
@@ -13,10 +14,17 @@ GameLogic::GameLogic(MagicalGirlEnum playerSelection, QObject* parent) : QObject
 
     // 设置初始中心位置
     QPoint initViewport(player->geometry().width() / 2, player->geometry().height() / 2);
-    map->updateObstacle(initViewport);
+    map->updateObstacleAndTextureIndex(initViewport);
 
     // 局内强化系统
     enhancementManager = new EnhancementManager(player, window);
+    // 施加全局强化
+    for (int i = 0; i < 6; i++) {
+        auto globalEnhancements = enhancementManager->getGlobalEnhancements();
+        enhancementManager->applyEnhancement(globalEnhancements[i],
+                                             global->getGlobalEnhancementLevel(i));
+    }
+    player->initHealthAndMana();
 }
 
 GameLogic::~GameLogic() {
@@ -61,7 +69,36 @@ QSet<Loot*>& GameLogic::getLoots() {
     return loots;
 }
 
-void GameLogic::startGame() {
+double GameLogic::getHpPercent() const {
+    return double(player->getHealth()) / player->getMaxHealth();
+}
+
+double GameLogic::getMpPercent() const {
+    return double(player->getCurrentMana()) / player->getMaxMana();
+}
+
+double GameLogic::getExpPercent() const {
+    return double(currentExp) / nextLevelExp;
+}
+
+QString GameLogic::getHpText() const {
+    return QString::number(int(player->getHealth())) + " / "
+           + QString::number(int(player->getMaxHealth()));
+}
+
+QString GameLogic::getMpText() const {
+    return QString::number(player->getCurrentMana()) + " / "
+           + QString::number(player->getMaxMana());
+}
+
+QString GameLogic::getExpText() const {
+    return QString::number(currentExp) + " / " + QString::number(nextLevelExp);
+}
+
+QString GameLogic::getSurvivalTimeString() const {
+    int minutes = survivalTimeLeft / 60;
+    int seconds = int(survivalTimeLeft) % 60;
+    return QString("%1:%2").arg(minutes, 2, 10, QChar('0')).arg(seconds, 2, 10, QChar('0'));
 }
 
 void GameLogic::updateSurvivalTime() {
@@ -432,6 +469,10 @@ void GameLogic::handlePlayerHealthRecover() {
 }
 
 void GameLogic::handlePlayerManaRecover() {
+    if (player->getCurrentMana() < minRecoverHealthMana) {
+        return;
+    }
+
     player->recoverMana(griefSeedFragmentMana);
 }
 
@@ -470,7 +511,7 @@ void GameLogic::storeAttack(Attack* attack) {
 }
 
 void GameLogic::enhancementSelected(int index) {
-    enhancementManager->applyEnhancement(randomEnhancements[index]);
+    enhancementManager->applyEnhancement(randomEnhancements[index], 0);
 
     emit levelUpFinish();
 }

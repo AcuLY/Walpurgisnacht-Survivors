@@ -15,6 +15,7 @@ private:
     QString type;
     QString description;
     QVector<double> parameters;
+
     friend class EnhancementManager;
 
 public:
@@ -36,12 +37,15 @@ public:
 
     QVector<Enhancement *> generateEnhancement(MagicalGirl *player);
 
-    void applyEnhancement(Enhancement *e);
+    const QVector<Enhancement *> getGlobalEnhancements() const;
+
+    void applyEnhancement(Enhancement *e, int index);
 
 private:
     MagicalGirl *player;
 
     QVector<Enhancement *> enhancements;
+    QVector<Enhancement *> globalEhancements;
 
     // 攻击类
     void damageEnhancement(double value);      // 提高攻击力

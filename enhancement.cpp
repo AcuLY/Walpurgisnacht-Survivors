@@ -33,6 +33,14 @@ EnhancementManager::EnhancementManager(MagicalGirl *player, QObject *parent)
         Enhancement *e = new Enhancement(json);
         enhancements.append(e);
     }
+
+    QJsonArray globalEnhancementJsons = FileUtils::loadJsonFile(
+        ":/data/enhancement/global_enhancement_jsons");
+    for (const QJsonValue &value : globalEnhancementJsons) {
+        QJsonObject json = value.toObject();
+        Enhancement *e = new Enhancement(json);
+        globalEhancements.append(e);
+    }
 }
 
 QVector<Enhancement *> EnhancementManager::generateEnhancement(MagicalGirl *player) {
@@ -58,62 +66,66 @@ QVector<Enhancement *> EnhancementManager::generateEnhancement(MagicalGirl *play
     return randomEnhancements;
 }
 
-void EnhancementManager::applyEnhancement(Enhancement *e) {
+const QVector<Enhancement *> EnhancementManager::getGlobalEnhancements() const {
+    return globalEhancements;
+}
+
+void EnhancementManager::applyEnhancement(Enhancement *e, int index) {
     QString type = e->getType();
 
     if (type == "damageEnhancement") {
-        damageEnhancement(e->parameters[0]);
+        damageEnhancement(e->parameters[index]);
     }
     if (type == "attackSpeedEnhancement") {
-        attackSpeedEnhancement(e->parameters[0]);
+        attackSpeedEnhancement(e->parameters[index]);
     }
     if (type == "attackRangeEnhancement") {
-        attackRangeEnhancement(e->parameters[0]);
+        attackRangeEnhancement(e->parameters[index]);
     }
     if (type == "bulletVelocityEnhancement") {
-        bulletVelocityEnhancement(e->parameters[0]);
+        bulletVelocityEnhancement(e->parameters[index]);
     }
     if (type == "bulletSizeEnhancement") {
-        bulletSizeEnhancement(e->parameters[0]);
+        bulletSizeEnhancement(e->parameters[index]);
     }
     if (type == "multiAttackTimeEnhancement") {
-        multiAttackTimeEnhancement(e->parameters[0]);
+        multiAttackTimeEnhancement(e->parameters[index]);
     }
     if (type == "maxHealthEnhancement") {
-        maxHealthEnhancement(e->parameters[0]);
+        maxHealthEnhancement(e->parameters[index]);
     }
     if (type == "healthRecoverIntervalEnhancement") {
-        healthRecoverIntervalEnhancement(e->parameters[0]);
+        healthRecoverIntervalEnhancement(e->parameters[index]);
     }
     if (type == "healthRecoverRateEnhancement") {
-        healthRecoverRateEnhancement(e->parameters[0]);
+        healthRecoverRateEnhancement(e->parameters[index]);
     }
     if (type == "healthRecoverManaCostEnhancement") {
-        healthRecoverManaCostEnhancement(e->parameters[0]);
+        healthRecoverManaCostEnhancement(e->parameters[index]);
     }
     if (type == "outAttackIntervalEnhancement") {
-        outAttackIntervalEnhancement(e->parameters[0]);
+        outAttackIntervalEnhancement(e->parameters[index]);
     }
     if (type == "invincibilityIntervalEnhancement") {
-        invincibilityIntervalEnhancement(e->parameters[0]);
+        invincibilityIntervalEnhancement(e->parameters[index]);
     }
     if (type == "maxManaEnhancement") {
-        maxManaEnhancement(e->parameters[0]);
+        maxManaEnhancement(e->parameters[index]);
     }
     if (type == "manaRecoverEnhancement") {
-        manaRecoverEnhancement(e->parameters[0]);
+        manaRecoverEnhancement(e->parameters[index]);
     }
     if (type == "maxVelocityEnhancement") {
-        maxVelocityEnhancement(e->parameters[0]);
+        maxVelocityEnhancement(e->parameters[index]);
     }
     if (type == "attackDecayEnhancement") {
-        attackDecayEnhancement(e->parameters[0]);
+        attackDecayEnhancement(e->parameters[index]);
     }
-    if (type == "pickupRangeEnhancement") {
-        pickupRangeEnhancement(e->parameters[0]);
+    if (type == "pickRangeEnhancement") {
+        pickupRangeEnhancement(e->parameters[index]);
     }
     if (type == "experienceGainEnhancement") {
-        experienceGainEnhancement(e->parameters[0]);
+        experienceGainEnhancement(e->parameters[index]);
     }
 }
 

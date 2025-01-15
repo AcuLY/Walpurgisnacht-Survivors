@@ -6,6 +6,7 @@
 #include "characterselectwindow.h"
 #include "gamewindow.h"
 #include "global.h"
+#include "globalenhancementwindow.h"
 #include "magicalgirl.h"
 
 QT_BEGIN_NAMESPACE
@@ -31,12 +32,16 @@ private:
     MagicalGirlEnum lastPlayerSelection; // 记录上次选择的角色，用于直接重开
 
     CharacterSelectWindow *characterSelectWindow;
+    GlobalEnhancementWindow *globalEnhancementWindow;
     GameWindow *gameWindow;
 
     void onGameStart();
+    void onGlobalEnhancement();
 
     void hideWidgets();
     void showWidgets();
+
+    void updateKeyMappingText();
 
 protected:
     void keyPressEvent(QKeyEvent *event) override;

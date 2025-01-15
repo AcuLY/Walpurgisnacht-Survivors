@@ -6,7 +6,7 @@
 
 #include "utils.h"
 
-const QString saveFilePath = ":/save/save_json";
+const QString saveFilePath = "save.json";
 
 enum GameKey { up, down, left, right, attack, dodge, skill };
 
@@ -25,6 +25,13 @@ public:
 
     const QMap<GameKey, int> &getKeyboardMapping() const;
     void setKeyboardMapping(GameKey key, int value);
+
+    int getGlobalEnhancementLevel(int index) const;
+    void addGlobalEnhancementLevel(int index);
+
+    int getMoney() const;
+    void addMoney(int amount);
+    void useMoney(int amount);
 
 private:
     bool backgroundMusic = true;

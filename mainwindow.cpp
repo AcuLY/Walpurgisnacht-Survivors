@@ -1,4 +1,8 @@
 #include "mainwindow.h"
+#include <QFile>
+#include <QJsonArray>
+#include <QJsonDocument>
+#include <QJsonObject>
 #include "ui_mainwindow.h"
 
 MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWindow) {
@@ -7,15 +11,61 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWi
 
     global = new Global();
 
+    updateKeyMappingText();
+
     connect(ui->startGame, &QPushButton::clicked, this, &MainWindow::onGameStart); // 开始游戏按钮
+    connect(ui->enhancement, &QPushButton::clicked, this, &MainWindow::onGlobalEnhancement);
     connect(ui->quitGame, &QPushButton::clicked, this, &QApplication::quit); // 退出游戏按钮
 
     characterSelectWindow = new CharacterSelectWindow(this);
     characterSelectWindow->hide();
+
+    globalEnhancementWindow = new GlobalEnhancementWindow(global, this);
+    globalEnhancementWindow->hide();
 }
 
 MainWindow::~MainWindow() {
     delete ui;
+
+    // 更新 save.json 文件
+    QJsonObject settings;
+    settings["backgroundMusic"] = global->isBackgroundMusicOn();
+    settings["soundEffect"] = global->isSoundEffectOn();
+    settings["voiceEffect"] = global->isVoiceEffectOn();
+
+    QJsonArray keyboardMapping;
+    auto mapping = global->getKeyboardMapping();
+    keyboardMapping.append(mapping[GameKey::up]);
+    keyboardMapping.append(mapping[GameKey::down]);
+    keyboardMapping.append(mapping[GameKey::left]);
+    keyboardMapping.append(mapping[GameKey::right]);
+    keyboardMapping.append(mapping[GameKey::attack]);
+    keyboardMapping.append(mapping[GameKey::skill]);
+    keyboardMapping.append(mapping[GameKey::dodge]);
+    settings["keyboardMapping"] = keyboardMapping;
+
+    QJsonArray globalEnhancementLevels;
+    for (int i = 0; i < 6; i++) {
+        globalEnhancementLevels.append(global->getGlobalEnhancementLevel(i));
+    }
+
+    QJsonObject rootObject;
+    rootObject["settings"] = settings;
+    rootObject["money"] = global->getMoney();
+    rootObject["globalEnhancementLevels"] = globalEnhancementLevels;
+
+    QJsonArray outerArray;
+    outerArray.append(rootObject);
+
+    QJsonDocument doc(outerArray);
+
+    QFile file(saveFilePath);
+    if (file.open(QIODevice::WriteOnly | QIODevice::Truncate)) {
+        file.write(doc.toJson());
+        file.close();
+    } else {
+        qWarning() << "Failed to open file for writing:" << file.errorString();
+    }
 }
 
 void MainWindow::onGameStart() {
@@ -29,6 +79,16 @@ void MainWindow::onGameStart() {
             Qt::UniqueConnection); // 使用 uniqueconnnection，不然会重复绑定
     connect(characterSelectWindow,
             &CharacterSelectWindow::backToMenu,
+            this,
+            &MainWindow::showWidgets);
+}
+
+void MainWindow::onGlobalEnhancement() {
+    globalEnhancementWindow->show();
+    hideWidgets();
+
+    connect(globalEnhancementWindow,
+            &GlobalEnhancementWindow::backToMenu,
             this,
             &MainWindow::showWidgets);
 }
@@ -47,6 +107,17 @@ void MainWindow::showWidgets() {
     ui->enhancement->show();
     ui->quitGame->show();
     ui->setting->show();
+}
+
+void MainWindow::updateKeyMappingText() {
+    auto mapping = global->getKeyboardMapping();
+    ui->up->setText("上移动：" + QKeySequence(mapping[GameKey::up]).toString());
+    ui->down->setText("下移动：" + QKeySequence(mapping[GameKey::down]).toString());
+    ui->left->setText("左移动：" + QKeySequence(mapping[GameKey::left]).toString());
+    ui->right->setText("右移动：" + QKeySequence(mapping[GameKey::right]).toString());
+    ui->attack->setText("攻击：" + QKeySequence(mapping[GameKey::attack]).toString());
+    ui->skill->setText("技能：" + QKeySequence(mapping[GameKey::skill]).toString());
+    ui->dodge->setText("闪避：" + QKeySequence(mapping[GameKey::dodge]).toString());
 }
 
 void MainWindow::keyPressEvent(QKeyEvent *event) {

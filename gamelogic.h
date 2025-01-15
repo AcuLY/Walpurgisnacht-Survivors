@@ -11,6 +11,7 @@
 #include "direction.h"
 #include "enhancement.h"
 #include "enhancementwindow.h"
+#include "global.h"
 #include "loot.h"
 #include "magicalgirl.h"
 #include "map.h"
@@ -23,6 +24,8 @@ class GameLogic : public QObject {
     Q_OBJECT
 
 private:
+    Global *global;
+
     MagicalGirl *player;
     QPoint lastPlayerPos; // 上次玩家位置，如果玩家两次在同一个格子里则不更新流场
 
@@ -48,12 +51,11 @@ private:
     bool isBlocked(QPoint pos1, QPoint pos2);
 
 public:
-    explicit GameLogic(MagicalGirlEnum playerSelection, QObject *parent = nullptr);
+    explicit GameLogic(Global *global, MagicalGirlEnum playerSelection, QObject *parent = nullptr);
     ~GameLogic();
 
-    void startGame();
-
     void updateSurvivalTime();
+    QString getSurvivalTimeString() const;
 
     int getLevel();
     int getCurrentExp();
@@ -65,6 +67,14 @@ public:
     QSet<Bullet *> &getBullets();
     QSet<Slash *> &getSlashes();
     QSet<Loot *> &getLoots();
+
+    double getHpPercent() const;
+    double getMpPercent() const;
+    double getExpPercent() const;
+
+    QString getHpText() const;
+    QString getMpText() const;
+    QString getExpText() const;
 
     void movePlayer(Direction dir);
     void moveWitches();
