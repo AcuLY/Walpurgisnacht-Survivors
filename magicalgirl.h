@@ -16,7 +16,9 @@ const int defaultIFrameInterval = 2000;    // 无敌帧时间
 const int defaultRecoverInterval = 3000;   // 回血的间隔
 const int defaultRecoverManaCost = 3;      // 回血消耗的蓝
 const int defaultPickRangeSize = 100;      // 拾取范围
-const int defaultMultiAttackInterval = 32; // 连击间隔
+const int defaultMultiAttackInterval = 128; // 连击间隔
+
+const int minRecoverHealthMana = 5; // 自动回血的最小蓝量，小于该值就不回血
 
 class MagicalGirl : public Character {
     Q_OBJECT
@@ -50,7 +52,7 @@ protected:
     double currentTargetDegree = INF;
     int attackTimeLeft;
     int multiAttackInterval = defaultMultiAttackInterval;
-    int multiAttackTime = 3; // 连击次数
+    int multiAttackTime = 8; // 连击次数
     QTimer *multiAttackTimer;
 
     int pickRangeSize = defaultPickRangeSize;
@@ -58,6 +60,8 @@ protected:
 
 public:
     explicit MagicalGirl(QString name,
+                         QString texturePath,
+                         QString texturePathHurt,
                          int width,
                          int height,
                          double maxHealth,
@@ -73,11 +77,14 @@ public:
     static MagicalGirl *loadMagicalGirlFromJson(MagicalGirlEnum playerSelection, Map *map);
 
     int getCurrentMana() const;
+    int getMaxMana() const;
     double getRecoverRate() const;
     bool getIsReadyToRecover() const;
     int getExperienceBonus() const;
 
     CircleRange *getPickRange() const;
+
+    void initHealthAndMana();
 
     void performSingleAttack(double targetDegree);
     void performAttack(QVector<double> targetWitchDegrees);
@@ -102,7 +109,8 @@ public:
     void increasePickRange(double value);          // 增加拾取范围，乘法
     void increaseExperienceBonus(int value);       // 增加经验获取，加法
 
-signals:
+private:
+    void multiAttack();
 };
 
 #endif // MAGICALGIRL_H

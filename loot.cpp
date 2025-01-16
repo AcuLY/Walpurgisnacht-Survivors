@@ -1,4 +1,5 @@
 #include "loot.h"
+#include "qpainter.h"
 
 Loot::Loot(QPoint pos, QWidget *parent) : QWidget{parent} {
     this->setFixedSize(5, 5);
@@ -45,9 +46,17 @@ void Experience::onLootPicked() {
     emit experiencePicked(value);
 }
 
+void Experience::render(QPainter *painter) {
+    painter->drawPixmap(this->pos(), texture);
+}
+
 GriefSeedFragment::GriefSeedFragment(QPoint pos, QWidget *parent) : Loot(pos, parent) {
 }
 
 void GriefSeedFragment::onLootPicked() {
     emit griefSeedFragmentPicked();
+}
+
+void GriefSeedFragment::render(QPainter *painter) {
+    painter->drawPixmap(this->pos(), texture);
 }

@@ -12,7 +12,7 @@
 #include "./third_party/perlinnoise.h"
 #include "direction.h"
 
-const int GRID_SIZE = 20;
+const int GRID_SIZE = 40;
 
 const int MAP_WIDTH = 1280;
 const int MAP_HEIGHT = 720;
@@ -28,13 +28,23 @@ const int CACHE_ROW = CACHE_HEIGHT / GRID_SIZE;
 
 const double FRICTION = 0.2;
 
-const double NOISE_SCALE = 0.006;
+const double TEXTURE_NOISE_SCALE = 0.002;
+const double OBSTACLE_NOISE_SCALE = 0.004;
 const double OBSTACLE_PROPORTION = 0.35;
+
+const int wallTextureTypes = 3;
+const int groundTextureTypes = 50;
 
 class Map : public QWidget {
     Q_OBJECT
 
 private:
+    QVector<QPixmap> wallTileTextures;
+    QVector<QPixmap> groundTileTextures;
+
+    QVector<QVector<int>> textureIndices;
+    int setTextureIndex(int x, int y, int typeNum);
+
     QVector<QVector<bool>> obstacleCache;
     QVector<QVector<bool>> obstaclePaddingCache;
     QVector<QVector<int>> integrationField;
@@ -66,7 +76,7 @@ public:
     bool isObstaclePadding(const QPoint &pos) const;
     bool isOnlyObstacle(const QPoint &pos) const;
     bool isOnlyPadding(const QPoint &pos) const;
-    void updateObstacle(const QPoint &viewport);
+    void updateObstacleAndTextureIndex(const QPoint &viewport);
 
     QPainterPath getPartialPath(const QPoint start, const QPoint end);
 

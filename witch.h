@@ -11,11 +11,26 @@
 const double griefSeedFragmentPossibility = 0.1;
 const int griefSeedFragmentMana = 10;
 
+const double spawnProbLow = 0;     // 进度小于20%时，生成怪物的概率
+const double spawnProbMidLow = 0;  // 进度在20%到50%之间时，生成怪物的概率
+const double spawnProbMidHigh = 0; // 进度在50%到80%之间时，生成怪物的概率
+const double spawnProbHigh = 1.0;  // 进度大于80%时，生成怪物的概率
+
+const double weakMonsterProb = 0.33; // 生成弱怪的概率
+const double midMonsterProb = 0.5; // 生成中等怪的概率（超过0.33但小于0.66的部分）
+const double strongMonsterProb = 0.8; // 生成强怪的概率（超过0.66的部分）
+
+const double thresholdWeakMid = 0.5; // 用于分隔弱怪和中等怪的阈值
+
+enum class WitchEnum { witch1, witch2, witch3, witch4, noWitch = -1 };
+
 class Witch : public Character {
     Q_OBJECT
 
 public:
     explicit Witch(QString name,
+                   QString texturePath,
+                   QString texturePathHurt,
                    int width,
                    int height,
                    double maxHealth,
@@ -29,9 +44,9 @@ public:
                    Weapon *weapon,
                    QWidget *parent = nullptr);
 
-    static int chooseWitch(double progress);
+    static WitchEnum chooseWitch(double progress);
     static bool ifDropGriefSeedFragment();
-    static Witch *loadWitchFromJson(int typeIndex, Map *map);
+    static Witch *loadWitchFromJson(WitchEnum witchIndex, Map *map);
 
     int getExp();
     bool getValidity();

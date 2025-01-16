@@ -54,9 +54,17 @@ Bullet::Bullet(QPoint initPos,
                int validTime,
                QWidget *parent)
     : Attack(initPos, size, damage, isPlayerSide, validTime, parent) {
+    texture = isPlayerSide ? QPixmap(":/images/item/bullet")
+                           : QPixmap(":/images/item/bullet_enemy");
+
     range = new CircleRange(size);
 
     prevPos = initPos;
+}
+
+void Bullet::render(QPainter *painter) {
+    QRect paintRect(pos.x(), pos.y(), size, size);
+    painter->drawPixmap(paintRect, texture);
 }
 
 QPoint Bullet::getPrevPos() {

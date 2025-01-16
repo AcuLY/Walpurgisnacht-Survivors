@@ -76,6 +76,8 @@ public:
     QString getMpText() const;
     QString getExpText() const;
 
+    bool isPlayerReceivingDamage() const;
+
     void movePlayer(Direction dir);
     void moveWitches();
     void moveBullets();
@@ -107,6 +109,8 @@ public:
 
     void updateExp(int exp);
     void handleLevelUp();
+
+    void handleRewards();
 
 signals:
     void gameWin();

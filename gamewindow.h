@@ -22,10 +22,33 @@ const int RENDER_FRAME_TIME = 1000 / RENDER_FPS;
 const int LOGIC_FPS = 60;
 const int LOGIC_FRAME_TIME = 1000 / LOGIC_FPS;
 
+const int HP_MP_BAR_X_OFFSET = 188;
+const int HP_BAR_Y_OFFSET = 29;
+const int MP_BAR_Y_OFFSET = 100;
+const int HP_MP_BAR_WIDTH = 285;
+const int HP_MP_BAR_HEIGHT = 35;
+const int EXP_BAR_Y_OFFSET = 668;
+const int EXP_BAR_WIDTH = 1280;
+const int EXP_BAR_HEIGHT = 52;
+const int SURVIVAL_TIME_RECT_X_OFFSET = 980;
+const int SURVIVAL_ITME_RECT_Y_OFFSET = 18;
+const int SURVIVAL_TIME_RECT_WIDTH = 280;
+const int SURVIVAL_TIME_RECT_HEIGHT = 100;
+
 class GameWindow : public QWidget {
     Q_OBJECT
 
 private:
+    QPixmap bar = QPixmap(":/images/ui/bar");
+    QRect hpBar;
+    QRect mpBar;
+    QRect expBar;
+    QRect survivalTimeRect;
+
+    QPixmap avatar;
+
+    void updateStatusBarParams();
+
     QPoint viewport = QPoint(0, 0);
 
     Global *global;

@@ -8,6 +8,12 @@ GameWindow::GameWindow(Global *global, MagicalGirlEnum playerSelection, QWidget 
     setFocusPolicy(Qt::StrongFocus);
     setFocus(); // 获取焦点
 
+    if (playerSelection == MagicalGirlEnum::Homura) {
+        avatar = QPixmap(":/images/character_avatar/homura_avatar");
+    } else {
+        avatar = QPixmap(":/images/character_avatar/sayaka_avatar");
+    }
+
     gameLogic = new GameLogic(global, playerSelection);
     connect(gameLogic, &GameLogic::gameWin, this, &GameWindow::onGameWin);
     connect(gameLogic, &GameLogic::gameOver, this, &GameWindow::onGameOver);
@@ -42,6 +48,25 @@ GameWindow::GameWindow(Global *global, MagicalGirlEnum playerSelection, QWidget 
             gameLogic,
             &GameLogic::enhancementSelected);
     enhancementWindow->hide();
+}
+
+void GameWindow::updateStatusBarParams() {
+    hpBar = QRect(viewport.x() + HP_MP_BAR_X_OFFSET,
+                  viewport.y() + HP_BAR_Y_OFFSET,
+                  gameLogic->getHpPercent() * HP_MP_BAR_WIDTH,
+                  HP_MP_BAR_HEIGHT);
+    mpBar = QRect(viewport.x() + HP_MP_BAR_X_OFFSET,
+                  viewport.y() + MP_BAR_Y_OFFSET,
+                  gameLogic->getMpPercent() * HP_MP_BAR_WIDTH,
+                  HP_MP_BAR_HEIGHT);
+    expBar = QRect(viewport.x(),
+                   viewport.y() + EXP_BAR_Y_OFFSET,
+                   gameLogic->getExpPercent() * EXP_BAR_WIDTH,
+                   EXP_BAR_HEIGHT);
+    survivalTimeRect = QRect(viewport.x() + SURVIVAL_TIME_RECT_X_OFFSET,
+                             viewport.y() + SURVIVAL_ITME_RECT_Y_OFFSET,
+                             SURVIVAL_TIME_RECT_WIDTH,
+                             SURVIVAL_TIME_RECT_HEIGHT);
 }
 
 void GameWindow::keyPressEvent(QKeyEvent *event) {
@@ -190,8 +215,6 @@ void GameWindow::updateGameLogic() {
 }
 
 void GameWindow::paintEvent(QPaintEvent *event) {
-    QElapsedTimer timer;
-    timer.start();
     Q_UNUSED(event);
 
     QPainter painter(this);
@@ -199,47 +222,80 @@ void GameWindow::paintEvent(QPaintEvent *event) {
     painter.translate(-viewport);
 
     Map *map = gameLogic->getMap();
-    map->updateObstacle(viewport);
+    map->updateObstacleAndTextureIndex(viewport);
     map->render(&painter, viewport);
-    qint64 renderMapTime = timer.elapsed();
-    timer.start();
 
     auto loots = gameLogic->getLoots();
     for (auto it = loots.begin(); it != loots.end(); ++it) {
-        painter.fillRect((*it)->geometry(), Qt::yellow);
+        (*it)->render(&painter);
     }
 
     MagicalGirl *player = gameLogic->getPlayer();
-    painter.fillRect(player->geometry(), Qt::white);
-    qint64 renderPlayerTime = timer.elapsed();
-    timer.start();
+    player->render(&painter);
 
     auto witches = gameLogic->getWitches();
     for (auto it = witches.begin(); it != witches.end(); ++it) {
-        painter.fillRect((*it)->geometry(), Qt::blue);
+        (*it)->render(&painter);
     }
-    qint64 renderWitchesTime = timer.elapsed();
-    timer.start();
 
     auto bullets = gameLogic->getBullets();
     for (auto it = bullets.begin(); it != bullets.end(); ++it) {
-        painter.fillPath((*it)->createPath(), Qt::red);
+        (*it)->render(&painter);
     }
-    qint64 renderBulletsTime = timer.elapsed();
-    timer.start();
 
     auto slashes = gameLogic->getSlashes();
     for (auto it = slashes.begin(); it != slashes.end(); ++it) {
         painter.fillPath((*it)->createPath(), Qt::red);
     }
-    qint64 renderSlashesTime = timer.elapsed();
 
-    // 最后统一输出所有时间
-    // qDebug() << "render map:" << renderMapTime;
-    // qDebug() << "render player:" << renderPlayerTime;
-    // qDebug() << "render witches:" << renderWitchesTime;
-    // qDebug() << "render bullets:" << renderBulletsTime;
-    // qDebug() << "render slashes:" << renderSlashesTime;
+    updateStatusBarParams();
+
+    painter.setPen(QColor(0, 0, 0, 0));
+    painter.setBrush(QColor(236, 0, 45, 180));
+    painter.drawRect(hpBar);
+
+    painter.setBrush(QColor(109, 157, 211, 180));
+    painter.drawRect(mpBar);
+
+    painter.setBrush(QColor(255, 255, 255, 180));
+    painter.drawRect(expBar);
+
+    QString survivalTime = gameLogic->getSurvivalTimeString();
+    painter.setFont(QFont("汉仪像素入侵 U", 64));
+    painter.setBrush(QColor(255, 255, 255, 255));
+    painter.setPen(QColor(255, 255, 255, 255));
+    painter.drawText(survivalTimeRect, Qt::AlignCenter, survivalTime);
+
+    painter.setFont(QFont("汉仪像素入侵 U", 16));
+    painter.drawText(QRect(viewport.x() + HP_MP_BAR_X_OFFSET,
+                           viewport.y() + HP_BAR_Y_OFFSET,
+                           HP_MP_BAR_WIDTH,
+                           HP_MP_BAR_HEIGHT),
+                     Qt::AlignCenter,
+                     gameLogic->getHpText());
+    painter.drawText(QRect(viewport.x() + HP_MP_BAR_X_OFFSET,
+                           viewport.y() + MP_BAR_Y_OFFSET,
+                           HP_MP_BAR_WIDTH,
+                           HP_MP_BAR_HEIGHT),
+                     Qt::AlignCenter,
+                     gameLogic->getMpText());
+    painter.setFont(QFont("汉仪像素入侵 U", 24));
+    painter.setPen(QColor(0, 0, 0));
+    painter.drawText(QRect(viewport.x(),
+                           viewport.y() + EXP_BAR_Y_OFFSET,
+                           EXP_BAR_WIDTH,
+                           EXP_BAR_HEIGHT),
+                     Qt::AlignCenter,
+                     gameLogic->getExpText());
+
+    painter.drawPixmap(viewport.x(), viewport.y(), bar);
+
+    painter.drawPixmap(viewport.x() + 20, viewport.y() + 12, avatar);
+
+    if (gameLogic->isPlayerReceivingDamage()) {
+        painter.setBrush(QColor(255, 0, 0, 32));
+        painter.drawRect(viewport.x(), viewport.y(), WINDOW_WIDTH, WINDOW_HEIGHT);
+    }
 }
 
 void GameWindow::renderFrame() {

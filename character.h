@@ -11,10 +11,15 @@
 
 const int REBOUND_PADDING = 0;
 
+const int RECEIVE_DAMAGE_DISPLAY_INTERVAL = 128;
+
 class Character : public QWidget {
     Q_OBJECT
 
 protected:
+    QPixmap texture;
+    QPixmap textureHurt;
+
     QString name;
 
     QPointF moveAccumulator; // 计算小数部分的位移
@@ -36,11 +41,16 @@ protected:
     double facingDegree = 0;
 
     bool isAttacking = false;
+    bool isReceivingDamage = false;
+
+    QTimer *receiveDamageReceiveTimer;
 
     Weapon *weapon;
 
 public:
     explicit Character(QString name,
+                       QString texturePath,
+                       QString texturePathHurt,
                        int width,
                        int height,
                        double maxHealth,
@@ -51,6 +61,8 @@ public:
                        Weapon *weapon,
                        QWidget *parent = nullptr);
     ~Character();
+
+    void render(QPainter *painter);
 
     QString getName() const;
     double getHealth() const;
@@ -63,6 +75,7 @@ public:
     bool getAttacking() const;
     Weapon *getWeapon() const;
     Weapon::WeaponType getWeaponType() const;
+    bool getIsReceivingDamage() const;
 
     void setAttacking();
 

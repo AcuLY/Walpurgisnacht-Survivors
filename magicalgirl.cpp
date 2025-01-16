@@ -1,6 +1,8 @@
 #include "magicalgirl.h"
 
 MagicalGirl::MagicalGirl(QString name,
+                         QString texturePath,
+                         QString texturePathHurt,
                          int width,
                          int height,
                          double maxHealth,
@@ -13,6 +15,8 @@ MagicalGirl::MagicalGirl(QString name,
                          Weapon *weapon,
                          QWidget *parent)
     : Character(name,
+                texturePath,
+                texturePathHurt,
                 width,
                 height,
                 maxHealth,
@@ -42,7 +46,8 @@ MagicalGirl::MagicalGirl(QString name,
     // 连击间隔计算器
     multiAttackTimer = new QTimer(this);
     multiAttackTimer->setInterval(multiAttackInterval);
-    multiAttackTimer->setSingleShot(false);
+    multiAttackTimer->setSingleShot(true);
+    connect(multiAttackTimer, &QTimer::timeout, this, &MagicalGirl::multiAttack);
 }
 
 MagicalGirl *MagicalGirl::loadMagicalGirlFromJson(MagicalGirlEnum playerSelection, Map *map) {
@@ -79,6 +84,8 @@ MagicalGirl *MagicalGirl::loadMagicalGirlFromJson(MagicalGirlEnum playerSelectio
     }
 
     QString name = basicJson["name"].toString();
+    QString texturePath = basicJson["texturePath"].toString();
+    QString texturePathHurt = basicJson["texturePathHurt"].toString();
     int width = basicJson["width"].toInt();
     int height = basicJson["height"].toInt();
     int maxHealth = basicJson["maxHealth"].toInt();
@@ -90,6 +97,8 @@ MagicalGirl *MagicalGirl::loadMagicalGirlFromJson(MagicalGirlEnum playerSelectio
     double recoverRate = basicJson["recoverRate"].toDouble();
 
     MagicalGirl *player = new MagicalGirl(name,
+                                          texturePath,
+                                          texturePathHurt,
                                           width,
                                           height,
                                           maxHealth,
@@ -108,6 +117,10 @@ int MagicalGirl::getCurrentMana() const {
     return currentMana;
 }
 
+int MagicalGirl::getMaxMana() const {
+    return maxMana;
+}
+
 double MagicalGirl::getRecoverRate() const {
     return recoverRate;
 }
@@ -124,6 +137,11 @@ CircleRange *MagicalGirl::getPickRange() const {
     return pickRange;
 }
 
+void MagicalGirl::initHealthAndMana() {
+    currentHealth = maxHealth;
+    currentMana = maxMana;
+}
+
 void MagicalGirl::performSingleAttack(double targetDegree) {
     double degree = targetDegree == INF ? facingDegree : targetDegree;
 
@@ -134,6 +152,39 @@ void MagicalGirl::performSingleAttack(double targetDegree) {
         Slash *slash = (Slash *) this->regularAttack(degree);
         emit attackPerformed(slash);
     }
+}
+
+void MagicalGirl::multiAttack() {
+    if (!attackTimeLeft) {
+        weapon->setMultiAttackMode(false);
+        isAttacking = false;
+        return;
+    }
+
+    if (!targetDegrees.empty()) {
+        ++targetDegreesIt;
+
+        if (targetDegreesIt == targetDegrees.end()) {
+            targetDegreesIt = targetDegrees.begin();
+        }
+
+        currentTargetDegree = *targetDegreesIt;
+    }
+
+    if (targetDegreeUpdated && !targetDegrees.empty()) {
+        targetDegreesIt = targetDegrees.begin();
+        currentTargetDegree = *targetDegreesIt;
+
+        targetDegreeUpdated = false;
+    }
+
+    if (attackTimeLeft < multiAttackTime) {
+        weapon->setMultiAttackMode(true);
+    }
+
+    performSingleAttack(currentTargetDegree);
+    attackTimeLeft -= 1;
+    multiAttackTimer->start();
 }
 
 void MagicalGirl::performAttack(QVector<double> targetWitchDegrees) {
@@ -148,62 +199,26 @@ void MagicalGirl::performAttack(QVector<double> targetWitchDegrees) {
     targetDegreesIt = targetDegrees.begin();
     attackTimeLeft = multiAttackTime;
 
-    auto singleAttack = [&] {
-        if (!attackTimeLeft) {
-            weapon->setMultiAttackMode(false);
-            isAttacking = false;
-            multiAttackTimer->stop();
-            return;
-        }
-
-        if (!targetDegrees.empty()) {
-            ++targetDegreesIt;
-
-            if (targetDegreesIt == targetDegrees.end()) {
-                targetDegreesIt = targetDegrees.begin();
-            }
-
-            currentTargetDegree = *targetDegreesIt;
-        }
-
-        if (targetDegreeUpdated && !targetDegrees.empty()) {
-            targetDegreesIt = targetDegrees.begin();
-            currentTargetDegree = *targetDegreesIt;
-
-            targetDegreeUpdated = false;
-        }
-
-        if (attackTimeLeft < multiAttackTime) {
-            weapon->setMultiAttackMode(true);
-        }
-
-        performSingleAttack(currentTargetDegree);
-        attackTimeLeft -= 1;
-    };
-
-    connect(multiAttackTimer, &QTimer::timeout, this, singleAttack);
-
-    singleAttack();
-    multiAttackTimer->start();
+    multiAttack();
 }
 
 void MagicalGirl::receiveDamage(double damage) {
     if (isInvincible) {
         return;
-    } else {
-        isInvincible = true;
-        invincibleTimer->start();
     }
+
+    isInvincible = true;
+    invincibleTimer->start();
+
+    isReceivingDamage = true;
+    receiveDamageReceiveTimer->start();
 
     if (currentHealth == 0) {
         currentMana -= damage;
-        qDebug() << "receive mana damage: " << damage << ", mana left: " << currentMana;
     } else if (currentHealth < damage) {
         currentHealth = 0;
-        qDebug() << "receive damage: " << damage << ", no health left";
     } else {
         currentHealth -= damage;
-        qDebug() << "receive damage: " << damage << ", health left: " << currentHealth;
     }
 
     isInAttack = true;
@@ -284,6 +299,7 @@ void MagicalGirl::increaseMaxVelocity(int value) {
 
 void MagicalGirl::decreaseAttackDecay(double value) {
     attackMoveDecayFactor += value;
+    attackMoveDecayFactor = fmin(1, attackMoveDecayFactor);
 }
 
 void MagicalGirl::increasePickRange(double value) {

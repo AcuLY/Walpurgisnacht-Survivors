@@ -42,6 +42,8 @@ class Bullet : public Attack {
     Q_OBJECT
 
 protected:
+    QPixmap texture;
+
     QPointF velocity;
     QPointF acceleration = QPointF(0, 0);
 
@@ -54,6 +56,8 @@ public:
                     bool isPlayerSide,
                     int validTime,
                     QWidget *parent = nullptr);
+
+    void render(QPainter *painter);
 
     QPoint getPrevPos();
 

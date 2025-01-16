@@ -22,17 +22,31 @@
     <height>240</height>
    </size>
   </property>
+  <property name="font">
+   <font>
+    <family>汉仪像素入侵 U</family>
+   </font>
+  </property>
   <property name="windowTitle">
    <string>Form</string>
+  </property>
+  <property name="autoFillBackground">
+   <bool>true</bool>
+  </property>
+  <property name="styleSheet">
+   <string notr="true"/>
   </property>
   <layout class="QVBoxLayout" name="verticalLayout">
    <item>
     <widget class="QLabel" name="label">
      <property name="font">
       <font>
-       <family>Wingdings</family>
+       <family>汉仪像素入侵 U</family>
        <pointsize>57</pointsize>
       </font>
+     </property>
+     <property name="styleSheet">
+      <string notr="true"/>
      </property>
      <property name="text">
       <string>游戏暂停</string>
@@ -73,7 +87,7 @@
        </property>
        <property name="font">
         <font>
-         <family>Wingdings</family>
+         <family>汉仪像素入侵 U</family>
          <pointsize>22</pointsize>
         </font>
        </property>
@@ -111,7 +125,7 @@
        </property>
        <property name="font">
         <font>
-         <family>Wingdings</family>
+         <family>汉仪像素入侵 U</family>
          <pointsize>22</pointsize>
         </font>
        </property>

@@ -1,5 +1,4 @@
 #include "map.h"
-#include "qthread.h"
 #include "utils.h"
 
 Map::Map(double friction, QWidget *parent) : QWidget{parent}, friction(friction) {
@@ -11,6 +10,17 @@ Map::Map(double friction, QWidget *parent) : QWidget{parent}, friction(friction)
     integrationField = QVector<QVector<int>>(CACHE_ROW, QVector<int>(CACHE_COL));
     flowField = QVector<QVector<Direction>>(CACHE_ROW,
                                             QVector<Direction>(CACHE_COL, Direction::Center));
+
+    textureIndices = QVector<QVector<int>>(CACHE_ROW, QVector<int>(CACHE_COL));
+
+    for (int i = 1; i <= wallTextureTypes; i++) {
+        QString path = QString(":/images/map/wall/res/images/map/wall/wall_%1.png").arg(i);
+        wallTileTextures.append(QPixmap(path));
+    }
+    for (int i = 1; i <= groundTextureTypes; i++) {
+        QString path = QString(":/images/map/ground/res/images/map/ground/ground_%1.png").arg(i);
+        groundTileTextures.append(QPixmap(path));
+    }
 }
 
 Map::~Map() {
@@ -19,6 +29,11 @@ Map::~Map() {
 
 QPoint Map::getGridCornerPos(QPoint pos) const {
     return pos - getOffset(pos);
+}
+
+int Map::setTextureIndex(int x, int y, int typeNum) {
+    double noise = pn->noise(x * TEXTURE_NOISE_SCALE, y * TEXTURE_NOISE_SCALE, TEXTURE_NOISE_SCALE);
+    return static_cast<int>(noise * typeNum) % typeNum;
 }
 
 QPoint Map::getOffset(const QPoint &pos) const {
@@ -46,7 +61,9 @@ bool Map::setObstacle(int x, int y) {
         return false;
     }
 
-    double noise = pn->noise(x * NOISE_SCALE, y * NOISE_SCALE, NOISE_SCALE);
+    double noise = pn->noise(x * OBSTACLE_NOISE_SCALE,
+                             y * OBSTACLE_NOISE_SCALE,
+                             OBSTACLE_NOISE_SCALE);
     return noise < OBSTACLE_PROPORTION;
 }
 
@@ -140,61 +157,22 @@ double Map::getFriction() const {
 }
 
 void Map::render(QPainter *painter, const QPoint &viewport) const {
-    painter->setPen(Qt::black);
-    painter->setBrush(Qt::green);
-
     int gridX = viewport.x() - viewport.x() % GRID_SIZE - GRID_SIZE;
     int gridY = viewport.y() - viewport.y() % GRID_SIZE - GRID_SIZE;
-
-    painter->drawRect(QRect(gridX, gridY, MAP_WIDTH + GRID_SIZE * 10, MAP_HEIGHT * 10));
-    painter->setBrush(Qt::gray);
 
     // 取 +1 以渲染右边缘和下边缘
     for (int j = 0; j <= MAP_HEIGHT / GRID_SIZE + 1; j++) {
         for (int i = 0; i <= MAP_WIDTH / GRID_SIZE + 1; i++) {
             QPoint index = getIndex(QPoint(gridX + i * GRID_SIZE, gridY + j * GRID_SIZE));
-            if (!obstacleCache[index.y()][index.x()]) {
-                continue;
-            }
-
             QRect grid(gridX + i * GRID_SIZE, gridY + j * GRID_SIZE, GRID_SIZE, GRID_SIZE);
-            painter->drawRect(grid);
 
-            // QString coordinates
-            //     = QString("(%1, %2)").arg(gridX + i * GRID_SIZE).arg(gridY + j * GRID_SIZE);
+            int textureIndex = textureIndices[index.y()][index.x()];
 
-            // QFont smallFont = painter->font();
-            // smallFont.setPointSize(6); // 设置字体大小为 6（可以根据需要调整）
-
-            // painter->setFont(smallFont);
-
-            // QPoint Findex = getIndex(QPoint(gridX + i * GRID_SIZE, gridY + j * GRID_SIZE));
-            // QString coordinates = QString("");
-            // if (flowField[Findex.y()][Findex.x()] == Direction::North) {
-            //     coordinates = QString("↑");
-            // }
-            // if (flowField[Findex.y()][Findex.x()] == Direction::NorthEast) {
-            //     coordinates = QString("↗");
-            // }
-            // if (flowField[Findex.y()][Findex.x()] == Direction::East) {
-            //     coordinates = QString("→");
-            // }
-            // if (flowField[Findex.y()][Findex.x()] == Direction::SouthEast) {
-            //     coordinates = QString("↘");
-            // }
-            // if (flowField[Findex.y()][Findex.x()] == Direction::South) {
-            //     coordinates = QString("↓");
-            // }
-            // if (flowField[Findex.y()][Findex.x()] == Direction::SouthWest) {
-            //     coordinates = QString("↙");
-            // }
-            // if (flowField[Findex.y()][Findex.x()] == Direction::West) {
-            //     coordinates = QString("←");
-            // }
-            // if (flowField[Findex.y()][Findex.x()] == Direction::NorthWest) {
-            //     coordinates = QString("↖");
-            // }
-            // painter->drawText(grid, Qt::AlignCenter, coordinates);
+            if (!obstacleCache[index.y()][index.x()]) {
+                painter->drawPixmap(grid, groundTileTextures[textureIndex]);
+            } else {
+                painter->drawPixmap(grid, wallTileTextures[textureIndex]);
+            }
         }
     }
 }
@@ -225,7 +203,7 @@ bool Map::isOnlyPadding(const QPoint &pos) const {
     return !isObstacle(pos) && isObstaclePadding(pos);
 }
 
-void Map::updateObstacle(const QPoint &viewport) {
+void Map::updateObstacleAndTextureIndex(const QPoint &viewport) {
     int safeWidth = MAP_WIDTH * (CACHE_MAGNIFICATION - 2) / 2,
         safeHeight = MAP_HEIGHT * (CACHE_MAGNIFICATION - 2) / 2;
     QRect safeRange(lastViewPort.x() - safeWidth / 2,
@@ -250,7 +228,14 @@ void Map::updateObstacle(const QPoint &viewport) {
             bool obstacle = setObstacle(startX + i * GRID_SIZE, startY + j * GRID_SIZE);
             obstacleCache[j][i] = obstacle;
             if (!obstacle) {
+                textureIndices[j][i] = setTextureIndex(startX + i * GRID_SIZE,
+                                                       startY + j * GRID_SIZE,
+                                                       groundTextureTypes);
                 continue;
+            } else {
+                textureIndices[j][i] = setTextureIndex(startX + i * GRID_SIZE,
+                                                       startY + j * GRID_SIZE,
+                                                       wallTextureTypes);
             }
 
             obstacleCache[j][i] = true;

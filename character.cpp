@@ -2,6 +2,8 @@
 #include <QDebug>
 
 Character::Character(QString name,
+                     QString texturePath,
+                     QString texturePathHurt,
                      int width,
                      int height,
                      double maxHealth,
@@ -14,12 +16,31 @@ Character::Character(QString name,
     : QWidget(parent), name(name), width(width), height(height), maxHealth(maxHealth),
       maxVelocity(maxVelocity), accelerationFactor(accelerationFactor),
       attackMoveDecayFactor(attackMoveDecayFactor), reboundFactor(reboundFactor), weapon(weapon) {
+    texture = QPixmap(texturePath);
+    textureHurt = QPixmap(texturePathHurt);
+
     setFixedSize(width, height);
     currentHealth = maxHealth;
+
+    receiveDamageReceiveTimer = new QTimer(this);
+    receiveDamageReceiveTimer->setInterval(RECEIVE_DAMAGE_DISPLAY_INTERVAL);
+    receiveDamageReceiveTimer->setSingleShot(true);
+    connect(receiveDamageReceiveTimer, &QTimer::timeout, this, [this] {
+        isReceivingDamage = false;
+    });
 }
 
 Character::~Character() {
     delete weapon;
+}
+
+void Character::render(QPainter *painter) {
+    if (isReceivingDamage) {
+        painter->drawPixmap(this->x(), this->y(), textureHurt);
+        return;
+    }
+
+    painter->drawPixmap(this->x(), this->y(), texture);
 };
 
 QString Character::getName() const {
@@ -66,6 +87,10 @@ Weapon::WeaponType Character::getWeaponType() const {
     return weapon->getType();
 }
 
+bool Character::getIsReceivingDamage() const {
+    return isReceivingDamage;
+}
+
 void Character::setAttacking() {
     isAttacking = !isAttacking;
 }
@@ -107,7 +132,7 @@ void Character::updateVelocity() {
     }
 
     // 攻击时移动衰减
-    if (!weapon->isCooldownFinished()) {
+    if (!weapon->isCooldownFinished() || isAttacking) {
         velocity.setX(velocity.x() * attackMoveDecayFactor);
         velocity.setY(velocity.y() * attackMoveDecayFactor);
     }
@@ -282,4 +307,7 @@ Attack *Character::regularAttack(double degree) {
 
 void Character::receiveDamage(double damage) {
     currentHealth -= damage;
+
+    isReceivingDamage = true;
+    receiveDamageReceiveTimer->start();
 }

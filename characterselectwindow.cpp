@@ -15,21 +15,21 @@ CharacterSelectWindow::CharacterSelectWindow(QWidget *parent)
     });
 
     // 选择角色事件
-    connect(ui->madoka, &QPushButton::clicked, this, [this] {
-        onPlayerSelected(MagicalGirlEnum::Madoka);
-    });
+    // connect(ui->madoka, &QPushButton::clicked, this, [this] {
+    //     onPlayerSelected(MagicalGirlEnum::Madoka);
+    // });
     connect(ui->homura, &QPushButton::clicked, this, [this] {
         onPlayerSelected(MagicalGirlEnum::Homura);
     });
     connect(ui->sayaka, &QPushButton::clicked, this, [this] {
         onPlayerSelected(MagicalGirlEnum::Sayaka);
     });
-    connect(ui->mami, &QPushButton::clicked, this, [this] {
-        onPlayerSelected(MagicalGirlEnum::Mami);
-    });
-    connect(ui->kyouko, &QPushButton::clicked, this, [this] {
-        onPlayerSelected(MagicalGirlEnum::Kyouko);
-    });
+    // connect(ui->mami, &QPushButton::clicked, this, [this] {
+    //     onPlayerSelected(MagicalGirlEnum::Mami);
+    // });
+    // connect(ui->kyouko, &QPushButton::clicked, this, [this] {
+    //     onPlayerSelected(MagicalGirlEnum::Kyouko);
+    // });
 }
 
 CharacterSelectWindow::~CharacterSelectWindow() {

@@ -95,6 +95,10 @@ QString GameLogic::getExpText() const {
     return QString::number(currentExp) + " / " + QString::number(nextLevelExp);
 }
 
+bool GameLogic::isPlayerReceivingDamage() const {
+    return player->getIsReceivingDamage();
+}
+
 QString GameLogic::getSurvivalTimeString() const {
     int minutes = survivalTimeLeft / 60;
     int seconds = int(survivalTimeLeft) % 60;
@@ -105,6 +109,8 @@ void GameLogic::updateSurvivalTime() {
     survivalTimeLeft -= 1;
 
     if (survivalTimeLeft < 0) {
+        handleRewards();
+
         emit gameWin();
     }
 }
@@ -208,12 +214,14 @@ void GameLogic::handleInRangeLoots() {
 }
 
 void GameLogic::addWitch(QPoint& viewport) {
-    int typeIndex = Witch::chooseWitch((survivalTime - survivalTimeLeft) / survivalTime);
-    if (typeIndex == -1) {
+    double progress = (survivalTime - survivalTimeLeft) / survivalTime;
+    WitchEnum witchIndex = Witch::chooseWitch(progress);
+
+    if (witchIndex == WitchEnum::noWitch) {
         return;
     }
 
-    Witch* newWitch = Witch::loadWitchFromJson(typeIndex, map);
+    Witch* newWitch = Witch::loadWitchFromJson(witchIndex, map);
     connect(newWitch, &Witch::attackPerformed, this, &GameLogic::storeAttack);
 
     int edge = QRandomGenerator::global()->bounded(0, 4);
@@ -480,6 +488,8 @@ void GameLogic::checkIfPlayerDie() {
     int manaLeft = player->getCurrentMana();
 
     if (manaLeft <= 0) {
+        handleRewards();
+
         emit gameOver();
     }
 }
@@ -500,6 +510,10 @@ void GameLogic::handleLevelUp() {
 
     randomEnhancements = enhancementManager->generateEnhancement(player);
     emit levelUp(randomEnhancements);
+}
+
+void GameLogic::handleRewards() {
+    global->addMoney(survivalTime - survivalTimeLeft);
 }
 
 void GameLogic::storeAttack(Attack* attack) {

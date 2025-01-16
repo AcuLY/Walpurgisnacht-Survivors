@@ -103,7 +103,7 @@
        <property name="font">
         <font>
          <family>汉仪像素入侵 U</family>
-         <pointsize>20</pointsize>
+         <pointsize>24</pointsize>
         </font>
        </property>
        <property name="layoutDirection">
@@ -147,7 +147,7 @@
        <property name="font">
         <font>
          <family>汉仪像素入侵 U</family>
-         <pointsize>20</pointsize>
+         <pointsize>24</pointsize>
         </font>
        </property>
        <property name="text">
@@ -185,7 +185,7 @@
        <property name="font">
         <font>
          <family>汉仪像素入侵 U</family>
-         <pointsize>20</pointsize>
+         <pointsize>24</pointsize>
         </font>
        </property>
        <property name="text">
