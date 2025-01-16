@@ -1,8 +1,11 @@
 #include "gamewindow.h"
 #include <QDebug>
 
-GameWindow::GameWindow(Global *global, MagicalGirlEnum playerSelection, QWidget *parent)
-    : QWidget{parent}, global(global) {
+GameWindow::GameWindow(Global *global,
+                       SoundManager *soundManager,
+                       MagicalGirlEnum playerSelection,
+                       QWidget *parent)
+    : QWidget{parent}, soundManager(soundManager), global(global) {
     this->setFixedSize(parent->geometry().width(), parent->geometry().height());
 
     setFocusPolicy(Qt::StrongFocus);
@@ -14,7 +17,7 @@ GameWindow::GameWindow(Global *global, MagicalGirlEnum playerSelection, QWidget 
         avatar = QPixmap(":/images/character_avatar/sayaka_avatar");
     }
 
-    gameLogic = new GameLogic(global, playerSelection);
+    gameLogic = new GameLogic(global, soundManager, playerSelection);
     connect(gameLogic, &GameLogic::gameWin, this, &GameWindow::onGameWin);
     connect(gameLogic, &GameLogic::gameOver, this, &GameWindow::onGameOver);
     connect(gameLogic, &GameLogic::levelUp, this, &GameWindow::onLevelUp);
@@ -42,7 +45,7 @@ GameWindow::GameWindow(Global *global, MagicalGirlEnum playerSelection, QWidget 
     pauseWindow->hide();
     connect(pauseWindow, &PauseWindow::closePauseWindow, this, &GameWindow::onClosePauseWindow);
 
-    enhancementWindow = new EnhancementWindow(this);
+    enhancementWindow = new EnhancementWindow(soundManager, this);
     connect(enhancementWindow,
             &EnhancementWindow::selectEnhancement,
             gameLogic,
@@ -72,6 +75,7 @@ void GameWindow::updateStatusBarParams() {
 void GameWindow::keyPressEvent(QKeyEvent *event) {
     if (event->key() == Qt::Key_Escape) {
         pauseWindow->setStatus(PauseStatus::GamePause);
+        soundManager->pauseBackgroundMusic();
         pauseWindow->show();
         isGamePaused = true;
     }
@@ -119,73 +123,37 @@ void GameWindow::updateGameLogic() {
         return;
     }
 
-    static qint64 totalAddWitchTime = 0;
-    static qint64 totalMovePlayerTime = 0;
-    static qint64 totalUpdateFlowTime = 0;
-    static qint64 totalMoveWitchesTime = 0;
-    static qint64 totalMoveBulletsTime = 0;
-    static qint64 totalCharaColliTime = 0;
-    static qint64 totalAttackTime = 0;
-    static qint64 totalBulletMapColliTime = 0;
-    static qint64 totalDeadWitchesTime = 0;
-    static qint64 totalInvalidAttackTime = 0;
-    static qint64 totalOobTime = 0;
-    static qint64 totalAttackActionTime = 0;
-
     QElapsedTimer timer;
 
-    // 逻辑操作
-    timer.start();
     gameLogic->addWitch(viewport);
-    totalAddWitchTime += timer.elapsed();
 
-    timer.start();
     gameLogic->movePlayer(getPlayerMovement());
-    totalMovePlayerTime += timer.elapsed();
 
     gameLogic->handleInRangeLoots();
 
-    timer.start();
     gameLogic->updateMapFlowField();
-    totalUpdateFlowTime += timer.elapsed();
 
-    timer.start();
     gameLogic->moveWitches();
-    totalMoveWitchesTime += timer.elapsed();
 
-    timer.start();
     gameLogic->moveBullets();
-    totalMoveBulletsTime += timer.elapsed();
 
     gameLogic->moveLoots();
 
-    timer.start();
     gameLogic->handleCharacterCollision();
-    totalCharaColliTime += timer.elapsed();
 
-    timer.start();
     gameLogic->handleAttack();
-    totalAttackTime += timer.elapsed();
 
     gameLogic->checkIfPlayerDie();
 
     gameLogic->handlePlayerHealthRecover();
 
-    timer.start();
     gameLogic->handleBulletMapCollision();
-    totalBulletMapColliTime += timer.elapsed();
 
-    timer.start();
     gameLogic->handleDeadWitches();
-    totalDeadWitchesTime += timer.elapsed();
 
-    timer.start();
     gameLogic->handleInvalidAttack();
-    totalInvalidAttackTime += timer.elapsed();
 
-    timer.start();
     gameLogic->handleOutOfBoundryObject();
-    totalOobTime += timer.elapsed();
 
     timer.start();
     if (getPlayerAttack()) {
@@ -195,23 +163,8 @@ void GameWindow::updateGameLogic() {
     gameLogic->handleDeadWitches();
 
     gameLogic->witchAttack();
-    totalAttackActionTime += timer.elapsed();
 
     updateViewport();
-
-    // 输出时间
-    // qDebug() << "add witch:" << totalAddWitchTime;
-    // qDebug() << "move player:" << totalMovePlayerTime;
-    // qDebug() << "update flow:" << totalUpdateFlowTime;
-    // qDebug() << "move witch:" << totalMoveWitchesTime;
-    // qDebug() << "move bullets:" << totalMoveBulletsTime;
-    // qDebug() << "chara colli:" << totalCharaColliTime;
-    // qDebug() << "attack:" << totalAttackTime;
-    // qDebug() << "bullet map colli:" << totalBulletMapColliTime;
-    // qDebug() << "dead witches:" << totalDeadWitchesTime;
-    // qDebug() << "invalid attack:" << totalInvalidAttackTime;
-    // qDebug() << "out of bound object:" << totalOobTime;
-    // qDebug() << "attack action:" << totalAttackActionTime;
 }
 
 void GameWindow::paintEvent(QPaintEvent *event) {
@@ -224,6 +177,8 @@ void GameWindow::paintEvent(QPaintEvent *event) {
     Map *map = gameLogic->getMap();
     map->updateObstacleAndTextureIndex(viewport);
     map->render(&painter, viewport);
+
+    painter.drawPixmap(-160, 0, QPixmap(":/images/ui/hint"));
 
     auto loots = gameLogic->getLoots();
     for (auto it = loots.begin(); it != loots.end(); ++it) {
@@ -314,13 +269,15 @@ void GameWindow::onClosePauseWindow(bool isGameContinued) {
         PauseStatus status = pauseWindow->getStatus();
 
         if (status == PauseStatus::GamePause) {
+            soundManager->playGameMusic();
             isGamePaused = false;
         } else {
             this->deleteLater();
             emit startNewGame();
         }
     } else {
-        qDebug() << "end game";
+        soundManager->stopBackgroundMusic();
+        soundManager->playMenuMusic();
         this->deleteLater();
     }
 }

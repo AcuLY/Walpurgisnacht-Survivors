@@ -5,6 +5,7 @@
 #include <QWidget>
 
 #include "magicalgirl.h"
+#include "soundmanager.h"
 
 namespace Ui {
 class CharacterSelectWindow;
@@ -14,7 +15,7 @@ class CharacterSelectWindow : public QWidget {
     Q_OBJECT
 
 public:
-    explicit CharacterSelectWindow(QWidget *parent = nullptr);
+    explicit CharacterSelectWindow(SoundManager *soundManager, QWidget *parent = nullptr);
     ~CharacterSelectWindow();
 
 signals:
@@ -23,6 +24,8 @@ signals:
 
 private:
     Ui::CharacterSelectWindow *ui;
+
+    SoundManager *soundManager;
 
     void onPlayerSelected(MagicalGirlEnum player);
 };

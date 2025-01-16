@@ -6,6 +6,7 @@
 #include "enhancement.h"
 #include "global.h"
 #include "qpushbutton.h"
+#include "soundmanager.h"
 
 namespace Ui {
 class GlobalEnhancementWindow;
@@ -15,28 +16,25 @@ class GlobalEnhancementWindow : public QWidget {
     Q_OBJECT
 
 public:
-    explicit GlobalEnhancementWindow(Global *global, QWidget *parent = nullptr);
+    explicit GlobalEnhancementWindow(Global *global,
+                                     SoundManager *soundManager,
+                                     QWidget *parent = nullptr);
     ~GlobalEnhancementWindow();
 
 private slots:
     void on_back_clicked();
-
     void on_globalEnhancement1_clicked();
-
     void on_globalEnhancement2_clicked();
-
     void on_globalEnhancement3_clicked();
-
     void on_globalEnhancement4_clicked();
-
     void on_globalEnhancement5_clicked();
-
     void on_globalEnhancement6_clicked();
 
 private:
     Ui::GlobalEnhancementWindow *ui;
 
     Global *global;
+    SoundManager *soundManager;
 
     QVector<Enhancement *> globalEnhancements;
     QVector<QVector<int>> prices;

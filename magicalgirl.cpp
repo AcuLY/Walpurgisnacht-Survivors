@@ -223,6 +223,8 @@ void MagicalGirl::receiveDamage(double damage) {
 
     isInAttack = true;
     inAttackTimer->start();
+
+    emit damageReceived();
 }
 
 void MagicalGirl::recoverHealth() {
@@ -235,10 +237,10 @@ void MagicalGirl::recoverHealth() {
 
     currentMana -= recoverManaCost;
 
-    qDebug() << "recover health, health left:" << currentHealth;
-
     isOnRecoverCooldown = true;
     recoverTimer->start();
+
+    emit healed();
 }
 
 void MagicalGirl::recoverMana(int mana) {

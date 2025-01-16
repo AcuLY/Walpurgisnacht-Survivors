@@ -1,8 +1,11 @@
 #include "gamelogic.h"
 #include <queue>
 
-GameLogic::GameLogic(Global* global, MagicalGirlEnum playerSelection, QObject* parent)
-    : QObject{parent}, global(global) {
+GameLogic::GameLogic(Global* global,
+                     SoundManager* soundManager,
+                     MagicalGirlEnum playerSelection,
+                     QObject* parent)
+    : QObject{parent}, global(global), soundManager(soundManager) {
     QWidget* window = qobject_cast<QWidget*>(parent);
 
     workerThread = new QThread;
@@ -10,7 +13,18 @@ GameLogic::GameLogic(Global* global, MagicalGirlEnum playerSelection, QObject* p
     map = new Map(FRICTION, window);
 
     player = MagicalGirl::loadMagicalGirlFromJson(playerSelection, map);
-    connect(player, &Character::attackPerformed, this, &GameLogic::storeAttack); // 角色攻击
+    connect(player, &Character::attackPerformed, this, &GameLogic::storeAttack); // 存放角色的子弹等
+    connect(player, &Character::damageReceived, this, [this] {
+        this->soundManager->playSfx("hit");
+    });
+    connect(player, &Character::attackPerformed, this, [this] {
+        if (player->getWeaponType() == Weapon::WeaponType::Remote) {
+            this->soundManager->playSfx("shoot");
+        } else {
+            this->soundManager->playSfx("slash");
+        }
+    });
+    connect(player, &MagicalGirl::healed, this, [this] { this->soundManager->playSfx("health"); });
 
     // 设置初始中心位置
     QPoint initViewport(player->geometry().width() / 2, player->geometry().height() / 2);
@@ -222,7 +236,17 @@ void GameLogic::addWitch(QPoint& viewport) {
     }
 
     Witch* newWitch = Witch::loadWitchFromJson(witchIndex, map);
-    connect(newWitch, &Witch::attackPerformed, this, &GameLogic::storeAttack);
+    connect(newWitch, &Character::attackPerformed, this, &GameLogic::storeAttack);
+    connect(newWitch, &Character::damageReceived, this, [this] {
+        this->soundManager->playSfx("hit");
+    });
+    connect(newWitch, &Character::attackPerformed, this, [this, newWitch] {
+        if (newWitch->getWeaponType() == Weapon::WeaponType::Remote) {
+            this->soundManager->playSfx("shoot");
+        } else {
+            this->soundManager->playSfx("slash");
+        }
+    });
 
     int edge = QRandomGenerator::global()->bounded(0, 4);
     int x = 0, y = 0;
@@ -399,6 +423,9 @@ void GameLogic::handleDeadWitches() {
             int witchExp = (*witchIt)->getExp();
             Experience* exp = new Experience(witchExp, (*witchIt)->getPos(), map);
             connect(exp, &Experience::experiencePicked, this, &GameLogic::updateExp);
+            connect(exp, &Experience::experiencePicked, this, [this] {
+                soundManager->playSfx("experience");
+            });
             loots.insert(exp);
 
             // 悲叹之种碎片掉落
@@ -409,6 +436,9 @@ void GameLogic::handleDeadWitches() {
                         &GriefSeedFragment::griefSeedFragmentPicked,
                         this,
                         &GameLogic::handlePlayerManaRecover);
+                connect(gsf, &GriefSeedFragment::griefSeedFragmentPicked, this, [this] {
+                    soundManager->playSfx("griefseed");
+                });
                 loots.insert(gsf);
             }
 
@@ -507,6 +537,8 @@ void GameLogic::updateExp(int exp) {
 
 void GameLogic::handleLevelUp() {
     level++;
+
+    soundManager->playSfx("levelup");
 
     randomEnhancements = enhancementManager->generateEnhancement(player);
     emit levelUp(randomEnhancements);

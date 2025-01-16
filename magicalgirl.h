@@ -52,7 +52,7 @@ protected:
     double currentTargetDegree = INF;
     int attackTimeLeft;
     int multiAttackInterval = defaultMultiAttackInterval;
-    int multiAttackTime = 8; // 连击次数
+    int multiAttackTime = 2; // 连击次数
     QTimer *multiAttackTimer;
 
     int pickRangeSize = defaultPickRangeSize;
@@ -111,6 +111,9 @@ public:
 
 private:
     void multiAttack();
+
+signals:
+    void healed();
 };
 
 #endif // MAGICALGIRL_H

@@ -12,6 +12,7 @@
 #include "gamelogic.h"
 #include "global.h"
 #include "pausewindow.h"
+#include "soundmanager.h"
 
 const int WINDOW_WIDTH = 1280;
 const int WINDOW_HEIGHT = 720;
@@ -39,6 +40,8 @@ class GameWindow : public QWidget {
     Q_OBJECT
 
 private:
+    SoundManager *soundManager;
+
     QPixmap bar = QPixmap(":/images/ui/bar");
     QRect hpBar;
     QRect mpBar;
@@ -66,7 +69,10 @@ private:
     EnhancementWindow *enhancementWindow;
 
 public:
-    explicit GameWindow(Global *global, MagicalGirlEnum playerSelection, QWidget *parent = nullptr);
+    explicit GameWindow(Global *global,
+                        SoundManager *soundManager,
+                        MagicalGirlEnum playerSelection,
+                        QWidget *parent = nullptr);
 
 protected:
     void keyPressEvent(QKeyEvent *event) override;

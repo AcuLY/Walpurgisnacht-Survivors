@@ -101,6 +101,7 @@ protected:
 
 signals:
     void attackPerformed(Attack *attack);
+    void damageReceived();
 
 public slots:
 };

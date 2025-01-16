@@ -15,6 +15,7 @@
 #include "loot.h"
 #include "magicalgirl.h"
 #include "map.h"
+#include "soundmanager.h"
 #include "witch.h"
 
 const double survivalTime = 600.0;
@@ -25,6 +26,7 @@ class GameLogic : public QObject {
 
 private:
     Global *global;
+    SoundManager *soundManager;
 
     MagicalGirl *player;
     QPoint lastPlayerPos; // 上次玩家位置，如果玩家两次在同一个格子里则不更新流场
@@ -51,7 +53,10 @@ private:
     bool isBlocked(QPoint pos1, QPoint pos2);
 
 public:
-    explicit GameLogic(Global *global, MagicalGirlEnum playerSelection, QObject *parent = nullptr);
+    explicit GameLogic(Global *global,
+                       SoundManager *soundManager,
+                       MagicalGirlEnum playerSelection,
+                       QObject *parent = nullptr);
     ~GameLogic();
 
     void updateSurvivalTime();

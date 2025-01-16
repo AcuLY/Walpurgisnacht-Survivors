@@ -1,9 +1,20 @@
 #include "enhancementwindow.h"
 #include "ui_enhancementwindow.h"
 
-EnhancementWindow::EnhancementWindow(QWidget *parent)
-    : QWidget(parent), ui(new Ui::EnhancementWindow) {
+EnhancementWindow::EnhancementWindow(SoundManager *soundManager, QWidget *parent)
+    : QWidget(parent), ui(new Ui::EnhancementWindow), soundManager(soundManager) {
     ui->setupUi(this);
+
+    // 动态连接所有按钮
+    QStringList buttonNames = {"enhancement1", "enhancement2", "enhancement3"};
+    for (const QString &buttonName : buttonNames) {
+        QPushButton *button = findChild<QPushButton *>(buttonName);
+        if (button) {
+            connect(button, &QPushButton::clicked, this, [this] {
+                this->soundManager->playSfx("select");
+            });
+        }
+    }
 
     connect(ui->enhancement1, &QPushButton::clicked, this, [this] { emit selectEnhancement(0); });
     connect(ui->enhancement2, &QPushButton::clicked, this, [this] { emit selectEnhancement(1); });

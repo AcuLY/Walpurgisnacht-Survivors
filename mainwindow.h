@@ -8,6 +8,7 @@
 #include "global.h"
 #include "globalenhancementwindow.h"
 #include "magicalgirl.h"
+#include "soundmanager.h"
 
 QT_BEGIN_NAMESPACE
 namespace Ui {
@@ -24,6 +25,8 @@ public:
 
 private:
     Ui::MainWindow *ui;
+
+    SoundManager *soundManager;
 
     Global *global;
     bool isSettingKeyboardMapping = false;

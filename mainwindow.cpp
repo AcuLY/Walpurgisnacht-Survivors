@@ -17,11 +17,40 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWi
     connect(ui->enhancement, &QPushButton::clicked, this, &MainWindow::onGlobalEnhancement);
     connect(ui->quitGame, &QPushButton::clicked, this, &QApplication::quit); // 退出游戏按钮
 
-    characterSelectWindow = new CharacterSelectWindow(this);
+    characterSelectWindow = new CharacterSelectWindow(soundManager, this);
     characterSelectWindow->hide();
 
-    globalEnhancementWindow = new GlobalEnhancementWindow(global, this);
+    globalEnhancementWindow = new GlobalEnhancementWindow(global, soundManager, this);
     globalEnhancementWindow->hide();
+
+    soundManager = new SoundManager(global, this);
+    soundManager->playMenuMusic();
+    // 动态连接所有按钮
+    QStringList buttonNames = {"startGame",
+                               "enhancement",
+                               "setting",
+                               "quitGame",
+                               "soundEffect",
+                               "attack",
+                               "back",
+                               "back_2",
+                               "backgroundMusic",
+                               "dodge",
+                               "down",
+                               "left",
+                               "right",
+                               "setKeyboardMapping",
+                               "skill",
+                               "up",
+                               "voiceEffect"};
+    for (const QString &buttonName : buttonNames) {
+        QPushButton *button = findChild<QPushButton *>(buttonName);
+        if (button) {
+            connect(button, &QPushButton::clicked, this, [this] {
+                soundManager->playSfx("select");
+            });
+        }
+    }
 }
 
 MainWindow::~MainWindow() {
@@ -154,7 +183,10 @@ void MainWindow::keyPressEvent(QKeyEvent *event) {
 void MainWindow::onPlayerSelected(MagicalGirlEnum playerSelection) {
     lastPlayerSelection = playerSelection;
 
-    gameWindow = new GameWindow(global, playerSelection, this);
+    soundManager->stopBackgroundMusic();
+    soundManager->playGameMusic();
+
+    gameWindow = new GameWindow(global, soundManager, playerSelection, this);
     connect(gameWindow, &GameWindow::startNewGame, this, &MainWindow::onRestartGame); // 重开
     gameWindow->show();
 
@@ -163,7 +195,10 @@ void MainWindow::onPlayerSelected(MagicalGirlEnum playerSelection) {
 }
 
 void MainWindow::onRestartGame() {
-    gameWindow = new GameWindow(global, lastPlayerSelection, this);
+    soundManager->stopBackgroundMusic();
+    soundManager->playGameMusic();
+
+    gameWindow = new GameWindow(global, soundManager, lastPlayerSelection, this);
     connect(gameWindow, &GameWindow::startNewGame, this, &MainWindow::onRestartGame); // 重开
     gameWindow->show();
 }
@@ -190,8 +225,10 @@ void MainWindow::on_backgroundMusic_clicked() {
 
     if (global->isBackgroundMusicOn()) {
         ui->backgroundMusic->setText("音乐：开");
+        soundManager->playMenuMusic();
     } else {
         ui->backgroundMusic->setText("音乐：关");
+        soundManager->stopBackgroundMusic();
     }
 }
 

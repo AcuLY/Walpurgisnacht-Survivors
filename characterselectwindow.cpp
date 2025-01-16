@@ -1,9 +1,8 @@
 #include "characterselectwindow.h"
 #include "ui_characterselectwindow.h"
 
-CharacterSelectWindow::CharacterSelectWindow(QWidget *parent)
-    : QWidget(parent), ui(new Ui::CharacterSelectWindow) {
-    qDebug() << "create select window";
+CharacterSelectWindow::CharacterSelectWindow(SoundManager *soundManager, QWidget *parent)
+    : QWidget(parent), ui(new Ui::CharacterSelectWindow), soundManager(soundManager) {
     ui->setupUi(this);
 
     this->setFixedSize(parent->geometry().width(), parent->geometry().height());
@@ -13,6 +12,17 @@ CharacterSelectWindow::CharacterSelectWindow(QWidget *parent)
         this->hide();
         emit backToMenu();
     });
+
+    // 动态连接所有按钮
+    QStringList buttonNames = {"exit", "homura", "sayaka"};
+    for (const QString &buttonName : buttonNames) {
+        QPushButton *button = findChild<QPushButton *>(buttonName);
+        if (button) {
+            connect(button, &QPushButton::clicked, this, [this] {
+                this->soundManager->playSfx("select");
+            });
+        }
+    }
 
     // 选择角色事件
     // connect(ui->madoka, &QPushButton::clicked, this, [this] {

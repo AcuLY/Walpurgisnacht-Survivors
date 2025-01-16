@@ -36,11 +36,15 @@ Character::~Character() {
 
 void Character::render(QPainter *painter) {
     if (isReceivingDamage) {
-        painter->drawPixmap(this->x(), this->y(), textureHurt);
+        painter->drawPixmap(this->x() + width / 2 - textureHurt.width() / 2,
+                            this->y() + height / 2 - textureHurt.height() / 2,
+                            textureHurt);
         return;
     }
 
-    painter->drawPixmap(this->x(), this->y(), texture);
+    painter->drawPixmap(this->x() + width / 2 - texture.width() / 2,
+                        this->y() + height / 2 - texture.height() / 2,
+                        texture);
 };
 
 QString Character::getName() const {
@@ -310,4 +314,6 @@ void Character::receiveDamage(double damage) {
 
     isReceivingDamage = true;
     receiveDamageReceiveTimer->start();
+
+    emit damageReceived();
 }

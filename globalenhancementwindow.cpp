@@ -1,8 +1,11 @@
 #include "globalenhancementwindow.h"
 #include "ui_globalenhancementwindow.h"
 
-GlobalEnhancementWindow::GlobalEnhancementWindow(Global *global, QWidget *parent)
-    : QWidget(parent), ui(new Ui::GlobalEnhancementWindow), global(global) {
+GlobalEnhancementWindow::GlobalEnhancementWindow(Global *global,
+                                                 SoundManager *soundManager,
+                                                 QWidget *parent)
+    : QWidget(parent), ui(new Ui::GlobalEnhancementWindow), global(global),
+      soundManager(soundManager) {
     ui->setupUi(this);
 
     QJsonArray globalEnhancementJsons = FileUtils::loadJsonFile(
@@ -18,6 +21,23 @@ GlobalEnhancementWindow::GlobalEnhancementWindow(Global *global, QWidget *parent
             currentPrices.append(value.toDouble());
         }
         prices.append(currentPrices);
+    }
+
+    // 动态连接所有按钮
+    QStringList buttonNames = {"back",
+                               "globalEnhancement1",
+                               "globalEnhancement2",
+                               "globalEnhancement3",
+                               "globalEnhancement4",
+                               "globalEnhancement5",
+                               "globalEnhancement6"};
+    for (const QString &buttonName : buttonNames) {
+        QPushButton *button = findChild<QPushButton *>(buttonName);
+        if (button) {
+            connect(button, &QPushButton::clicked, this, [this] {
+                this->soundManager->playSfx("select");
+            });
+        }
     }
 
     ui->money->setText("金币：" + QString::number(global->getMoney()));
