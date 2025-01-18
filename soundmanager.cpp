@@ -14,7 +14,9 @@ SoundManager::SoundManager(Global *global, QObject *parent)
     soundEffects["levelup"] = "qrc:/sounds/sfx/levelup";
     soundEffects["select"] = "qrc:/sounds/sfx/select";
     soundEffects["shoot"] = "qrc:/sounds/sfx/shoot";
+    soundEffects["enemy_shoot"] = "qrc:/sounds/sfx/enemy_shoot";
     soundEffects["slash"] = "qrc:/sounds/sfx/slash";
+    soundEffects["hurt"] = "qrc:/sounds/sfx/hurt";
 
     // 创建音频输出设备
     QAudioOutput *menuAudioOutput = new QAudioOutput(this);
@@ -38,6 +40,10 @@ SoundManager::~SoundManager() {
 }
 
 void SoundManager::playSound(const QString &soundName) {
+    if (currentPlayingNum[soundName] > MAX_CONCURRENT_SFX_PLAYBACKS) {
+        return;
+    }
+
     if (soundEffects.contains(soundName)) {
         // 创建新的实例
         QMediaPlayer *player = new QMediaPlayer(this);
@@ -49,14 +55,18 @@ void SoundManager::playSound(const QString &soundName) {
             player->setSource(soundUrl);
             player->play();
 
+            currentPlayingNum[soundName]++;
+
             // 连接播放完成后清理播放器
             connect(player,
                     &QMediaPlayer::playbackStateChanged,
                     this,
-                    [player, audioOutput](QMediaPlayer::PlaybackState state) {
+                    [player, audioOutput, this, soundName](QMediaPlayer::PlaybackState state) {
                         if (state == QMediaPlayer::StoppedState) {
                             player->deleteLater();
                             audioOutput->deleteLater();
+
+                            currentPlayingNum[soundName]--;
                         }
                     });
         }

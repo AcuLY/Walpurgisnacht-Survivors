@@ -175,6 +175,8 @@ void Map::render(QPainter *painter, const QPoint &viewport) const {
             }
         }
     }
+
+    painter->drawPixmap(-160, 0, QPixmap(":/images/ui/hint"));
 }
 
 bool Map::isOutOfBoundry(const QPoint &pos) const {

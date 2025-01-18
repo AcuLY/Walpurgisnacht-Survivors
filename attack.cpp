@@ -63,7 +63,7 @@ Bullet::Bullet(QPoint initPos,
 }
 
 void Bullet::render(QPainter *painter) {
-    QRect paintRect(pos.x(), pos.y(), size, size);
+    QRect paintRect(pos.x() - size, pos.y() - size, size * 2, size * 2);
     painter->drawPixmap(paintRect, texture);
 }
 
@@ -114,11 +114,34 @@ Slash::Slash(QPoint pos,
              bool isPlayerSide,
              int validTime,
              QWidget *parent)
-    : Attack(pos, size, damage, isPlayerSide, validTime, parent) {
+    : Attack(pos, size, damage, isPlayerSide, validTime, parent), startAngle(startAngle),
+      spanAngle(spanAngle) {
     range = new SectorRange(size, startAngle, spanAngle);
+
+    texture = isPlayerSide ? QPixmap(":/images/item/slash") : QPixmap(":/images/item/slash_enemy");
 };
 
 bool Slash::isHit(const QRectF &targetRect) {
     QPainterPath path = range->createPath(pos);
     return path.intersects(targetRect);
+}
+
+void Slash::render(QPainter *painter) {
+    painter->save(); // 保存当前画笔状态
+
+    painter->setClipPath(range->createPath(pos));
+
+    // 缩放贴图
+    QPixmap scaledTexture = texture.scaled(size * 2,
+                                           size * 2,
+                                           Qt::IgnoreAspectRatio,
+                                           Qt::SmoothTransformation);
+
+    // 绘制贴图，中心对齐
+    QRect paintRect(pos.x() - size, pos.y() - size, size * 2, size * 2);
+
+    // 使用正确的 drawPixmap 重载函数
+    painter->drawPixmap(paintRect, scaledTexture);
+
+    painter->restore(); // 恢复画笔状态
 }

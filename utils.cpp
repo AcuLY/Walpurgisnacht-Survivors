@@ -18,6 +18,7 @@ double MathUtils::euclideanDistance(QPointF pos1, QPointF pos2) {
 
 QJsonArray FileUtils::loadJsonFile(const QString &path) {
     QFile file(path);
+
     if (!file.open(QIODevice::ReadOnly)) {
         qWarning() << "Failed to open file:" << path;
 

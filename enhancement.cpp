@@ -52,9 +52,12 @@ QVector<Enhancement *> EnhancementManager::generateEnhancement(MagicalGirl *play
         int randomIndex = gen->bounded(enhancements.size());
         Enhancement *randomEnhancement = enhancements[randomIndex];
 
-        if ((randomEnhancement->getType() == "bulletSizeEnhancement"
-             || randomEnhancement->getType() == "bulletVelocityEnhancement")
-            && player->getWeaponType() == Weapon::WeaponType::Melee) {
+        // 对子弹的增益不出现在进战武器，对斩击张角的增益不出现在远程武器
+        if (((randomEnhancement->getType() == "bulletSizeEnhancement"
+              || randomEnhancement->getType() == "bulletVelocityEnhancement")
+             && player->getWeaponType() == Weapon::WeaponType::Melee)
+            || (randomEnhancement->type == "spanAngleEnhancement"
+                && player->getWeaponType() == Weapon::WeaponType::Remote)) {
             continue;
         }
 
@@ -87,6 +90,9 @@ void EnhancementManager::applyEnhancement(Enhancement *e, int index) {
     }
     if (type == "bulletSizeEnhancement") {
         bulletSizeEnhancement(e->parameters[index]);
+    }
+    if (type == "spanAngleEnhancement") {
+        spanAngleEnhancement(e->parameters[index]);
     }
     if (type == "multiAttackTimeEnhancement") {
         multiAttackTimeEnhancement(e->parameters[index]);
@@ -147,6 +153,10 @@ void EnhancementManager::bulletVelocityEnhancement(double value) {
 
 void EnhancementManager::bulletSizeEnhancement(double value) {
     dynamic_cast<RemoteWeapon *>(player->getWeapon())->increaseBulletSize(value);
+}
+
+void EnhancementManager::spanAngleEnhancement(double value) {
+    dynamic_cast<MeleeWeapon *>(player->getWeapon())->increaseSpanAngle(value);
 }
 
 void EnhancementManager::multiAttackTimeEnhancement(int value) {

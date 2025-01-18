@@ -75,6 +75,7 @@ public:
 class MeleeWeapon : public Weapon {
 protected:
     int validTime = 16;
+    double spanAngle;
 
     WeaponType getType() override;
 
@@ -82,10 +83,13 @@ public:
     explicit MeleeWeapon(double damage,
                          double attackInterval,
                          double rangeSize,
+                         double spanAngle,
                          bool isPlayerSide,
                          QWidget *parent = nullptr);
 
     Slash *attack(QPoint pos, double degree);
+
+    void increaseSpanAngle(double value); // 增大斩击张角，乘法
 };
 
 #endif // WEAPON_H

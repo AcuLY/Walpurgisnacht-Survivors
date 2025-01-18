@@ -11,6 +11,9 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWi
 
     global = new Global();
 
+    soundManager = new SoundManager(global, this);
+    soundManager->playMenuMusic();
+
     updateKeyMappingText();
 
     connect(ui->startGame, &QPushButton::clicked, this, &MainWindow::onGameStart); // 开始游戏按钮
@@ -23,8 +26,6 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWi
     globalEnhancementWindow = new GlobalEnhancementWindow(global, soundManager, this);
     globalEnhancementWindow->hide();
 
-    soundManager = new SoundManager(global, this);
-    soundManager->playMenuMusic();
     // 动态连接所有按钮
     QStringList buttonNames = {"startGame",
                                "enhancement",
@@ -113,6 +114,7 @@ void MainWindow::onGameStart() {
 }
 
 void MainWindow::onGlobalEnhancement() {
+    globalEnhancementWindow->updateInfo();
     globalEnhancementWindow->show();
     hideWidgets();
 

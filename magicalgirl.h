@@ -12,11 +12,12 @@
 enum class MagicalGirlEnum { Madoka, Homura, Sayaka, Mami, Kyouko };
 
 const int defaultOutAttackInterval = 5000; // 脱战时间
-const int defaultIFrameInterval = 2000;    // 无敌帧时间
+const int defaultIFrameInterval = 1000;    // 无敌帧时间
 const int defaultRecoverInterval = 3000;   // 回血的间隔
 const int defaultRecoverManaCost = 3;      // 回血消耗的蓝
 const int defaultPickRangeSize = 100;      // 拾取范围
 const int defaultMultiAttackInterval = 128; // 连击间隔
+const int DEFAULT_MULTI_ATTACK_NUM = 2;
 
 const int minRecoverHealthMana = 5; // 自动回血的最小蓝量，小于该值就不回血
 
@@ -52,7 +53,7 @@ protected:
     double currentTargetDegree = INF;
     int attackTimeLeft;
     int multiAttackInterval = defaultMultiAttackInterval;
-    int multiAttackTime = 2; // 连击次数
+    int multiAttackTime = DEFAULT_MULTI_ATTACK_NUM; // 连击次数
     QTimer *multiAttackTimer;
 
     int pickRangeSize = defaultPickRangeSize;
@@ -75,6 +76,8 @@ public:
                          QWidget *parent = nullptr);
 
     static MagicalGirl *loadMagicalGirlFromJson(MagicalGirlEnum playerSelection, Map *map);
+
+    void render(QPainter *painter);
 
     int getCurrentMana() const;
     int getMaxMana() const;

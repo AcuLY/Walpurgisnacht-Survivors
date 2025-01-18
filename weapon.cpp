@@ -106,9 +106,10 @@ Weapon::WeaponType MeleeWeapon::getType() {
 MeleeWeapon::MeleeWeapon(double damage,
                          double attackInterval,
                          double rangeSize,
+                         double spanAngle,
                          bool isPlayerSide,
                          QWidget *parent)
-    : Weapon(damage, attackInterval, rangeSize, isPlayerSide, parent) {
+    : Weapon(damage, attackInterval, rangeSize, isPlayerSide, parent), spanAngle(spanAngle) {
     range = new CircleRange(rangeSize);
 }
 
@@ -120,8 +121,18 @@ Slash *MeleeWeapon::attack(QPoint pos, double degree) {
     isOnCooldown = true;
     cooldownTimer.start();
 
-    Slash *slash
-        = new Slash(pos, rangeSize, degree, qDegreesToRadians(60), damage, isPlayerSide, validTime);
+    Slash *slash = new Slash(pos,
+                             rangeSize,
+                             degree,
+                             qDegreesToRadians(spanAngle),
+                             damage,
+                             isPlayerSide,
+                             validTime);
 
     return slash;
+}
+
+void MeleeWeapon::increaseSpanAngle(double value) {
+    spanAngle *= value;
+    spanAngle = qMin(360, (int) spanAngle);
 }

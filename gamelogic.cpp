@@ -15,7 +15,7 @@ GameLogic::GameLogic(Global* global,
     player = MagicalGirl::loadMagicalGirlFromJson(playerSelection, map);
     connect(player, &Character::attackPerformed, this, &GameLogic::storeAttack); // 存放角色的子弹等
     connect(player, &Character::damageReceived, this, [this] {
-        this->soundManager->playSfx("hit");
+        this->soundManager->playSfx("hurt");
     });
     connect(player, &Character::attackPerformed, this, [this] {
         if (player->getWeaponType() == Weapon::WeaponType::Remote) {
@@ -242,7 +242,7 @@ void GameLogic::addWitch(QPoint& viewport) {
     });
     connect(newWitch, &Character::attackPerformed, this, [this, newWitch] {
         if (newWitch->getWeaponType() == Weapon::WeaponType::Remote) {
-            this->soundManager->playSfx("shoot");
+            this->soundManager->playSfx("enemy_shoot");
         } else {
             this->soundManager->playSfx("slash");
         }
@@ -430,7 +430,7 @@ void GameLogic::handleDeadWitches() {
 
             // 悲叹之种碎片掉落
             if (Witch::ifDropGriefSeedFragment()) {
-                GriefSeedFragment* gsf = new GriefSeedFragment((*witchIt)->getPos() + QPoint(5, 5),
+                GriefSeedFragment* gsf = new GriefSeedFragment((*witchIt)->getPos() + QPoint(3, 3),
                                                                map); // 偏移一点，防止和经验重合
                 connect(gsf,
                         &GriefSeedFragment::griefSeedFragmentPicked,
@@ -507,10 +507,6 @@ void GameLogic::handlePlayerHealthRecover() {
 }
 
 void GameLogic::handlePlayerManaRecover() {
-    if (player->getCurrentMana() < minRecoverHealthMana) {
-        return;
-    }
-
     player->recoverMana(griefSeedFragmentMana);
 }
 

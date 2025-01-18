@@ -1,4 +1,4 @@
-QT       += core gui
+QT       += core gui multimedia
 
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
@@ -15,14 +15,18 @@ SOURCES += \
     characterselectwindow.cpp \
     direction.cpp \
     enhancement.cpp \
+    enhancementwindow.cpp \
     gamelogic.cpp \
     gamewindow.cpp \
+    global.cpp \
+    globalenhancementwindow.cpp \
     loot.cpp \
     magicalgirl.cpp \
     main.cpp \
     mainwindow.cpp \
     map.cpp \
     pausewindow.cpp \
+    soundmanager.cpp \
     third_party/perlinnoise.cpp \
     utils.cpp \
     weapon.cpp \
@@ -35,13 +39,17 @@ HEADERS += \
     characterselectwindow.h \
     direction.h \
     enhancement.h \
+    enhancementwindow.h \
     gamelogic.h \
     gamewindow.h \
+    global.h \
+    globalenhancementwindow.h \
     loot.h \
     magicalgirl.h \
     mainwindow.h \
     map.h \
     pausewindow.h \
+    soundmanager.h \
     third_party/perlinnoise.h \
     utils.h \
     weapon.h \
@@ -49,6 +57,8 @@ HEADERS += \
 
 FORMS += \
     characterselectwindow.ui \
+    enhancementwindow.ui \
+    globalenhancementwindow.ui \
     mainwindow.ui \
     pausewindow.ui
 
@@ -62,3 +72,5 @@ DISTFILES += \
 
 RESOURCES += \
     res.qrc
+
+

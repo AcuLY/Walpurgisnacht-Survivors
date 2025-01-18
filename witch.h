@@ -9,18 +9,18 @@
 #include "utils.h"
 
 const double griefSeedFragmentPossibility = 0.1;
-const int griefSeedFragmentMana = 10;
+const int griefSeedFragmentMana = 2;
 
-const double spawnProbLow = 0;     // 进度小于20%时，生成怪物的概率
-const double spawnProbMidLow = 0;  // 进度在20%到50%之间时，生成怪物的概率
-const double spawnProbMidHigh = 0; // 进度在50%到80%之间时，生成怪物的概率
+const double spawnProbLow = 0.2;     // 只生成 witch1 的进度
+const double spawnProbMidLow = 0.5;  // 进度在20%到50%之间时，生成怪物的概率
+const double spawnProbMidHigh = 0.8; // 进度在50%到80%之间时，生成怪物的概率
 const double spawnProbHigh = 1.0;  // 进度大于80%时，生成怪物的概率
 
-const double weakMonsterProb = 0.33; // 生成弱怪的概率
-const double midMonsterProb = 0.5; // 生成中等怪的概率（超过0.33但小于0.66的部分）
-const double strongMonsterProb = 0.8; // 生成强怪的概率（超过0.66的部分）
+const double weakMonsterProb = 0.3;   // 生成弱怪的概率
+const double midMonsterProb = 0.4;    // 生成中等怪的概率
+const double strongMonsterProb = 0.8; // 生成强怪的概率
 
-const double thresholdWeakMid = 0.5; // 用于分隔弱怪和中等怪的阈值
+const double thresholdWeakMid = 0.75; // 用于分隔弱怪和中等怪的阈值
 
 enum class WitchEnum { witch1, witch2, witch3, witch4, noWitch = -1 };
 

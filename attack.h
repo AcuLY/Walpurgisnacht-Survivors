@@ -82,6 +82,14 @@ public:
                    QWidget *parent = nullptr);
 
     bool isHit(const QRectF &targetRect);
+
+    void render(QPainter *painter);
+
+protected:
+    QPixmap texture;
+
+    double startAngle;
+    double spanAngle;
 };
 
 #endif // ATTACK_H

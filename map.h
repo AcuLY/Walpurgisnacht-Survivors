@@ -12,13 +12,13 @@
 #include "./third_party/perlinnoise.h"
 #include "direction.h"
 
-const int GRID_SIZE = 40;
+const int GRID_SIZE = 20;
 
 const int MAP_WIDTH = 1280;
 const int MAP_HEIGHT = 720;
 
-const int INIT_WIDHT = 160;
-const int INIT_HEIGHT = 160;
+const int INIT_WIDHT = 320;
+const int INIT_HEIGHT = 320;
 
 const int CACHE_MAGNIFICATION = 5;
 const int CACHE_WIDTH = MAP_WIDTH * CACHE_MAGNIFICATION;
@@ -30,7 +30,7 @@ const double FRICTION = 0.2;
 
 const double TEXTURE_NOISE_SCALE = 0.002;
 const double OBSTACLE_NOISE_SCALE = 0.004;
-const double OBSTACLE_PROPORTION = 0.35;
+const double OBSTACLE_PROPORTION = 0.4;
 
 const int wallTextureTypes = 3;
 const int groundTextureTypes = 50;

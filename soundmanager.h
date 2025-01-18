@@ -9,6 +9,8 @@
 
 #include "global.h"
 
+const int MAX_CONCURRENT_SFX_PLAYBACKS = 10; // 一个音效的最多同时播放数
+
 class SoundManager : public QObject {
     Q_OBJECT
 
@@ -26,6 +28,7 @@ private:
     Global *global;
 
     QMap<QString, QString> soundEffects; // 存储音效名称和文件路径的映射
+    QMap<QString, int> currentPlayingNum; // 记录某个音效当前正在播放的数量
     QList<QMediaPlayer *> mediaPlayers;  // 用于存储多个 QMediaPlayer 实例
 
     QMediaPlayer *menuPlayer; // 菜单背景音乐播放器

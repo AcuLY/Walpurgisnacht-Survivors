@@ -12,6 +12,8 @@
     <qresource prefix="/images/ui">
         <file alias="border">res/images/ui/border.png</file>
         <file alias="background">res/images/ui/background.png</file>
+        <file alias="bar">res/images/ui/bar.png</file>
+        <file alias="hint">res/images/ui/hint.png</file>
     </qresource>
     <qresource prefix="/data/magical_girls">
         <file alias="magical_girls_basic_jsons">data/magical_girl/basic.json</file>
@@ -20,5 +22,110 @@
     <qresource prefix="/data/witch">
         <file alias="witches_basic_jsons">data/witch/basic.json</file>
         <file alias="witches_weapons_jsons">data/witch/weapon.json</file>
+    </qresource>
+    <qresource prefix="/data/enhancement">
+        <file alias="enhancement_jsons">data/enhancement/enhancements.json</file>
+        <file alias="global_enhancement_jsons">data/enhancement/global_enhancements.json</file>
+    </qresource>
+    <qresource prefix="/images/map/wall">
+        <file>res/images/map/wall/wall_1.png</file>
+        <file>res/images/map/wall/wall_2.png</file>
+        <file>res/images/map/wall/wall_3.png</file>
+    </qresource>
+    <qresource prefix="/images/map/ground">
+        <file>res/images/map/ground/ground_1.png</file>
+        <file>res/images/map/ground/ground_2.png</file>
+        <file>res/images/map/ground/ground_3.png</file>
+        <file>res/images/map/ground/ground_4.png</file>
+        <file>res/images/map/ground/ground_5.png</file>
+        <file>res/images/map/ground/ground_6.png</file>
+        <file>res/images/map/ground/ground_7.png</file>
+        <file>res/images/map/ground/ground_8.png</file>
+        <file>res/images/map/ground/ground_9.png</file>
+        <file>res/images/map/ground/ground_10.png</file>
+        <file>res/images/map/ground/ground_11.png</file>
+        <file>res/images/map/ground/ground_12.png</file>
+        <file>res/images/map/ground/ground_13.png</file>
+        <file>res/images/map/ground/ground_14.png</file>
+        <file>res/images/map/ground/ground_15.png</file>
+        <file>res/images/map/ground/ground_16.png</file>
+        <file>res/images/map/ground/ground_17.png</file>
+        <file>res/images/map/ground/ground_18.png</file>
+        <file>res/images/map/ground/ground_19.png</file>
+        <file>res/images/map/ground/ground_20.png</file>
+        <file>res/images/map/ground/ground_21.png</file>
+        <file>res/images/map/ground/ground_22.png</file>
+        <file>res/images/map/ground/ground_23.png</file>
+        <file>res/images/map/ground/ground_24.png</file>
+        <file>res/images/map/ground/ground_25.png</file>
+        <file>res/images/map/ground/ground_26.png</file>
+        <file>res/images/map/ground/ground_27.png</file>
+        <file>res/images/map/ground/ground_28.png</file>
+        <file>res/images/map/ground/ground_29.png</file>
+        <file>res/images/map/ground/ground_30.png</file>
+        <file>res/images/map/ground/ground_31.png</file>
+        <file>res/images/map/ground/ground_32.png</file>
+        <file>res/images/map/ground/ground_33.png</file>
+        <file>res/images/map/ground/ground_34.png</file>
+        <file>res/images/map/ground/ground_35.png</file>
+        <file>res/images/map/ground/ground_36.png</file>
+        <file>res/images/map/ground/ground_37.png</file>
+        <file>res/images/map/ground/ground_38.png</file>
+        <file>res/images/map/ground/ground_39.png</file>
+        <file>res/images/map/ground/ground_40.png</file>
+        <file>res/images/map/ground/ground_41.png</file>
+        <file>res/images/map/ground/ground_42.png</file>
+        <file>res/images/map/ground/ground_43.png</file>
+        <file>res/images/map/ground/ground_44.png</file>
+        <file>res/images/map/ground/ground_45.png</file>
+        <file>res/images/map/ground/ground_46.png</file>
+        <file>res/images/map/ground/ground_47.png</file>
+        <file>res/images/map/ground/ground_48.png</file>
+        <file>res/images/map/ground/ground_49.png</file>
+        <file>res/images/map/ground/ground_50.png</file>
+    </qresource>
+    <qresource prefix="/images/item">
+        <file alias="grief_seed">res/images/item/grief_seed.png</file>
+        <file alias="exp">res/images/item/exp.png</file>
+        <file alias="bullet">res/images/item/bullet.png</file>
+        <file alias="bullet_enemy">res/images/item/bullet_enemy.png</file>
+        <file alias="slash">res/images/item/slash.png</file>
+        <file alias="slash_enemy">res/images/item/slash_enemy.png</file>
+    </qresource>
+    <qresource prefix="/images/character_avatar">
+        <file alias="homura_avatar">res/images/character_avatar/homura_avatar.png</file>
+        <file alias="sayaka_avatar">res/images/character_avatar/sayaka_avatar.png</file>
+    </qresource>
+    <qresource prefix="/images/magical_girl">
+        <file alias="homura">res/images/magical_girl/homura.png</file>
+        <file alias="homura_hurt">res/images/magical_girl/homura_hurt.png</file>
+        <file alias="sayaka">res/images/magical_girl/sayaka.png</file>
+        <file alias="sayaka_hurt">res/images/magical_girl/sayaka_hurt.png</file>
+    </qresource>
+    <qresource prefix="/images/witch">
+        <file alias="witch1">res/images/witch/tsukaima1.png</file>
+        <file alias="witch1_hurt">res/images/witch/tsukaima1_hurt.png</file>
+        <file alias="witch2">res/images/witch/tsukaima2.png</file>
+        <file alias="witch2_hurt">res/images/witch/tsukaima2_hurt.png</file>
+        <file alias="witch3">res/images/witch/tsukaima3.png</file>
+        <file alias="witch3_hurt">res/images/witch/tsukaima3_hurt.png</file>
+        <file alias="witch4">res/images/witch/tsukaima4.png</file>
+        <file alias="witch4_hurt">res/images/witch/tsukaima4_hurt.png</file>
+    </qresource>
+    <qresource prefix="/sounds/sfx">
+        <file alias="experience">res/sounds/sfx/experience.wav</file>
+        <file alias="griefseed">res/sounds/sfx/griefseed.wav</file>
+        <file alias="health">res/sounds/sfx/health.wav</file>
+        <file alias="hit">res/sounds/sfx/hit.wav</file>
+        <file alias="levelup">res/sounds/sfx/levelup.wav</file>
+        <file alias="shoot">res/sounds/sfx/shoot.wav</file>
+        <file alias="slash">res/sounds/sfx/slash.wav</file>
+        <file alias="select">res/sounds/sfx/select.wav</file>
+        <file alias="enemy_shoot">res/sounds/sfx/enemy_shoot.wav</file>
+        <file alias="hurt">res/sounds/sfx/hurt.wav</file>
+    </qresource>
+    <qresource prefix="/sounds/bgm">
+        <file alias="game">res/sounds/bgm/game.wav</file>
+        <file alias="menu">res/sounds/bgm/menu.wav</file>
     </qresource>
 </RCC>

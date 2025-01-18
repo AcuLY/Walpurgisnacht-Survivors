@@ -53,6 +53,7 @@ private:
     void attackRangeEnhancement(double value); // 增加攻击范围
     void bulletVelocityEnhancement(double value); // 提高子弹速度
     void bulletSizeEnhancement(double value);  // 增加子弹大小
+    void spanAngleEnhancement(double value);   // 增大斩击张角
     void multiAttackTimeEnhancement(int value); // 增加攻击次数
 
     // 生存类

@@ -21,6 +21,8 @@ public:
                                      QWidget *parent = nullptr);
     ~GlobalEnhancementWindow();
 
+    void updateInfo();
+
 private slots:
     void on_back_clicked();
     void on_globalEnhancement1_clicked();

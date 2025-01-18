@@ -40,6 +40,14 @@ GlobalEnhancementWindow::GlobalEnhancementWindow(Global *global,
         }
     }
 
+    updateInfo();
+}
+
+GlobalEnhancementWindow::~GlobalEnhancementWindow() {
+    delete ui;
+}
+
+void GlobalEnhancementWindow::updateInfo() {
     ui->money->setText("金币：" + QString::number(global->getMoney()));
     updateButtonText(ui->globalEnhancement1, 0);
     updateButtonText(ui->globalEnhancement2, 1);
@@ -47,10 +55,6 @@ GlobalEnhancementWindow::GlobalEnhancementWindow(Global *global,
     updateButtonText(ui->globalEnhancement4, 3);
     updateButtonText(ui->globalEnhancement5, 4);
     updateButtonText(ui->globalEnhancement6, 5);
-}
-
-GlobalEnhancementWindow::~GlobalEnhancementWindow() {
-    delete ui;
 }
 
 void GlobalEnhancementWindow::on_back_clicked() {

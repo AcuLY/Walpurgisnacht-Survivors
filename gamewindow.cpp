@@ -178,20 +178,18 @@ void GameWindow::paintEvent(QPaintEvent *event) {
     map->updateObstacleAndTextureIndex(viewport);
     map->render(&painter, viewport);
 
-    painter.drawPixmap(-160, 0, QPixmap(":/images/ui/hint"));
-
     auto loots = gameLogic->getLoots();
     for (auto it = loots.begin(); it != loots.end(); ++it) {
         (*it)->render(&painter);
     }
 
-    MagicalGirl *player = gameLogic->getPlayer();
-    player->render(&painter);
-
     auto witches = gameLogic->getWitches();
     for (auto it = witches.begin(); it != witches.end(); ++it) {
         (*it)->render(&painter);
     }
+
+    MagicalGirl *player = gameLogic->getPlayer();
+    player->render(&painter);
 
     auto bullets = gameLogic->getBullets();
     for (auto it = bullets.begin(); it != bullets.end(); ++it) {
@@ -200,7 +198,7 @@ void GameWindow::paintEvent(QPaintEvent *event) {
 
     auto slashes = gameLogic->getSlashes();
     for (auto it = slashes.begin(); it != slashes.end(); ++it) {
-        painter.fillPath((*it)->createPath(), Qt::red);
+        (*it)->render(&painter);
     }
 
     updateStatusBarParams();

@@ -31,24 +31,24 @@ Witch::Witch(QString name,
 }
 
 WitchEnum Witch::chooseWitch(double progress) {
-    double rand = QRandomGenerator::global()->bounded(1.0);
+    double spawnRand = QRandomGenerator::global()->bounded(1.0);
+    double chooseIndexRand = QRandomGenerator::global()->bounded(1.0);
 
-    double spawnProbability = 1 / (1 + std::exp(-2 * (progress - 2)));
-    double chooseIndexRand = 1 / (1 + std::exp(-8 * (progress - 0.3)));
+    double spawnProbability = 1 / (1 + std::exp(-2 * (progress - 2.5))) + 0.002;
 
     if (progress < spawnProbLow) {
         // 进度小于20%，最多只能生成怪物witch1
-        if (rand < spawnProbability) {
+        if (spawnRand < spawnProbability) {
             return WitchEnum::witch1;
         }
     } else if (progress < spawnProbMidLow) {
         // 进度在20%到50%之间，最多生成怪物witch1和witch2
-        if (rand < spawnProbability) {
+        if (spawnRand < spawnProbability) {
             return chooseIndexRand < thresholdWeakMid ? WitchEnum::witch1 : WitchEnum::witch2;
         }
     } else if (progress < spawnProbMidHigh) {
         // 进度在50%到80%之间，最多生成怪物witch1、witch2和witch3
-        if (rand < spawnProbability) {
+        if (spawnRand < spawnProbability) {
             if (chooseIndexRand < weakMonsterProb) {
                 return WitchEnum::witch1;
             } else if (chooseIndexRand < midMonsterProb) {
@@ -59,7 +59,7 @@ WitchEnum Witch::chooseWitch(double progress) {
         }
     } else {
         // 进度大于80%，可以生成所有种类的怪物
-        if (rand < spawnProbability) {
+        if (spawnRand < spawnProbability) {
             if (chooseIndexRand < weakMonsterProb) {
                 return WitchEnum::witch1;
             } else if (chooseIndexRand < midMonsterProb) {
@@ -109,8 +109,9 @@ Witch *Witch::loadWitchFromJson(WitchEnum witchIndex, Map *map) {
         int damage = weaponJson["damage"].toInt();
         int attackInterval = weaponJson["attackInterval"].toInt();
         int rangeSize = weaponJson["rangeSize"].toInt();
+        int spanAngle = weaponJson["spanAngle"].toInt();
         bool isPlayerSide = false;
-        weapon = new MeleeWeapon(damage, attackInterval, rangeSize, isPlayerSide, map);
+        weapon = new MeleeWeapon(damage, attackInterval, rangeSize, spanAngle, isPlayerSide, map);
     }
 
     QString name = basicJson["name"].toString();

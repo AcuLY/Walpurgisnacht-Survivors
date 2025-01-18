@@ -79,8 +79,9 @@ MagicalGirl *MagicalGirl::loadMagicalGirlFromJson(MagicalGirlEnum playerSelectio
         int damage = weaponJson["damage"].toInt();
         int attackInterval = weaponJson["attackInterval"].toInt();
         int rangeSize = weaponJson["rangeSize"].toInt();
+        int spanAngle = weaponJson["spanAngle"].toInt();
         bool isPlayerSide = true;
-        weapon = new MeleeWeapon(damage, attackInterval, rangeSize, isPlayerSide, map);
+        weapon = new MeleeWeapon(damage, attackInterval, rangeSize, spanAngle, isPlayerSide, map);
     }
 
     QString name = basicJson["name"].toString();
@@ -111,6 +112,19 @@ MagicalGirl *MagicalGirl::loadMagicalGirlFromJson(MagicalGirlEnum playerSelectio
                                           weapon,
                                           map);
     return player;
+}
+
+void MagicalGirl::render(QPainter *painter) {
+    if (isInvincible) {
+        painter->drawPixmap(this->x() + width / 2 - textureHurt.width() / 2,
+                            this->y() + height / 2 - textureHurt.height() / 2,
+                            textureHurt);
+        return;
+    }
+
+    painter->drawPixmap(this->x() + width / 2 - texture.width() / 2,
+                        this->y() + height / 2 - texture.height() / 2,
+                        texture);
 }
 
 int MagicalGirl::getCurrentMana() const {
@@ -169,6 +183,8 @@ void MagicalGirl::multiAttack() {
         }
 
         currentTargetDegree = *targetDegreesIt;
+    } else {
+        currentTargetDegree = INF;
     }
 
     if (targetDegreeUpdated && !targetDegrees.empty()) {
@@ -228,7 +244,7 @@ void MagicalGirl::receiveDamage(double damage) {
 }
 
 void MagicalGirl::recoverHealth() {
-    if (currentHealth == maxHealth) {
+    if (currentHealth == maxHealth || currentMana < minRecoverHealthMana) {
         return;
     }
 
@@ -244,8 +260,11 @@ void MagicalGirl::recoverHealth() {
 }
 
 void MagicalGirl::recoverMana(int mana) {
+    qDebug() << mana << currentMana << maxMana;
     currentMana += mana + manaRecoverBonus;
+    qDebug() << currentMana;
     currentMana = qMin(currentMana, maxMana);
+    qDebug() << currentMana;
 }
 
 void MagicalGirl::increaseAttackSpeed(double value) {
@@ -270,6 +289,7 @@ void MagicalGirl::decreaseRecoverInterval(double value) {
 
 void MagicalGirl::increaseRecoverRate(double value) {
     recoverRate += value;
+    recoverRate = qMin(recoverRate, 1.0);
 }
 
 void MagicalGirl::decreaseRecoverManaCost(int value) {
