@@ -1,6 +1,8 @@
 [
     {
-        "name": "tsukaima0",
+        "name": "tsukaima1",
+        "texturePath": ":/images/witch/witch1",
+        "texturePathHurt": ":/images/witch/witch1_hurt",
         "width": 20,
         "height": 30,
         "maxHealth": 20,
@@ -9,6 +11,52 @@
         "attackMoveDecayFactor": 0.5,
         "reboundFactor": 0.8,
         "exp": 5,
-        "attackWaitTime": 200
+        "attackWaitTime": 0,
+        "isPlayerDirected": true
+    },
+    {
+        "name": "tsukaima2",
+        "texturePath": ":/images/witch/witch2",
+        "texturePathHurt": ":/images/witch/witch2_hurt",
+        "width": 30,
+        "height": 20,
+        "maxHealth": 10,
+        "maxVelocity": 3,
+        "accelerationFactor": 0.05,
+        "attackMoveDecayFactor": 1,
+        "reboundFactor": 1,
+        "exp": 5,
+        "attackWaitTime": 0,
+        "isPlayerDirected": false
+    },
+    {
+        "name": "tsukaima3",
+        "texturePath": ":/images/witch/witch3",
+        "texturePathHurt": ":/images/witch/witch3_hurt",
+        "width": 40,
+        "height": 40,
+        "maxHealth": 200,
+        "maxVelocity": 0.5,
+        "accelerationFactor": 1,
+        "attackMoveDecayFactor": 0.8,
+        "reboundFactor": 0.1,
+        "exp": 20,
+        "attackWaitTime": 200,
+        "isPlayerDirected": true
+    },
+    {
+        "name": "tsukaima4",
+        "texturePath": ":/images/witch/witch4",
+        "texturePathHurt": ":/images/witch/witch4_hurt",
+        "width": 40,
+        "height": 30,
+        "maxHealth": 300,
+        "maxVelocity": 2,
+        "accelerationFactor": 0.2,
+        "attackMoveDecayFactor": 0.5,
+        "reboundFactor": 0.8,
+        "exp": 30,
+        "attackWaitTime": 500,
+        "isPlayerDirected": true
     }
 ]

@@ -1,0 +1,38 @@
+[
+    {
+        "type": "damageEnhancement",
+        "description": "提高攻击力",
+        "parameters": [0, 1, 2, 3, 4, 5],
+        "price": [100, 200, 300, 400, 500]
+    },
+    {
+        "type": "attackSpeedEnhancement",
+        "description": "提高攻击速度",
+        "parameters": [1, 0.95, 0.9, 0.85, 0.8, 0.75],
+        "price": [100, 200, 300, 400, 500]
+    },
+    {
+        "type": "maxHealthEnhancement",
+        "description": "提高最大生命值",
+        "parameters": [0, 10, 20, 30, 40, 50],
+        "price": [100, 200, 300, 400, 500]
+    },
+    {
+        "type": "maxManaEnhancement",
+        "description": "提高最大魔力值",
+        "parameters": [0, 5, 10, 15, 20, 25],
+        "price": [100, 200, 300, 400, 500]
+    },
+    {
+        "type": "experienceGainEnhancement",
+        "description": "获得更多经验",
+        "parameters": [0, 1, 2, 3, 4, 5],
+        "price": [100, 200, 300, 400, 500]
+    },
+    {
+        "type": "moneyGainEnhancement",
+        "description": "获得更多金币",
+        "parameters": [1, 1.2, 1.4, 1.6, 1.8, 2],
+        "price": [100, 200, 300, 400, 500]
+    }
+]

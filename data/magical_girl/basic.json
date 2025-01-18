@@ -12,14 +12,30 @@
     },
     {
         "name": "Homura",
-        "width": 10,
-        "height": 15,
-        "maxHealth": 100,
+        "texturePath": ":/images/magical_girl/homura",
+        "texturePathHurt": ":/images/magical_girl/homura_hurt",
+        "width": 20,
+        "height": 30,
+        "maxHealth": 20,
         "maxVelocity": 2,
         "accelerationFactor": 0.3,
         "attackMoveDecayFactor": 0.5,
         "reboundFactor": 0.8,
-        "maxMana": 100,
-        "recoverRate": 0.01
+        "maxMana": 20,
+        "recoverRate": 0.1
+    },
+    {
+        "name": "Sayaka",
+        "texturePath": ":/images/magical_girl/sayaka",
+        "texturePathHurt": ":/images/magical_girl/sayaka_hurt",
+        "width": 20,
+        "height": 30,
+        "maxHealth": 30,
+        "maxVelocity": 3,
+        "accelerationFactor": 0.5,
+        "attackMoveDecayFactor": 0.8,
+        "reboundFactor": 0.8,
+        "maxMana": 20,
+        "recoverRate": 0.2
     }
 ]

@@ -1,0 +1,98 @@
+[
+    {
+        "type": "damageEnhancement",
+        "description": "提高攻击力",
+        "parameters": [3]
+    },
+    {
+        "type": "attackSpeedEnhancement",
+        "description": "提高攻击速度",
+        "parameters": [0.8]
+    },
+    {
+        "type": "attackRangeEnhancement",
+        "description": "增大攻击范围",
+        "parameters": [1.2]
+    },
+    {
+        "type": "bulletVelocityEnhancement",
+        "description": "提高子弹速度",
+        "parameters": [1.2]
+    },
+    {
+        "type": "bulletSizeEnhancement",
+        "description": "增加子弹大小",
+        "parameters": [1.5]
+    },
+    {
+        "type": "spanAngleEnhancement",
+        "description": "增大斩击幅度",
+        "parameters": [1.5]
+    },
+    {
+        "type": "multiAttackTimeEnhancement",
+        "description": "增加攻击的\n连击次数",
+        "parameters": [1]
+    },
+    {
+        "type": "maxHealthEnhancement",
+        "description": "提高最大\n生命值",
+        "parameters": [10]
+    },
+    {
+        "type": "healthRecoverIntervalEnhancement",
+        "description": "提高生命的\n恢复频率",
+        "parameters": [0.8]
+    },
+    {
+        "type": "healthRecoverRateEnhancement",
+        "description": "增加单次的\n生命恢复量",
+        "parameters": [0.1]
+    },
+    {
+        "type": "healthRecoverManaCostEnhancement",
+        "description": "减少恢复生命\n的魔力消耗",
+        "parameters": [1]
+    },
+    {
+        "type": "outAttackIntervalEnhancement",
+        "description": "更快脱离战斗",
+        "parameters": [0.6]
+    },
+    {
+        "type": "invincibilityIntervalEnhancement",
+        "description": "延长受伤后\n的无敌时间",
+        "parameters": [1.2]
+    },
+    {
+        "type": "maxManaEnhancement",
+        "description": "提高最大\n魔力值",
+        "parameters": [10]
+    },
+    {
+        "type": "manaRecoverEnhancement",
+        "description": "拾取悲叹之种\n恢复更多魔力",
+        "parameters": [1]
+    },
+    {
+        "type": "maxVelocityEnhancement",
+        "description": "提高最大移动速度",
+        "parameters": [0.5]
+    },
+    {
+        "type": "attackDecayEnhancement",
+        "description": "增加攻击时的\n移动速度",
+        "parameters": [0.1]
+    },
+    {
+        "type": "pickRangeEnhancement",
+        "description": "增大掉落物\n拾取范围",
+        "parameters": [1.5]
+    },
+    {
+        "type": "experienceGainEnhancement",
+        "description": "敌人死亡时\n掉落更多经验",
+        "parameters": [2]
+    }
+    
+]

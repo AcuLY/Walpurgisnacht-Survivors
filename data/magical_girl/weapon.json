@@ -4,10 +4,17 @@
     },
     {
         "isRemoteWeapon": true,
-        "bulletVelocity": 20,
+        "bulletVelocity": 10,
         "bulletSize": 5,
         "damage": 5,
+        "attackInterval": 1000,
+        "rangeSize": 400
+    },
+    {
+        "isRemoteWeapon": false,
+        "damage": 3,
         "attackInterval": 500,
-        "rangeSize": 1000
+        "spanAngle": 30,
+        "rangeSize": 100
     }
 ]
