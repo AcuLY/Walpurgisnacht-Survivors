@@ -1,5 +1,6 @@
 #include "weapon.h"
 #include "attackrange.h"
+#include "utils.h"
 
 Weapon::Weapon(double damage,
                double attackInterval,
@@ -8,17 +9,18 @@ Weapon::Weapon(double damage,
                QWidget *parent)
     : QWidget{parent}, damage(damage), attackInterval(attackInterval), rangeSize(rangeSize),
       isPlayerSide(isPlayerSide) {
-    cooldownTimer.setInterval(attackInterval);
-    cooldownTimer.setSingleShot(true);
-    connect(&cooldownTimer, &QTimer::timeout, this, [this]() { isOnCooldown = false; });
+    cooldownTimer = new QTimer;
+    cooldownTimer->setInterval(attackInterval);
+    cooldownTimer->setSingleShot(true);
+    connect(cooldownTimer, &QTimer::timeout, this, [this]() { isOnCooldown = false; });
+}
+
+Weapon::~Weapon() {
+    delete cooldownTimer;
 }
 
 double Weapon::getDamage() {
     return damage;
-}
-
-double Weapon::getAttackInterval() {
-    return attackInterval;
 }
 
 AttackRange *Weapon::getRange() {
@@ -27,10 +29,6 @@ AttackRange *Weapon::getRange() {
 
 bool Weapon::isCooldownFinished() {
     return !isOnCooldown;
-}
-
-bool Weapon::getSide() {
-    return isPlayerSide;
 }
 
 void Weapon::setMultiAttackMode(bool isMulti) {
@@ -43,7 +41,7 @@ void Weapon::increaseDamage(double value) {
 
 void Weapon::decreaseAttackInterval(double value) {
     attackInterval *= value;
-    cooldownTimer.setInterval(attackInterval);
+    cooldownTimer->setInterval(attackInterval);
 }
 
 void Weapon::increaseRangeSize(double value) {
@@ -64,28 +62,25 @@ RemoteWeapon::RemoteWeapon(double bulletVelocity,
     range = new CircleRange(rangeSize);
 }
 
-double RemoteWeapon::getBulletSize() const {
-    return bulletSize;
-};
-
 Weapon::WeaponType RemoteWeapon::getType() {
     return Weapon::WeaponType::Remote;
 }
 
 Bullet *RemoteWeapon::attack(QPoint pos, double degree) {
+    // 如果在连击模式则忽视冷却，否则进入冷却
     if (!isMultiAttacking) {
         if (isOnCooldown) {
             return nullptr;
         }
 
         isOnCooldown = true;
-        cooldownTimer.start();
+        cooldownTimer->start();
     }
 
-    int validTime = rangeSize / bulletVelocity * 16;
+    int validTime = rangeSize / bulletVelocity * 16; // 子弹类的有效时间是 范围 / 速度 * 帧长度
     auto newBullet = new Bullet(pos, bulletSize, damage, isPlayerSide, validTime);
 
-    QPointF v = MathUtils::velocityDecomQPointF(bulletVelocity, degree);
+    QPointF v = MathUtils::velocityDecomQPointF(bulletVelocity, degree); // 由角度分解速度
     newBullet->setVelocity(v);
 
     return newBullet;
@@ -114,12 +109,14 @@ MeleeWeapon::MeleeWeapon(double damage,
 }
 
 Slash *MeleeWeapon::attack(QPoint pos, double degree) {
-    if (isOnCooldown) {
-        return nullptr;
-    }
+    if (!isMultiAttacking) {
+        if (isOnCooldown) {
+            return nullptr;
+        }
 
-    isOnCooldown = true;
-    cooldownTimer.start();
+        isOnCooldown = true;
+        cooldownTimer->start();
+    }
 
     Slash *slash = new Slash(pos,
                              rangeSize,

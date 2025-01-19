@@ -13,11 +13,12 @@ Map::Map(double friction, QWidget *parent) : QWidget{parent}, friction(friction)
 
     textureIndices = QVector<QVector<int>>(CACHE_ROW, QVector<int>(CACHE_COL));
 
-    for (int i = 1; i <= wallTextureTypes; i++) {
+    // 加载贴图数据
+    for (int i = 1; i <= WALL_TEXTURE_TYPES; i++) {
         QString path = QString(":/images/map/wall/res/images/map/wall/wall_%1.png").arg(i);
         wallTileTextures.append(QPixmap(path));
     }
-    for (int i = 1; i <= groundTextureTypes; i++) {
+    for (int i = 1; i <= GROUND_TEXTURE_TYPES; i++) {
         QString path = QString(":/images/map/ground/res/images/map/ground/ground_%1.png").arg(i);
         groundTileTextures.append(QPixmap(path));
     }
@@ -32,6 +33,7 @@ QPoint Map::getGridCornerPos(QPoint pos) const {
 }
 
 int Map::setTextureIndex(int x, int y, int typeNum) {
+    // 使用柏林噪声选择贴图
     double noise = pn->noise(x * TEXTURE_NOISE_SCALE, y * TEXTURE_NOISE_SCALE, TEXTURE_NOISE_SCALE);
     return static_cast<int>(noise * typeNum) % typeNum;
 }
@@ -61,6 +63,7 @@ bool Map::setObstacle(int x, int y) {
         return false;
     }
 
+    // 使用柏林噪声选择障碍物
     double noise = pn->noise(x * OBSTACLE_NOISE_SCALE,
                              y * OBSTACLE_NOISE_SCALE,
                              OBSTACLE_NOISE_SCALE);
@@ -68,12 +71,14 @@ bool Map::setObstacle(int x, int y) {
 }
 
 void Map::updateIntegrationField(const QPoint &targetPos) {
+    // 初始化积分场
     for (int j = 0; j < CACHE_ROW; j++) {
         for (int i = 0; i < CACHE_COL; i++) {
             integrationField[j][i] = -1;
         }
     }
 
+    // 用 bfs 更新积分场
     QQueue<QPoint> queue;
 
     QPoint targetIndex = getIndex(targetPos);
@@ -116,8 +121,10 @@ void Map::updateIntegrationField(const QPoint &targetPos) {
 void Map::updateFlowField(const QPoint &targetPos) {
     updateIntegrationField(targetPos);
 
+    // 流场寻路算法更新流场
     for (int j = 0; j < CACHE_ROW; j++) {
         for (int i = 0; i < CACHE_COL; i++) {
+            // 是障碍物则跳过
             if (integrationField[j][i] == -1) {
                 flowField[j][i] = Direction::Center;
                 continue;
@@ -130,6 +137,7 @@ void Map::updateFlowField(const QPoint &targetPos) {
                 auto [dx, dy] = ~dir;
                 QPoint neighborIndex = QPoint(i + dx, j + dy);
 
+                // 边界情况
                 if (neighborIndex.x() < 0 || neighborIndex.x() >= CACHE_COL || neighborIndex.y() < 0
                     || neighborIndex.y() >= CACHE_ROW) {
                     continue;
@@ -206,6 +214,7 @@ bool Map::isOnlyPadding(const QPoint &pos) const {
 }
 
 void Map::updateObstacleAndTextureIndex(const QPoint &viewport) {
+    // 如果当前视点还没有超出必须更新的范围，就不进行更新
     int safeWidth = MAP_WIDTH * (CACHE_MAGNIFICATION - 2) / 2,
         safeHeight = MAP_HEIGHT * (CACHE_MAGNIFICATION - 2) / 2;
     QRect safeRange(lastViewPort.x() - safeWidth / 2,
@@ -232,14 +241,15 @@ void Map::updateObstacleAndTextureIndex(const QPoint &viewport) {
             if (!obstacle) {
                 textureIndices[j][i] = setTextureIndex(startX + i * GRID_SIZE,
                                                        startY + j * GRID_SIZE,
-                                                       groundTextureTypes);
+                                                       GROUND_TEXTURE_TYPES);
                 continue;
             } else {
                 textureIndices[j][i] = setTextureIndex(startX + i * GRID_SIZE,
                                                        startY + j * GRID_SIZE,
-                                                       wallTextureTypes);
+                                                       WALL_TEXTURE_TYPES);
             }
 
+            // 障碍物的四周是缓冲区
             obstacleCache[j][i] = true;
             for (auto &dir : fourDirections) {
                 auto [dx, dy] = ~dir;
@@ -267,7 +277,7 @@ QPainterPath Map::getPartialPath(const QPoint start, const QPoint end) {
     int stepY = (end - start).y() > 0 ? GRID_SIZE : -GRID_SIZE;
 
     QPoint cur = startGrid;
-    // 使用 Bresenham 算法计算两格之间是否有障碍物
+    // 使用 Bresenham 算法计算两格连线之间是否有障碍物
     while (true) {
         if (isObstacle(cur)) {
             path.addRect(cur.x(), cur.y(), GRID_SIZE, GRID_SIZE);

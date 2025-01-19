@@ -1,5 +1,6 @@
 #include "character.h"
 #include <QDebug>
+#include "utils.h"
 
 Character::Character(QString name,
                      QString texturePath,
@@ -13,28 +14,28 @@ Character::Character(QString name,
                      double reboundFactor,
                      Weapon *weapon,
                      QWidget *parent)
-    : QWidget(parent), name(name), width(width), height(height), maxHealth(maxHealth),
-      maxVelocity(maxVelocity), accelerationFactor(accelerationFactor),
+    : QWidget(parent), name(name), width(width), height(height), currentHealth(maxHealth),
+      maxHealth(maxHealth), maxVelocity(maxVelocity), accelerationFactor(accelerationFactor),
       attackMoveDecayFactor(attackMoveDecayFactor), reboundFactor(reboundFactor), weapon(weapon) {
     texture = QPixmap(texturePath);
     textureHurt = QPixmap(texturePathHurt);
 
     setFixedSize(width, height);
-    currentHealth = maxHealth;
 
-    receiveDamageReceiveTimer = new QTimer(this);
-    receiveDamageReceiveTimer->setInterval(RECEIVE_DAMAGE_DISPLAY_INTERVAL);
-    receiveDamageReceiveTimer->setSingleShot(true);
-    connect(receiveDamageReceiveTimer, &QTimer::timeout, this, [this] {
-        isReceivingDamage = false;
-    });
+    // 受伤显示计时器
+    receiveDamageTimer = new QTimer(this);
+    receiveDamageTimer->setInterval(RECEIVE_DAMAGE_DISPLAY_INTERVAL);
+    receiveDamageTimer->setSingleShot(true);
+    connect(receiveDamageTimer, &QTimer::timeout, this, [this] { isReceivingDamage = false; });
 }
 
 Character::~Character() {
     delete weapon;
+    delete receiveDamageTimer;
 }
 
 void Character::render(QPainter *painter) {
+    // 根据是否受伤渲染贴图
     if (isReceivingDamage) {
         painter->drawPixmap(this->x() + width / 2 - textureHurt.width() / 2,
                             this->y() + height / 2 - textureHurt.height() / 2,
@@ -51,7 +52,7 @@ QString Character::getName() const {
     return name;
 }
 
-double Character::getHealth() const {
+double Character::getCurrentHealth() const {
     return currentHealth;
 }
 
@@ -60,27 +61,17 @@ double Character::getMaxHealth() const {
 }
 
 QPoint Character::getPos() const {
+    // 计算中心位置
     return QPoint(this->x() + width / 2, this->y() + height / 2);
 }
 
 double Character::getComposedVelocity() const {
+    // 根据 xy 方向的速度计算总速度
     return std::hypot(velocity.x(), velocity.y());
-}
-
-double Character::getMaxVelocity() const {
-    return maxVelocity;
 }
 
 AttackRange *Character::getRange() const {
     return weapon->getRange();
-}
-
-double Character::getFacingDegree() const {
-    return facingDegree;
-}
-
-bool Character::getAttacking() const {
-    return isAttacking;
 }
 
 Weapon *Character::getWeapon() const {
@@ -95,14 +86,12 @@ bool Character::getIsReceivingDamage() const {
     return isReceivingDamage;
 }
 
-void Character::setAttacking() {
-    isAttacking = !isAttacking;
-}
-
 void Character::updateAcceleration(BiDirection moveX, BiDirection moveY) {
+    // 初始加速度
     acceleration.setX(moveX ? moveX * maxVelocity * accelerationFactor : 0);
     acceleration.setY(moveY ? moveY * maxVelocity * accelerationFactor : 0);
 
+    // 如果斜向移动则对 x 和 y 方向速度除根号二
     if (moveX && moveY) {
         acceleration.setX(acceleration.x() * DIAGONAL_FACTOR);
         acceleration.setY(acceleration.y() * DIAGONAL_FACTOR);
@@ -118,6 +107,7 @@ void Character::updateAcceleration(BiDirection moveX, BiDirection moveY) {
         }
     }
 
+    // 更新移动方向
     if (moveX || moveY) {
         facingDegree = qAtan2((double) -moveY, (double) moveX);
     }
@@ -130,6 +120,7 @@ void Character::updateVelocity() {
     velocity.setY(velocity.y() + acceleration.y());
     double curVelocity = getComposedVelocity();
 
+    // 防止加速超过最大速度
     if (prevVelocity <= maxVelocity && curVelocity > maxVelocity) {
         velocity.setX(velocity.x() * maxVelocity / curVelocity);
         velocity.setY(velocity.y() * maxVelocity / curVelocity);
@@ -152,13 +143,16 @@ void Character::updatePosition() {
 
     this->move(this->x() + moveX, this->y() + moveY);
 
+    // 去除整数部分
     moveAccumulator.setX(modf(moveAccumulator.x(), nullptr));
     moveAccumulator.setY(modf(moveAccumulator.y(), nullptr));
 }
 
 void Character::applyFriction(double friction) {
-    friction = velocity.x() && velocity.y() ? friction * DIAGONAL_FACTOR : friction;
+    friction = velocity.x() && velocity.y() ? friction * DIAGONAL_FACTOR
+                                            : friction; // 如果斜向移动阻力也是斜向的
 
+    // 根据速度方向施加阻力
     if (velocity.x() > 0) {
         velocity.setX(qMax(velocity.x() - friction, 0.0));
     } else if (velocity.x() < 0) {
@@ -179,33 +173,29 @@ void Character::moveActively(Direction dir) {
     updatePosition();
 }
 
-void Character::stop() {
-    velocity = QPointF(0, 0);
-    acceleration = QPointF(0, 0);
-}
-
 QPair<bool, bool> Character::handleCollision(QRect &otherRect) {
-    QRect thisRect(this->x(), this->y(), width + 1, height + 1);
+    QRect thisRect(this->x(), this->y(), width + 1, height + 1); // 当前角色的矩形范围
 
     bool moveX = false, moveY = false;
 
-    if (thisRect.intersects(otherRect)) {
+    if (thisRect.intersects(otherRect)) { // 判断是否碰撞
         isBlocked = true;
 
-        QRect intersection = thisRect.intersected(otherRect);
+        QRect intersection = thisRect.intersected(otherRect); // 两个矩形的重合部分
 
+        // 根据重合部分的形状和两个角色的位置判断碰撞的方向，并解除重合
         if (intersection.width() > intersection.height()) {
             if (thisRect.top() < otherRect.top()) {
-                this->move(thisRect.left(), otherRect.top() - thisRect.height() - REBOUND_PADDING);
+                this->move(thisRect.left(), otherRect.top() - thisRect.height());
             } else {
-                this->move(thisRect.left(), otherRect.bottom() + REBOUND_PADDING);
+                this->move(thisRect.left(), otherRect.bottom());
             }
             moveY = true;
         } else {
             if (thisRect.left() < otherRect.left()) {
-                this->move(otherRect.left() - thisRect.width() - REBOUND_PADDING, thisRect.top());
+                this->move(otherRect.left() - thisRect.width(), thisRect.top());
             } else {
-                this->move(otherRect.right() + REBOUND_PADDING, thisRect.top());
+                this->move(otherRect.right(), thisRect.top());
             }
             moveX = true;
         }
@@ -213,6 +203,7 @@ QPair<bool, bool> Character::handleCollision(QRect &otherRect) {
 
     this->rebound(moveX, moveY);
 
+    // 返回当前角色的运动反向，让另一个角色根据此反弹
     return qMakePair(moveX, moveY);
 }
 
@@ -225,13 +216,13 @@ void Character::handleCollision(Character *other) {
 }
 
 void Character::handleCollision(Map *map) {
-    int offsetX = this->x() < 0 ? this->x() % GRID_SIZE + GRID_SIZE : this->x() % GRID_SIZE;
-    int offsetY = this->y() < 0 ? this->y() % GRID_SIZE + GRID_SIZE : this->y() % GRID_SIZE;
-    int startX = this->x() - offsetX;
-    int startY = this->y() - offsetY;
+    // 计算当前角色碰撞矩形的左上角位于地图上的格子的左上角坐标
+    int offsetX = this->x() < 0 ? this->x() % GRID_SIZE + GRID_SIZE : this->x() % GRID_SIZE,
+        offsetY = this->y() < 0 ? this->y() % GRID_SIZE + GRID_SIZE : this->y() % GRID_SIZE,
+        startX = this->x() - offsetX, startY = this->y() - offsetY;
 
-    int widthGridsNum = width / GRID_SIZE;
-    int heightGridsNum = height / GRID_SIZE;
+    int widthGridsNum = width / GRID_SIZE,
+        heightGridsNum = height / GRID_SIZE; // 当前角色的矩形覆盖的格子数
 
     // 边界情况
     if (this->x() + width > startX + GRID_SIZE * (widthGridsNum + 1)) {
@@ -241,9 +232,10 @@ void Character::handleCollision(Map *map) {
         heightGridsNum++;
     }
 
-    int endX = startX + GRID_SIZE * widthGridsNum;
-    int endY = startY + GRID_SIZE * heightGridsNum;
+    // 右下角格子的左上角坐标
+    int endX = startX + GRID_SIZE * widthGridsNum, endY = startY + GRID_SIZE * heightGridsNum;
 
+    // 遍历角色碰撞矩形覆盖的地图格子，并进行碰撞检测
     for (int x = startX; x <= endX; x += GRID_SIZE) {
         QPoint p1(x, startY), p2(x, endY);
         if (map->isObstacle(p1)) {
@@ -270,6 +262,7 @@ void Character::handleCollision(Map *map) {
 }
 
 void Character::rebound(bool x, bool y) {
+    // 反弹
     if (x) {
         velocity.setX(-velocity.x() * reboundFactor);
         acceleration.setX(-acceleration.x() * reboundFactor);
@@ -281,25 +274,22 @@ void Character::rebound(bool x, bool y) {
 }
 
 void Character::performAttack(Character *target) {
+    // 检查普通攻击是否冷却结束，或者仍在攻击中
     if (!weapon->isCooldownFinished() || isAttacking) {
         return;
     }
 
+    // 如果有目标就朝目标攻击，否则朝移动方向攻击
     double degree = facingDegree;
     if (target) {
         degree = MathUtils::calculateDegree(getPos(), target->getPos());
     }
 
-    if (weapon->getType() == Weapon::WeaponType::Remote) {
-        Bullet *bullet = (Bullet *) this->regularAttack(degree);
-        emit attackPerformed(bullet);
-    } else {
-        Slash *slash = (Slash *) this->regularAttack(degree);
-        emit attackPerformed(slash);
-    }
+    // 发送攻击实体
+    emit attackPerformed(generateAttack(degree));
 }
 
-Attack *Character::regularAttack(double degree) {
+Attack *Character::generateAttack(double degree) {
     if (weapon->getType() == Weapon::WeaponType::Remote) {
         Bullet *bullet = ((RemoteWeapon *) weapon)->attack(this->getPos(), degree);
         return bullet;
@@ -311,9 +301,11 @@ Attack *Character::regularAttack(double degree) {
 
 void Character::receiveDamage(double damage) {
     currentHealth -= damage;
+    currentHealth = fmax(currentHealth, 0); // 生命值不会减到负数
 
+    // 更新受伤显示状态
     isReceivingDamage = true;
-    receiveDamageReceiveTimer->start();
+    receiveDamageTimer->start();
 
     emit damageReceived();
 }

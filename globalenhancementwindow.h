@@ -12,7 +12,7 @@ namespace Ui {
 class GlobalEnhancementWindow;
 }
 
-class GlobalEnhancementWindow : public QWidget {
+class GlobalEnhancementWindow : public QWidget { // 全局强化窗口类
     Q_OBJECT
 
 public:
@@ -38,11 +38,11 @@ private:
     Global *global;
     SoundManager *soundManager;
 
-    QVector<Enhancement *> globalEnhancements;
-    QVector<QVector<int>> prices;
+    QVector<Enhancement *> globalEnhancements; // 全局强化词条
+    QVector<QVector<int>> prices;              // 价格
 
-    void updateButtonText(QPushButton *button, int index);
-    void purchaseGlobalEnhancement(QPushButton *button, int index);
+    void updateButtonText(QPushButton *button, int index); // 更新全局强化的显示信息
+    void purchaseGlobalEnhancement(QPushButton *button, int index); // 升级
 
 signals:
     void backToMenu();

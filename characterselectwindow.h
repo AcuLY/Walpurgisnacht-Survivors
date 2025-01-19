@@ -11,7 +11,7 @@ namespace Ui {
 class CharacterSelectWindow;
 }
 
-class CharacterSelectWindow : public QWidget {
+class CharacterSelectWindow : public QWidget { // 角色选择窗口
     Q_OBJECT
 
 public:
@@ -20,14 +20,12 @@ public:
 
 signals:
     void backToMenu();
-    void playerSelectedSignal(MagicalGirlEnum player);
+    void playerSelected(MagicalGirlEnum player);
 
 private:
     Ui::CharacterSelectWindow *ui;
 
     SoundManager *soundManager;
-
-    void onPlayerSelected(MagicalGirlEnum player);
 };
 
 #endif // CHARACTERSELECTWINDOW_H

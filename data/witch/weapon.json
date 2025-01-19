@@ -9,7 +9,7 @@
     {
         "isRemoteWeapon": false,
         "damage": 5,
-        "attackInterval": 1000,
+        "attackInterval": 100,
         "spanAngle": 30,
         "rangeSize": 20
     },

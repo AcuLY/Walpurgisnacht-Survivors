@@ -9,6 +9,7 @@
 
 #include <cmath>
 
+#include "enhancementwindow.h"
 #include "gamelogic.h"
 #include "global.h"
 #include "pausewindow.h"
@@ -32,41 +33,41 @@ const int EXP_BAR_Y_OFFSET = 668;
 const int EXP_BAR_WIDTH = 1280;
 const int EXP_BAR_HEIGHT = 52;
 const int SURVIVAL_TIME_RECT_X_OFFSET = 980;
-const int SURVIVAL_ITME_RECT_Y_OFFSET = 18;
+const int SURVIVAL_TIME_RECT_Y_OFFSET = 18;
 const int SURVIVAL_TIME_RECT_WIDTH = 280;
 const int SURVIVAL_TIME_RECT_HEIGHT = 100;
 
-class GameWindow : public QWidget {
+class GameWindow : public QWidget { // 游戏窗口类
     Q_OBJECT
 
 private:
     SoundManager *soundManager;
 
-    QPixmap bar = QPixmap(":/images/ui/bar");
-    QRect hpBar;
-    QRect mpBar;
-    QRect expBar;
-    QRect survivalTimeRect;
+    QPixmap bar = QPixmap(":/images/ui/bar"); // 游戏内 ui 的贴图
+    QRect hpBar;                              // 血条矩形
+    QRect mpBar;                              // 蓝条矩形
+    QRect expBar;                             // 经验条矩形
+    QRect survivalTimeRect;                   // 剩余时间的位置矩形
+    QPixmap avatar;                           // 角色头像
 
-    QPixmap avatar;
+    void updateStatusBarParams(); // 更新状态条的数据
 
-    void updateStatusBarParams();
-
-    QPoint viewport = QPoint(0, 0);
+    QPoint viewport = QPoint(0, 0); // 窗口左上角的坐标
 
     Global *global;
     GameLogic *gameLogic;
 
-    QSet<int> pressedKeys;
+    QSet<int> pressedKeys; // 记录当前按下的按钮
 
-    QTimer *logicTimer;
-    QTimer *renderTimer;
-    QTimer *survivalTimer;
+    QTimer *logicTimer;  // 逻辑帧时间
+    QTimer *renderTimer; // 渲染帧时间
+
+    QTimer *survivalTimer; // 剩余游戏时间
 
     bool isGamePaused = false;
-    PauseWindow *pauseWindow;
+    PauseWindow *pauseWindow; // 游戏暂停窗口
 
-    EnhancementWindow *enhancementWindow;
+    EnhancementWindow *enhancementWindow; // 局内强化窗口
 
 public:
     explicit GameWindow(Global *global,
@@ -79,10 +80,12 @@ protected:
     void keyReleaseEvent(QKeyEvent *event) override;
     void paintEvent(QPaintEvent *event) override;
 
-    Direction getPlayerMovement();
-    bool getPlayerAttack();
+    Direction getPlayerMovement(); // 获取玩家移动方向
+    bool getPlayerAttack();        // 获取攻击状态
 
-    void updateViewport();
+    void updateViewport(); // 根据玩家移动更新左上角坐标
+
+    void updateAndRenderUI(QPainter *painter); // 更新并渲染 UI
 
 private slots:
     void updateGameLogic();

@@ -7,14 +7,14 @@ CharacterSelectWindow::CharacterSelectWindow(SoundManager *soundManager, QWidget
 
     this->setFixedSize(parent->geometry().width(), parent->geometry().height());
 
-    // 返回
+    // 返回按钮
     connect(ui->exit, &QPushButton::clicked, this, [this] {
         this->hide();
         emit backToMenu();
     });
 
-    // 动态连接所有按钮
-    QStringList buttonNames = {"exit", "homura", "sayaka"};
+    // 动态连接所有按钮的音效
+    QStringList buttonNames = {"exit", "madoka", "homura", "sayaka", "mami", "kyouko"};
     for (const QString &buttonName : buttonNames) {
         QPushButton *button = findChild<QPushButton *>(buttonName);
         if (button) {
@@ -29,10 +29,10 @@ CharacterSelectWindow::CharacterSelectWindow(SoundManager *soundManager, QWidget
     //     onPlayerSelected(MagicalGirlEnum::Madoka);
     // });
     connect(ui->homura, &QPushButton::clicked, this, [this] {
-        onPlayerSelected(MagicalGirlEnum::Homura);
+        emit playerSelected(MagicalGirlEnum::Homura);
     });
     connect(ui->sayaka, &QPushButton::clicked, this, [this] {
-        onPlayerSelected(MagicalGirlEnum::Sayaka);
+        emit playerSelected(MagicalGirlEnum::Sayaka);
     });
     // connect(ui->mami, &QPushButton::clicked, this, [this] {
     //     onPlayerSelected(MagicalGirlEnum::Mami);
@@ -44,8 +44,4 @@ CharacterSelectWindow::CharacterSelectWindow(SoundManager *soundManager, QWidget
 
 CharacterSelectWindow::~CharacterSelectWindow() {
     delete ui;
-}
-
-void CharacterSelectWindow::onPlayerSelected(MagicalGirlEnum playerSelection) { // 传递角色编号
-    emit playerSelectedSignal(playerSelection);
 }

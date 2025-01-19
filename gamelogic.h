@@ -10,7 +10,6 @@
 
 #include "direction.h"
 #include "enhancement.h"
-#include "enhancementwindow.h"
 #include "global.h"
 #include "loot.h"
 #include "magicalgirl.h"
@@ -18,10 +17,12 @@
 #include "soundmanager.h"
 #include "witch.h"
 
-const double survivalTime = 600.0;
-const double nextLevelExpFactor = 1.1;
+const double SURVIVAL_TIME = 600.0; // 获胜所需时间
 
-class GameLogic : public QObject {
+const int INIT_NEXT_LEVEL_EXP = 30;                // 升到第二级需要的经验
+const double NEXT_LEVEL_EXP_INCREASE_FACTOR = 1.1; // 升下一级需要的经验系数
+
+class GameLogic : public QObject { // 游戏逻辑类
     Q_OBJECT
 
 private:
@@ -42,15 +43,16 @@ private:
 
     int level = 1;
     int currentExp = 0;
-    int nextLevelExp = 30;
+    int nextLevelExp = INIT_NEXT_LEVEL_EXP;
     EnhancementManager *enhancementManager;
-    QVector<Enhancement *> randomEnhancements;
+    QVector<Enhancement *> randomEnhancements; // 存储当前的三个局内强化
 
-    double survivalTimeLeft = survivalTime;
+    double survivalTimeLeft = SURVIVAL_TIME; // 剩余生存时间
 
-    QThread *workerThread;
+    QThread *flowFieldUpdateThread; // 更新流场用的线程
 
-    bool isBlocked(QPoint pos1, QPoint pos2);
+    QVector<double> playerSelectTarget();     // 玩家索敌
+    bool isBlocked(QPoint pos1, QPoint pos2); // 两个点是否被障碍物阻挡
 
 public:
     explicit GameLogic(Global *global,
@@ -60,75 +62,72 @@ public:
     ~GameLogic();
 
     void updateSurvivalTime();
-    QString getSurvivalTimeString() const;
-
-    int getLevel();
-    int getCurrentExp();
-    int getNextLevelExp();
+    QString getSurvivalTimeString() const; // 返回 MM:SS 的字符串
 
     Map *getMap() const;
     MagicalGirl *getPlayer() const;
-    QSet<Witch *> &getWitches();
-    QSet<Bullet *> &getBullets();
-    QSet<Slash *> &getSlashes();
-    QSet<Loot *> &getLoots();
+    const QSet<Witch *> &getWitches() const;
+    const QSet<Bullet *> &getBullets() const;
+    const QSet<Slash *> &getSlashes() const;
+    const QSet<Loot *> &getLoots() const;
 
+    // 获取百分比
     double getHpPercent() const;
     double getMpPercent() const;
     double getExpPercent() const;
 
+    // 获取用于渲染的字符串
     QString getHpText() const;
     QString getMpText() const;
     QString getExpText() const;
+    QString getLevelText() const;
 
-    bool isPlayerReceivingDamage() const;
+    bool isPlayerReceivingDamage() const; // 玩家是否在受伤
 
-    void movePlayer(Direction dir);
+    void movePlayer(Direction dir); // 玩家移动
     void moveWitches();
     void moveBullets();
     void moveLoots();
 
-    void updateMapFlowField();
+    void updateMapFlowField(); // 更新地图流场
 
-    void handleCharacterCollision();
+    void handleCharacterCollision(); // 处理角色碰撞
 
-    void handleInRangeLoots();
+    void handleInRangeLoots(); // 处理掉落书拾取
 
-    void addWitch(QPoint &viewport);
+    void addWitch(QPoint &viewport); // 生成敌人
 
-    QVector<double> playerSelectTarget();
     void playerAttack();
-
     void witchAttack();
 
-    void handleAttack();
-    void handleBulletMapCollision();
+    void handleAttack();             // 处理攻击实体
+    void handleBulletMapCollision(); // 处理子弹地图碰撞
 
-    void handleDeadWitches();
-    void handleInvalidAttack();
-    void handleOutOfBoundryObject();
+    void handleDeadWitches();        // 处理敌人死亡
+    void handleInvalidAttack();      // 处理失效的攻击实体
+    void handleOutOfBoundryObject(); // 处理超出游戏最大边界的实体
 
-    void handlePlayerHealthRecover();
-    void handlePlayerManaRecover();
-    void checkIfPlayerDie();
+    void handlePlayerHealthRecover(); // 玩家回血
+    void handlePlayerManaRecover();   // 玩家回蓝
+    void checkIfPlayerDie();          // 检查游戏结束
 
     void updateExp(int exp);
     void handleLevelUp();
 
-    void handleRewards();
+    void handleRewards(); // 金币奖励
 
 signals:
     void gameWin();
-    void gameOver();
+    void gameLose();
 
-    void levelUp(QVector<Enhancement *> &enhancements);
-    void levelUpFinish();
+    void levelUp(QVector<Enhancement *> &enhancements); // 开始选择局内强化
+    void levelUpFinish();                               // 结束选择局内强化
 
 private slots:
-    void storeAttack(Attack *attack);
+    void storeAttack(Attack *attack); // 将攻击实体存入
 
 public slots:
-    void enhancementSelected(int index);
+    void enhancementSelected(int index); // 已选择强化
 };
 
 #endif // GAMELOGIC_H

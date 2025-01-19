@@ -1,15 +1,17 @@
 #include "attackrange.h"
+#include "utils.h"
 
 EllipseRange::EllipseRange(double a, double b) : a(a), b(b) {
 }
 
 QPainterPath EllipseRange::createPath(const QPointF &center) const {
     QPainterPath path;
-    path.addEllipse(center.x() - a, center.y() - b, a * 2, b * 2);
+    path.addEllipse(center.x() - a, center.y() - b, a * 2, b * 2); // 绘制椭圆
     return path;
 }
 
 QPainterPath EllipseRange::createTrack(const QPointF &center1, const QPointF &center2) const {
+    // 该函数暂未实现
     QPainterPath track;
     return track;
 };
@@ -25,10 +27,11 @@ CircleRange::CircleRange(double r) : EllipseRange(r, r) {
 QPainterPath CircleRange::createTrack(const QPointF &center1, const QPointF &center2) const {
     QPainterPath track;
 
+    // 绘制一个圆形平移后得到的胶囊形
     double dx = center2.x() - center1.x();
     double dy = center2.y() - center1.y();
     double distance = MathUtils::euclideanDistance(center1, center2);
-    double scale = a / distance;
+    double scale = a / distance; // a 即半径，scale 即 1 / sqrt(dx + dy)
 
     QPointF start1 = center1 + QPointF(-scale * dy, scale * dx);
     QPointF control1 = center1 - QPointF(scale * dx, scale * dy);
@@ -54,7 +57,8 @@ SectorRange::SectorRange(double radius, double startAngle, double spanAngle)
 QPainterPath SectorRange::createPath(const QPointF &center) const {
     QPainterPath path;
 
-    double startAngleDegrees = qRadiansToDegrees(startAngle - M_PI / 6);
+    // 绘制扇形
+    double startAngleDegrees = qRadiansToDegrees(startAngle - M_PI / 6); // 调整到 x 轴正方形
     double spanAngleDegrees = qRadiansToDegrees(spanAngle);
 
     path.moveTo(center);
@@ -67,6 +71,7 @@ QPainterPath SectorRange::createPath(const QPointF &center) const {
 QPainterPath SectorRange::createTrack(const QPointF &center1, const QPointF &center2) const {
     QPainterPath track = createPath(center2);
 
+    // 绘制扇形平移得到的轨迹
     QPointF startPoint1 = center1 + QPointF(radius * cos(startAngle), radius * sin(startAngle));
     QPointF startPoint2 = center1 - QPointF(radius * cos(startAngle), radius * sin(startAngle));
 

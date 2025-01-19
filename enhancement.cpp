@@ -1,4 +1,5 @@
 #include "enhancement.h"
+#include "utils.h"
 
 Enhancement::Enhancement(QString type,
                          QString description,
@@ -7,7 +8,8 @@ Enhancement::Enhancement(QString type,
     : QObject{parent}, type(type), description(description), parameters(parameters) {
 }
 
-Enhancement::Enhancement(const QJsonObject &json, QObject *parent) : QObject(parent) {
+Enhancement::Enhancement(const QJsonObject &json, QObject *parent)
+    : QObject(parent) { // 从 json 文件加载一个词条
     type = json["type"].toString();
     description = json["description"].toString();
 
@@ -27,6 +29,7 @@ QString Enhancement::getDescription() {
 
 EnhancementManager::EnhancementManager(MagicalGirl *player, QObject *parent)
     : QObject(parent), player(player) {
+    // 加载所有局内强化词条
     QJsonArray enhancementJsons = FileUtils::loadJsonFile(":/data/enhancement/enhancement_jsons");
     for (const QJsonValue &value : enhancementJsons) {
         QJsonObject json = value.toObject();
@@ -34,6 +37,7 @@ EnhancementManager::EnhancementManager(MagicalGirl *player, QObject *parent)
         enhancements.append(e);
     }
 
+    // 加载所有全局强化词条
     QJsonArray globalEnhancementJsons = FileUtils::loadJsonFile(
         ":/data/enhancement/global_enhancement_jsons");
     for (const QJsonValue &value : globalEnhancementJsons) {
@@ -43,13 +47,22 @@ EnhancementManager::EnhancementManager(MagicalGirl *player, QObject *parent)
     }
 }
 
+EnhancementManager::~EnhancementManager() {
+    for (auto it = enhancements.begin(); it != enhancements.end(); ++it) {
+        delete *it;
+    }
+    for (auto it = globalEhancements.begin(); it != enhancements.end(); ++it) {
+        delete *it;
+    }
+}
+
 QVector<Enhancement *> EnhancementManager::generateEnhancement(MagicalGirl *player) {
     QVector<Enhancement *> randomEnhancements;
     QRandomGenerator *gen = QRandomGenerator::global();
 
     // 选择三个不同的随机强化
     while (randomEnhancements.size() < 3) {
-        int randomIndex = gen->bounded(enhancements.size());
+        int randomIndex = gen->bounded(enhancements.size()); // 随机选一个下标
         Enhancement *randomEnhancement = enhancements[randomIndex];
 
         // 对子弹的增益不出现在进战武器，对斩击张角的增益不出现在远程武器
@@ -61,6 +74,7 @@ QVector<Enhancement *> EnhancementManager::generateEnhancement(MagicalGirl *play
             continue;
         }
 
+        // 防止重复词条
         if (!randomEnhancements.contains(randomEnhancement)) {
             randomEnhancements.append(randomEnhancement);
         }

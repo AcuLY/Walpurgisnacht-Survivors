@@ -4,17 +4,15 @@
 #include <QObject>
 #include <QVector>
 
-#include "character.h"
 #include "magicalgirl.h"
-#include "utils.h"
 
-class Enhancement : public QObject {
+class Enhancement : public QObject { // 单个强化词条类
     Q_OBJECT
 
 private:
-    QString type;
-    QString description;
-    QVector<double> parameters;
+    QString type;               // 强化类型
+    QString description;        // 描述
+    QVector<double> parameters; // 参数
 
     friend class EnhancementManager;
 
@@ -29,25 +27,24 @@ public:
     QString getDescription();
 };
 
-class EnhancementManager : public QObject {
+class EnhancementManager : public QObject { // 强化执行类
     Q_OBJECT
 
 public:
     explicit EnhancementManager(MagicalGirl *player, QObject *parent);
-
-    QVector<Enhancement *> generateEnhancement(MagicalGirl *player);
+    ~EnhancementManager();
 
     const QVector<Enhancement *> getGlobalEnhancements() const;
 
-    void applyEnhancement(Enhancement *e, int index);
+    QVector<Enhancement *> generateEnhancement(MagicalGirl *player); // 随机返回三个强化
+    void applyEnhancement(Enhancement *e, int index);                // 执行强化
 
 private:
     MagicalGirl *player;
 
-    QVector<Enhancement *> enhancements;
-    QVector<Enhancement *> globalEhancements;
+    QVector<Enhancement *> enhancements;      // 存储所有局内强化词条
+    QVector<Enhancement *> globalEhancements; // 全局强化
 
-    // 攻击类
     void damageEnhancement(double value);      // 提高攻击力
     void attackSpeedEnhancement(double value); // 提高攻击速度
     void attackRangeEnhancement(double value); // 增加攻击范围
@@ -55,8 +52,6 @@ private:
     void bulletSizeEnhancement(double value);  // 增加子弹大小
     void spanAngleEnhancement(double value);   // 增大斩击张角
     void multiAttackTimeEnhancement(int value); // 增加攻击次数
-
-    // 生存类
     void maxHealthEnhancement(double value);             // 提高最大生命值
     void healthRecoverIntervalEnhancement(double value); // 提高回血速度
     void healthRecoverRateEnhancement(double value);     // 增加每次回血量
@@ -65,12 +60,8 @@ private:
     void invincibilityIntervalEnhancement(double value); // 增加无敌时间长度
     void maxManaEnhancement(double value);               // 提高最大蓝量
     void manaRecoverEnhancement(double value);           // 增加回蓝速度
-
-    // 移动类
     void maxVelocityEnhancement(double value); // 提高最大移动速度
     void attackDecayEnhancement(double value); // 减少攻击衰减
-
-    // 升级类
     void pickupRangeEnhancement(double value);    // 增加拾取范围
     void experienceGainEnhancement(double value); // 增加经验获取
 };

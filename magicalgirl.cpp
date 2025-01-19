@@ -50,6 +50,13 @@ MagicalGirl::MagicalGirl(QString name,
     connect(multiAttackTimer, &QTimer::timeout, this, &MagicalGirl::multiAttack);
 }
 
+MagicalGirl::~MagicalGirl() {
+    delete inAttackTimer;
+    delete invincibleTimer;
+    delete recoverTimer;
+    delete multiAttackTimer;
+}
+
 MagicalGirl *MagicalGirl::loadMagicalGirlFromJson(MagicalGirlEnum playerSelection, Map *map) {
     QJsonArray basicJsons = FileUtils::loadJsonFile(
         ":/data/magical_girls/magical_girls_basic_jsons");
@@ -115,6 +122,7 @@ MagicalGirl *MagicalGirl::loadMagicalGirlFromJson(MagicalGirlEnum playerSelectio
 }
 
 void MagicalGirl::render(QPainter *painter) {
+    // 如果处于无敌状态就用红色表示
     if (isInvincible) {
         painter->drawPixmap(this->x() + width / 2 - textureHurt.width() / 2,
                             this->y() + height / 2 - textureHurt.height() / 2,
@@ -135,12 +143,8 @@ int MagicalGirl::getMaxMana() const {
     return maxMana;
 }
 
-double MagicalGirl::getRecoverRate() const {
-    return recoverRate;
-}
-
 bool MagicalGirl::getIsReadyToRecover() const {
-    return !isInAttack && !isOnRecoverCooldown;
+    return !isInAttack && !isOnRecoverCooldown; // 脱战且回血冷却结束才能回血
 }
 
 int MagicalGirl::getExperienceBonus() const {
@@ -157,24 +161,21 @@ void MagicalGirl::initHealthAndMana() {
 }
 
 void MagicalGirl::performSingleAttack(double targetDegree) {
-    double degree = targetDegree == INF ? facingDegree : targetDegree;
+    double degree = targetDegree == INF ? facingDegree
+                                        : targetDegree; // 如果没有目标则向移动方向攻击
 
-    if (weapon->getType() == Weapon::WeaponType::Remote) {
-        Bullet *bullet = (Bullet *) this->regularAttack(degree);
-        emit attackPerformed(bullet);
-    } else {
-        Slash *slash = (Slash *) this->regularAttack(degree);
-        emit attackPerformed(slash);
-    }
+    emit attackPerformed(generateAttack(degree));
 }
 
 void MagicalGirl::multiAttack() {
+    // 连击次数用完，结束
     if (!attackTimeLeft) {
         weapon->setMultiAttackMode(false);
         isAttacking = false;
         return;
     }
 
+    // 如果有能攻击到的目标，就遍历目标的角度
     if (!targetDegrees.empty()) {
         ++targetDegreesIt;
 
@@ -187,6 +188,7 @@ void MagicalGirl::multiAttack() {
         currentTargetDegree = INF;
     }
 
+    // 如果目标列表更新了需要重置当前目标
     if (targetDegreeUpdated && !targetDegrees.empty()) {
         targetDegreesIt = targetDegrees.begin();
         currentTargetDegree = *targetDegreesIt;
@@ -194,22 +196,26 @@ void MagicalGirl::multiAttack() {
         targetDegreeUpdated = false;
     }
 
+    // 武器进入连击模式
     if (attackTimeLeft < multiAttackTime) {
         weapon->setMultiAttackMode(true);
     }
 
+    // 触发第一次连击
     performSingleAttack(currentTargetDegree);
     attackTimeLeft -= 1;
     multiAttackTimer->start();
 }
 
 void MagicalGirl::performAttack(QVector<double> targetWitchDegrees) {
+    // 检查武器冷却以及是否还在攻击中
     if (!weapon->isCooldownFinished() || isAttacking) {
         return;
     }
 
     isAttacking = true;
 
+    // 更新连击所需信息
     targetDegrees = targetWitchDegrees;
     targetDegreeUpdated = true;
     targetDegreesIt = targetDegrees.begin();
@@ -219,6 +225,7 @@ void MagicalGirl::performAttack(QVector<double> targetWitchDegrees) {
 }
 
 void MagicalGirl::receiveDamage(double damage) {
+    // 检查是否仍在无敌状态，否则进入受击无敌状态
     if (isInvincible) {
         return;
     }
@@ -227,8 +234,12 @@ void MagicalGirl::receiveDamage(double damage) {
     invincibleTimer->start();
 
     isReceivingDamage = true;
-    receiveDamageReceiveTimer->start();
+    receiveDamageTimer->start();
 
+    isInAttack = true;
+    inAttackTimer->start();
+
+    // 如果没血了就扣蓝
     if (currentHealth == 0) {
         currentMana -= damage;
     } else if (currentHealth < damage) {
@@ -237,19 +248,17 @@ void MagicalGirl::receiveDamage(double damage) {
         currentHealth -= damage;
     }
 
-    isInAttack = true;
-    inAttackTimer->start();
-
     emit damageReceived();
 }
 
 void MagicalGirl::recoverHealth() {
-    if (currentHealth == maxHealth || currentMana < minRecoverHealthMana) {
+    // 如果满血或者蓝太少就不回血
+    if (currentHealth == maxHealth || currentMana < MIN_RECOVER_HEALTH_MANA) {
         return;
     }
 
     currentHealth += maxHealth * recoverRate;
-    currentHealth = std::min(currentHealth, maxHealth);
+    currentHealth = std::min(currentHealth, maxHealth); // 不能超过最大血量
 
     currentMana -= recoverManaCost;
 
@@ -260,11 +269,8 @@ void MagicalGirl::recoverHealth() {
 }
 
 void MagicalGirl::recoverMana(int mana) {
-    qDebug() << mana << currentMana << maxMana;
     currentMana += mana + manaRecoverBonus;
-    qDebug() << currentMana;
-    currentMana = qMin(currentMana, maxMana);
-    qDebug() << currentMana;
+    currentMana = qMin(currentMana, maxMana); // 不能超过最大蓝量
 }
 
 void MagicalGirl::increaseAttackSpeed(double value) {

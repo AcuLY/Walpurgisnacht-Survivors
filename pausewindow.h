@@ -3,7 +3,7 @@
 
 #include <QWidget>
 
-enum class PauseStatus { GamePause, GameWin, GameLose };
+enum class PauseStatus { GamePause, GameWin, GameLose }; // 暂停状态
 
 namespace Ui {
 class PauseWindow;
@@ -16,7 +16,7 @@ public:
     explicit PauseWindow(QWidget *parent = nullptr);
     ~PauseWindow();
 
-    void setStatus(PauseStatus status);
+    void setStatus(PauseStatus status); // 设置暂停状态
     PauseStatus getStatus() const;
 
 private:

@@ -1,7 +1,8 @@
 #include "global.h"
+#include "utils.h"
 
 Global::Global(QObject *parent) : QObject{parent} {
-    // 如果没有 save 文件则创建一个
+    // 如果没有 save 文件则创建并初始化一个
     if (!QFile::exists(saveFilePath)) {
         QJsonObject settings;
         settings["backgroundMusic"] = true;
@@ -45,6 +46,7 @@ Global::Global(QObject *parent) : QObject{parent} {
         }
     }
 
+    // 从 json 文件中读取全局设置和强化等级
     QJsonObject jsonFile = FileUtils::loadJsonFile(saveFilePath)[0].toObject();
 
     QJsonObject settings = jsonFile.value("settings").toObject();

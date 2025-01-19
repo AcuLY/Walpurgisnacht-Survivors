@@ -5,15 +5,15 @@ GameLogic::GameLogic(Global* global,
                      SoundManager* soundManager,
                      MagicalGirlEnum playerSelection,
                      QObject* parent)
-    : QObject{parent}, global(global), soundManager(soundManager) {
-    QWidget* window = qobject_cast<QWidget*>(parent);
+    : QObject{parent}, global(global), soundManager(soundManager),
+      flowFieldUpdateThread(new QThread()) {
+    QWidget* gameWindow = qobject_cast<QWidget*>(parent);
 
-    workerThread = new QThread;
-
-    map = new Map(FRICTION, window);
+    map = new Map(FRICTION, gameWindow);
 
     player = MagicalGirl::loadMagicalGirlFromJson(playerSelection, map);
-    connect(player, &Character::attackPerformed, this, &GameLogic::storeAttack); // 存放角色的子弹等
+    connect(player, &Character::attackPerformed, this, &GameLogic::storeAttack); // 存放玩家的攻击实体
+    // 绑定音效
     connect(player, &Character::damageReceived, this, [this] {
         this->soundManager->playSfx("hurt");
     });
@@ -26,37 +26,45 @@ GameLogic::GameLogic(Global* global,
     });
     connect(player, &MagicalGirl::healed, this, [this] { this->soundManager->playSfx("health"); });
 
-    // 设置初始中心位置
-    QPoint initViewport(player->geometry().width() / 2, player->geometry().height() / 2);
-    map->updateObstacleAndTextureIndex(initViewport);
+    QPoint initViewport(player->geometry().width() / 2,
+                        player->geometry().height() / 2); // 设置初始视点
 
-    // 局内强化系统
-    enhancementManager = new EnhancementManager(player, window);
+    map->updateObstacleAndTextureIndex(initViewport); // 初始化地图障碍
+
+    enhancementManager = new EnhancementManager(player, gameWindow); // 初始化局内强化系统
     // 施加全局强化
     for (int i = 0; i < 6; i++) {
         auto globalEnhancements = enhancementManager->getGlobalEnhancements();
         enhancementManager->applyEnhancement(globalEnhancements[i],
                                              global->getGlobalEnhancementLevel(i));
     }
-    player->initHealthAndMana();
+
+    player->initHealthAndMana(); // 根据全局强化更新玩家初始值
 }
 
 GameLogic::~GameLogic() {
     delete map;
     delete player;
     delete enhancementManager;
-}
 
-int GameLogic::getLevel() {
-    return level;
-}
+    if (flowFieldUpdateThread) {
+        flowFieldUpdateThread->quit();
+        flowFieldUpdateThread->wait();
+        delete flowFieldUpdateThread;
+    }
 
-int GameLogic::getCurrentExp() {
-    return currentExp;
-}
-
-int GameLogic::getNextLevelExp() {
-    return nextLevelExp;
+    for (auto it = witches.begin(); it != witches.end(); ++it) {
+        delete *it;
+    }
+    for (auto it = bullets.begin(); it != bullets.end(); ++it) {
+        delete *it;
+    }
+    for (auto it = slashes.begin(); it != slashes.end(); ++it) {
+        delete *it;
+    }
+    for (auto it = loots.begin(); it != loots.end(); ++it) {
+        delete *it;
+    }
 }
 
 Map* GameLogic::getMap() const {
@@ -67,24 +75,24 @@ MagicalGirl* GameLogic::getPlayer() const {
     return player;
 }
 
-QSet<Witch*>& GameLogic::getWitches() {
+const QSet<Witch*>& GameLogic::getWitches() const {
     return witches;
 }
 
-QSet<Bullet*>& GameLogic::getBullets() {
+const QSet<Bullet*>& GameLogic::getBullets() const {
     return bullets;
 }
 
-QSet<Slash*>& GameLogic::getSlashes() {
+const QSet<Slash*>& GameLogic::getSlashes() const {
     return slashes;
 }
 
-QSet<Loot*>& GameLogic::getLoots() {
+const QSet<Loot*>& GameLogic::getLoots() const {
     return loots;
 }
 
 double GameLogic::getHpPercent() const {
-    return double(player->getHealth()) / player->getMaxHealth();
+    return double(player->getCurrentHealth()) / player->getMaxHealth();
 }
 
 double GameLogic::getMpPercent() const {
@@ -96,7 +104,7 @@ double GameLogic::getExpPercent() const {
 }
 
 QString GameLogic::getHpText() const {
-    return QString::number(int(player->getHealth())) + " / "
+    return QString::number(int(player->getCurrentHealth())) + " / "
            + QString::number(int(player->getMaxHealth()));
 }
 
@@ -107,6 +115,10 @@ QString GameLogic::getMpText() const {
 
 QString GameLogic::getExpText() const {
     return QString::number(currentExp) + " / " + QString::number(nextLevelExp);
+}
+
+QString GameLogic::getLevelText() const {
+    return "Level:" + QString::number(level);
 }
 
 bool GameLogic::isPlayerReceivingDamage() const {
@@ -122,6 +134,7 @@ QString GameLogic::getSurvivalTimeString() const {
 void GameLogic::updateSurvivalTime() {
     survivalTimeLeft -= 1;
 
+    // 游戏胜利条件
     if (survivalTimeLeft < 0) {
         handleRewards();
 
@@ -135,9 +148,9 @@ void GameLogic::movePlayer(Direction dir) {
 }
 
 void GameLogic::moveWitches() {
-    for (auto witchIt = witches.begin(); witchIt != witches.end(); ++witchIt) {
-        Direction dir = map->getFlow((*witchIt)->getPos());
-        (*witchIt)->moveActively(dir);
+    for (auto it = witches.begin(); it != witches.end(); ++it) {
+        Direction dir = map->getFlow((*it)->getPos());
+        (*it)->moveActively(dir);
     }
 }
 
@@ -149,8 +162,9 @@ void GameLogic::moveBullets() {
 
 void GameLogic::moveLoots() {
     for (auto it = loots.begin(); it != loots.end();) {
-        (*it)->moveToPlayer(player->getPos());
+        (*it)->moveToPlayer(player->getPos()); // 向玩家持续移动
 
+        // 是否被拾取
         if ((*it)->getIsPicked()) {
             delete *it;
             it = loots.erase(it);
@@ -166,45 +180,50 @@ void GameLogic::updateMapFlowField() {
         return;
     }
 
-    static QTime lastCallTime = QTime::currentTime();
+    static QTime lastCallTime = QTime::currentTime(); // 上次更新的时间
     QTime currentTime = QTime::currentTime();
 
-    int interval = 200;
+    int interval = 200; // 流场更新最小时间间隔
 
+    // 如果时间没到则不更新流场
     if (lastCallTime.msecsTo(currentTime) >= interval) {
         lastCallTime = currentTime;
     } else {
         return;
     }
 
-    if (!workerThread || !workerThread->isRunning()) {
-        if (workerThread) {
-            workerThread->quit();
-            workerThread->wait();
-            delete workerThread;
+    if (!flowFieldUpdateThread || !flowFieldUpdateThread->isRunning()) {
+        // 检查线程状态
+        if (flowFieldUpdateThread) {
+            flowFieldUpdateThread->quit();
+            flowFieldUpdateThread->wait();
+            delete flowFieldUpdateThread;
         }
 
-        workerThread = new QThread;
+        // 创建子线程用于更新流场
+        flowFieldUpdateThread = new QThread;
         FlowFieldWorker* worker = new FlowFieldWorker(map, player->getPos());
-        worker->moveToThread(workerThread);
+        worker->moveToThread(flowFieldUpdateThread);
 
-        connect(workerThread, &QThread::started, worker, &FlowFieldWorker::updateFlowField);
-        connect(worker, &FlowFieldWorker::flowFieldUpdated, workerThread, &QThread::quit);
-        connect(workerThread, &QThread::finished, worker, &FlowFieldWorker::deleteLater);
+        connect(flowFieldUpdateThread, &QThread::started, worker, &FlowFieldWorker::updateFlowField);
+        connect(worker, &FlowFieldWorker::flowFieldUpdated, flowFieldUpdateThread, &QThread::quit);
+        connect(flowFieldUpdateThread, &QThread::finished, worker, &FlowFieldWorker::deleteLater);
 
-        workerThread->start();
+        flowFieldUpdateThread->start();
     }
 
     lastPlayerPos = map->getGridCornerPos(player->getPos());
 }
 
 void GameLogic::handleCharacterCollision() {
+    // 玩家与地图，玩家与敌人
     player->handleCollision(map);
     for (auto witchIt = witches.begin(); witchIt != witches.end(); ++witchIt) {
         player->handleCollision(*witchIt);
     }
     player->handleCollision(map);
 
+    // 敌人与地图，敌人与玩家，敌人与敌人
     for (auto witchIt = witches.begin(); witchIt != witches.end(); ++witchIt) {
         (*witchIt)->handleCollision(map);
         (*witchIt)->handleCollision(player);
@@ -221,6 +240,7 @@ void GameLogic::handleInRangeLoots() {
     for (auto it = loots.begin(); it != loots.end(); ++it) {
         CircleRange* pickRange = player->getPickRange();
 
+        // 判断是否吸引到了掉落物
         if (pickRange->contains(player->getPos(), (*it)->geometry())) {
             (*it)->inPickRange();
         }
@@ -228,13 +248,14 @@ void GameLogic::handleInRangeLoots() {
 }
 
 void GameLogic::addWitch(QPoint& viewport) {
-    double progress = (survivalTime - survivalTimeLeft) / survivalTime;
-    WitchEnum witchIndex = Witch::chooseWitch(progress);
+    double progress = (SURVIVAL_TIME - survivalTimeLeft) / SURVIVAL_TIME; // 当前游戏进度
+    WitchEnum witchIndex = Witch::chooseWitch(progress);                  // 敌人编号
 
-    if (witchIndex == WitchEnum::noWitch) {
+    if (witchIndex == WitchEnum::noWitch) { // 当前不生成敌人
         return;
     }
 
+    // witch 初始化
     Witch* newWitch = Witch::loadWitchFromJson(witchIndex, map);
     connect(newWitch, &Character::attackPerformed, this, &GameLogic::storeAttack);
     connect(newWitch, &Character::damageReceived, this, [this] {
@@ -248,10 +269,11 @@ void GameLogic::addWitch(QPoint& viewport) {
         }
     });
 
-    int edge = QRandomGenerator::global()->bounded(0, 4);
-    int x = 0, y = 0;
-    Direction dir = Direction::Center;
+    int edge = QRandomGenerator::global()->bounded(0, 4); // 选择一个边界
+    int x = 0, y = 0;                                     // 初始坐标
+    Direction dir = Direction::Center;                    // 边界方向
 
+    // 根据边界初始化值
     switch (edge) {
         case 0: // 上边界
             x = QRandomGenerator::global()->bounded(0, MAP_WIDTH) + viewport.x();
@@ -279,6 +301,8 @@ void GameLogic::addWitch(QPoint& viewport) {
     }
 
     newWitch->move(x, y);
+
+    // 判断初始位置是否卡在地图里，如果是则移动位置
     int width = newWitch->geometry().width(), height = newWitch->geometry().height();
     QPainterPath partialPath = map->getPartialPath(QPoint(x, y), QPoint(x + width, y + height));
     auto [moveX, moveY] = ~dir;
@@ -293,6 +317,7 @@ void GameLogic::addWitch(QPoint& viewport) {
 }
 
 bool GameLogic::isBlocked(QPoint pos1, QPoint pos2) {
+    // 判断两点间是否有障碍物
     QPainterPath partialPath = map->getPartialPath(pos1, pos2);
     return !partialPath.isEmpty();
 }
@@ -301,26 +326,28 @@ QVector<double> GameLogic::playerSelectTarget() {
     MagicalGirl* player = getPlayer();
     AttackRange* range = player->getRange();
 
+    // 将能攻击到的敌人按距离排序
     std::priority_queue<QPair<double, Witch*>,
                         std::vector<QPair<double, Witch*>>,
                         std::greater<QPair<double, Witch*>>>
         distances;
     for (auto it = witches.begin(); it != witches.end(); it++) {
         if (player->getWeaponType() == Weapon::WeaponType::Remote
-            && isBlocked(player->getPos(), (*it)->getPos())) {
+            && isBlocked(player->getPos(), (*it)->getPos())) { // 被障碍物阻挡
             continue;
         }
 
         QPointF playerPos(player->x(), player->y()), witchPos((*it)->x(), (*it)->y());
         double distance = MathUtils::euclideanDistance(playerPos, witchPos);
 
-        if (!range->contains(playerPos, (*it)->geometry())) {
+        if (!range->contains(playerPos, (*it)->geometry())) { // 距离外
             continue;
         }
 
         distances.push(qMakePair(distance, (*it)));
     }
 
+    // 将敌人换算成相对于玩家的角度
     QVector<double> targetWitchDegrees;
     while (!distances.empty()) {
         targetWitchDegrees.append(
@@ -339,7 +366,7 @@ void GameLogic::playerAttack() {
 void GameLogic::witchAttack() {
     for (auto it = witches.begin(); it != witches.end(); ++it) {
         if ((*it)->getWeaponType() == Weapon::WeaponType::Remote
-            && isBlocked(player->getPos(), (*it)->getPos())) {
+            && isBlocked(player->getPos(), (*it)->getPos())) { // 被挡住或者打不到
             continue;
         }
 
@@ -355,7 +382,7 @@ void GameLogic::handleAttack() {
         }
 
         bool bulletHit = false;
-        // player
+        // 玩家是否受伤
         if (!(*bulletIt)->getPlayerSide() && (*bulletIt)->isHit(player->geometry())) {
             player->receiveDamage((*bulletIt)->getDamage());
 
@@ -365,7 +392,7 @@ void GameLogic::handleAttack() {
             continue;
         }
 
-        // witch
+        // 敌人是否受伤
         for (auto witchIt = witches.begin(); witchIt != witches.end(); ++witchIt) {
             if ((*bulletIt)->getPlayerSide() && (*bulletIt)->isHit((*witchIt)->geometry())) {
                 (*witchIt)->receiveDamage((*bulletIt)->getDamage());
@@ -388,12 +415,12 @@ void GameLogic::handleAttack() {
             continue;
         }
 
-        // player
+        // 玩家
         if (!(*slashIt)->getPlayerSide() && (*slashIt)->isHit(player->geometry())) {
             player->receiveDamage((*slashIt)->getDamage());
         }
 
-        // witch
+        // 敌人
         for (auto witchIt = witches.begin(); witchIt != witches.end(); ++witchIt) {
             if ((*slashIt)->getPlayerSide() && (*slashIt)->isHit((*witchIt)->geometry())) {
                 (*witchIt)->receiveDamage((*slashIt)->getDamage());
@@ -418,7 +445,7 @@ void GameLogic::handleBulletMapCollision() {
 
 void GameLogic::handleDeadWitches() {
     for (auto witchIt = witches.begin(); witchIt != witches.end();) {
-        if ((*witchIt)->getHealth() <= 0) {
+        if ((*witchIt)->getCurrentHealth() <= 0) {
             // 经验掉落
             int witchExp = (*witchIt)->getExp();
             Experience* exp = new Experience(witchExp, (*witchIt)->getPos(), map);
@@ -507,16 +534,17 @@ void GameLogic::handlePlayerHealthRecover() {
 }
 
 void GameLogic::handlePlayerManaRecover() {
-    player->recoverMana(griefSeedFragmentMana);
+    player->recoverMana(GRIEF_SEED_FRAGMENT_MANA);
 }
 
 void GameLogic::checkIfPlayerDie() {
     int manaLeft = player->getCurrentMana();
 
-    if (manaLeft <= 0) {
+    if (manaLeft <= 0) { // 没蓝了就死了
+        soundManager->stopBackgroundMusic();
         handleRewards();
 
-        emit gameOver();
+        emit gameLose();
     }
 }
 
@@ -525,7 +553,7 @@ void GameLogic::updateExp(int exp) {
 
     if (currentExp >= nextLevelExp) {
         currentExp %= nextLevelExp;
-        nextLevelExp *= nextLevelExpFactor;
+        nextLevelExp *= NEXT_LEVEL_EXP_INCREASE_FACTOR;
 
         handleLevelUp();
     }
@@ -541,7 +569,7 @@ void GameLogic::handleLevelUp() {
 }
 
 void GameLogic::handleRewards() {
-    global->addMoney(survivalTime - survivalTimeLeft);
+    global->addMoney(SURVIVAL_TIME - survivalTimeLeft); // 金币奖励为存活的时间
 }
 
 void GameLogic::storeAttack(Attack* attack) {

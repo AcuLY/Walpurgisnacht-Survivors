@@ -1,14 +1,6 @@
 [
     {
-        "name": "Madoka",
-        "width": 10,
-        "height": 15,
-        "maxHealth": 100,
-        "maxVelocity": 3,
-        "accelerationFactor": 0.2,
-        "attackMoveDecayFactor": 0.5,
-        "reboundFactor": 0.8,
-        "mana": 10
+        "name": "Madoka"
     },
     {
         "name": "Homura",
@@ -33,7 +25,7 @@
         "maxHealth": 30,
         "maxVelocity": 3,
         "accelerationFactor": 0.5,
-        "attackMoveDecayFactor": 0.8,
+        "attackMoveDecayFactor": 0.5,
         "reboundFactor": 0.8,
         "maxMana": 20,
         "recoverRate": 0.2

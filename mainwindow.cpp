@@ -26,7 +26,7 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWi
     globalEnhancementWindow = new GlobalEnhancementWindow(global, soundManager, this);
     globalEnhancementWindow->hide();
 
-    // 动态连接所有按钮
+    // 动态连接所有按钮的音效
     QStringList buttonNames = {"startGame",
                                "enhancement",
                                "setting",
@@ -57,7 +57,7 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWi
 MainWindow::~MainWindow() {
     delete ui;
 
-    // 更新 save.json 文件
+    // 更新存档文件
     QJsonObject settings;
     settings["backgroundMusic"] = global->isBackgroundMusicOn();
     settings["soundEffect"] = global->isSoundEffectOn();
@@ -96,6 +96,11 @@ MainWindow::~MainWindow() {
     } else {
         qWarning() << "Failed to open file for writing:" << file.errorString();
     }
+
+    delete soundManager;
+    delete global;
+    delete characterSelectWindow;
+    delete globalEnhancementWindow;
 }
 
 void MainWindow::onGameStart() {
@@ -103,10 +108,10 @@ void MainWindow::onGameStart() {
     hideWidgets();
 
     connect(characterSelectWindow,
-            &CharacterSelectWindow::playerSelectedSignal,
+            &CharacterSelectWindow::playerSelected,
             this,
             &MainWindow::onPlayerSelected,
-            Qt::UniqueConnection); // 使用 uniqueconnnection，不然会重复绑定
+            Qt::UniqueConnection); // 使用 uniqueconnnection，防止重复绑定
     connect(characterSelectWindow,
             &CharacterSelectWindow::backToMenu,
             this,

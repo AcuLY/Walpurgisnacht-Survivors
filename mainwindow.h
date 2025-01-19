@@ -16,7 +16,7 @@ class MainWindow;
 }
 QT_END_NAMESPACE
 
-class MainWindow : public QMainWindow {
+class MainWindow : public QMainWindow { // 主窗口类
     Q_OBJECT
 
 public:
@@ -26,25 +26,25 @@ public:
 private:
     Ui::MainWindow *ui;
 
-    SoundManager *soundManager;
+    SoundManager *soundManager; // 音频管理
 
-    Global *global;
-    bool isSettingKeyboardMapping = false;
-    GameKey keyToSet;
+    Global *global;                        // 全局设置
+    bool isSettingKeyboardMapping = false; // 是否在改键位
+    GameKey keyToSet;                      // 要改的键位
 
     MagicalGirlEnum lastPlayerSelection; // 记录上次选择的角色，用于直接重开
 
-    CharacterSelectWindow *characterSelectWindow;
-    GlobalEnhancementWindow *globalEnhancementWindow;
-    GameWindow *gameWindow;
+    CharacterSelectWindow *characterSelectWindow;     // 角色选择窗口
+    GlobalEnhancementWindow *globalEnhancementWindow; // 全局强化窗口
+    GameWindow *gameWindow;                           // 游戏内窗口
 
     void onGameStart();
     void onGlobalEnhancement();
 
-    void hideWidgets();
+    void hideWidgets(); // 隐藏当前组件，防止和新窗口重叠
     void showWidgets();
 
-    void updateKeyMappingText();
+    void updateKeyMappingText(); // 更新键位显示信息
 
 protected:
     void keyPressEvent(QKeyEvent *event) override;

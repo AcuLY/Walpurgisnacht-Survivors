@@ -8,6 +8,7 @@ GlobalEnhancementWindow::GlobalEnhancementWindow(Global *global,
       soundManager(soundManager) {
     ui->setupUi(this);
 
+    // 读取全局强化词条
     QJsonArray globalEnhancementJsons = FileUtils::loadJsonFile(
         ":/data/enhancement/global_enhancement_jsons");
     for (const QJsonValue &value : globalEnhancementJsons) {
@@ -23,7 +24,7 @@ GlobalEnhancementWindow::GlobalEnhancementWindow(Global *global,
         prices.append(currentPrices);
     }
 
-    // 动态连接所有按钮
+    // 动态连接所有按钮的音效
     QStringList buttonNames = {"back",
                                "globalEnhancement1",
                                "globalEnhancement2",
@@ -45,6 +46,9 @@ GlobalEnhancementWindow::GlobalEnhancementWindow(Global *global,
 
 GlobalEnhancementWindow::~GlobalEnhancementWindow() {
     delete ui;
+    for (auto it = globalEnhancements.begin(); it != globalEnhancements.end(); ++it) {
+        delete *it;
+    }
 }
 
 void GlobalEnhancementWindow::updateInfo() {
@@ -67,12 +71,14 @@ void GlobalEnhancementWindow::updateButtonText(QPushButton *button, int index) {
 
     QString enhancementDescription = globalEnhancements[index]->getDescription() + "\n";
     QString levelDescription = "等级：" + QString::number(level) + "\n";
+    // 如果满级则不显示下一级的价格
     QString priceDescription = level == 5 ? "已满级"
                                           : "价格：" + QString::number(prices[index][level]);
     button->setText(enhancementDescription + levelDescription + priceDescription);
 }
 
 void GlobalEnhancementWindow::purchaseGlobalEnhancement(QPushButton *button, int index) {
+    // 如果已经满级就无效
     int level = global->getGlobalEnhancementLevel(index);
     if (level == 5 || global->getMoney() < prices[index][level]) {
         return;

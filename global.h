@@ -4,13 +4,11 @@
 #include <QMap>
 #include <QObject>
 
-#include "utils.h"
-
 const QString saveFilePath = "save.json";
 
 enum GameKey { up, down, left, right, attack, dodge, skill };
 
-class Global : public QObject {
+class Global : public QObject { // 全局设置、强化管理类
     Q_OBJECT
 public:
     explicit Global(QObject *parent = nullptr);
@@ -34,14 +32,14 @@ public:
     void useMoney(int amount);
 
 private:
-    bool backgroundMusic = true;
-    bool soundEffect = true;
-    bool voiceEffect = true;
+    bool backgroundMusic = true; // bgm
+    bool soundEffect = true;     // 音效
+    bool voiceEffect = true;     // 语音，没做
 
-    QMap<GameKey, int> keyboardMapping;
+    QMap<GameKey, int> keyboardMapping; // 键位映射
 
-    int money = 0;
-    QVector<int> globalEnhancementLevels;
+    int money = 0;                        // 金币
+    QVector<int> globalEnhancementLevels; // 全局强化的等级
 
 signals:
 };

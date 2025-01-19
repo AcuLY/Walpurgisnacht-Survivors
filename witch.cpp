@@ -1,4 +1,5 @@
 #include "witch.h"
+#include "utils.h"
 
 Witch::Witch(QString name,
              QString texturePath,
@@ -36,22 +37,28 @@ WitchEnum Witch::chooseWitch(double progress) {
 
     double spawnProbability = 1 / (1 + std::exp(-2 * (progress - 2.5))) + 0.002;
 
-    if (progress < spawnProbLow) {
+    if (progress < PROGRESS_1_THRES) {
         // 进度小于20%，最多只能生成怪物witch1
         if (spawnRand < spawnProbability) {
             return WitchEnum::witch1;
         }
-    } else if (progress < spawnProbMidLow) {
+    } else if (progress < PROGRESS_2_THRES) {
         // 进度在20%到50%之间，最多生成怪物witch1和witch2
         if (spawnRand < spawnProbability) {
-            return chooseIndexRand < thresholdWeakMid ? WitchEnum::witch1 : WitchEnum::witch2;
+            double probSum = WITCH_1_PROB + WITCH_2_PROB;
+            if (chooseIndexRand < WITCH_1_PROB / probSum) {
+                return WitchEnum::witch1;
+            } else {
+                return WitchEnum::witch2;
+            }
         }
-    } else if (progress < spawnProbMidHigh) {
+    } else if (progress < PROGRESS_3_THRES) {
         // 进度在50%到80%之间，最多生成怪物witch1、witch2和witch3
         if (spawnRand < spawnProbability) {
-            if (chooseIndexRand < weakMonsterProb) {
+            double probSum = WITCH_1_PROB + WITCH_2_PROB + WITCH_3_PROB;
+            if (chooseIndexRand < WITCH_1_PROB / probSum) {
                 return WitchEnum::witch1;
-            } else if (chooseIndexRand < midMonsterProb) {
+            } else if (chooseIndexRand < (WITCH_1_PROB + WITCH_2_PROB) / probSum) {
                 return WitchEnum::witch2;
             } else {
                 return WitchEnum::witch3;
@@ -60,11 +67,11 @@ WitchEnum Witch::chooseWitch(double progress) {
     } else {
         // 进度大于80%，可以生成所有种类的怪物
         if (spawnRand < spawnProbability) {
-            if (chooseIndexRand < weakMonsterProb) {
+            if (chooseIndexRand < WITCH_1_PROB) {
                 return WitchEnum::witch1;
-            } else if (chooseIndexRand < midMonsterProb) {
+            } else if (chooseIndexRand < WITCH_1_PROB + WITCH_2_PROB) {
                 return WitchEnum::witch2;
-            } else if (chooseIndexRand < strongMonsterProb) {
+            } else if (chooseIndexRand < WITCH_1_PROB + WITCH_2_PROB + WITCH_3_PROB) {
                 return WitchEnum::witch3;
             } else {
                 return WitchEnum::witch4;
@@ -79,7 +86,7 @@ WitchEnum Witch::chooseWitch(double progress) {
 bool Witch::ifDropGriefSeedFragment() {
     double rand = QRandomGenerator::global()->bounded(1.0);
 
-    return rand < griefSeedFragmentPossibility;
+    return rand < GRIEF_SEED_FRAGMENT_POSSIBILITY;
 }
 
 Witch *Witch::loadWitchFromJson(WitchEnum witchIndex, Map *map) {
@@ -163,10 +170,12 @@ void Witch::setValidity() {
 }
 
 void Witch::performAttack(Character *player) {
-    if (!weapon->isCooldownFinished() || isAttacking || !isValid) {
+    // 未处于可攻击状态则不攻击
+    if (!weapon->isCooldownFinished() || !isValid) {
         return;
     }
 
+    // 不在范围内则不攻击
     AttackRange *range = weapon->getRange();
     QPointF witchPos = this->getPos(), playerPos = player->getPos();
     if (!range->contains(witchPos, player->geometry())) {
@@ -174,19 +183,8 @@ void Witch::performAttack(Character *player) {
     }
 
     double degree = MathUtils::calculateDegree(witchPos, playerPos);
-    isAttacking = true;
 
-    QTimer::singleShot(attackWaitTime, this, [this, degree]() {
-        if (weapon->getType() == Weapon::WeaponType::Remote) {
-            Bullet *bullet = (Bullet *) this->regularAttack(degree);
-            emit attackPerformed(bullet);
-        } else {
-            Slash *slash = (Slash *) this->regularAttack(degree);
-            emit attackPerformed(slash);
-        }
-
-        isAttacking = false;
-    });
+    emit attackPerformed(generateAttack(degree));
 }
 
 void Witch::moveActively(Direction dir) {
@@ -195,6 +193,7 @@ void Witch::moveActively(Direction dir) {
         updateAcceleration(moveX, moveY);
         prevDir = dir;
     } else {
+        // 非跟随玩家的怪物在被阻挡后选择一个随机的方向移动，否则一直按之前的方向移动
         if (isBlocked) {
             BiDirection moveX = BiDirection::Neutral, moveY = BiDirection::Neutral;
             while (moveX != BiDirection::Neutral || moveY != BiDirection::Neutral) {
